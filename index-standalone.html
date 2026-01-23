@@ -128,6 +128,7 @@
 
         .grid { display: grid; gap: 1rem; }
         .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
         .flex { display: flex; }
         .flex-wrap { flex-wrap: wrap; }
         .items-center { align-items: center; }
@@ -344,7 +345,44 @@
             .mobile-menu-item:hover { background: rgba(255,255,255,0.3); }
             .mobile-menu-item.active { background: rgba(255,255,255,0.6); font-weight: 700; }
             .mobile-menu-item svg { width: 20px; height: 20px; margin-right: 12px; }
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+        .modal-overlay.hidden { display: none; }
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Admin Tool Card */
+        .admin-tool-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .admin-tool-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .space-y-2 > * + * { margin-top: 0.5rem; }
     </style>
 </head>
 <body>
@@ -363,6 +401,7 @@
                     <button id="tab-qrxlsx" class="tab-button" onclick="showTab('qrxlsx')">QR XLSX</button>
                     <button id="tab-stopwatch" class="tab-button" onclick="showTab('stopwatch')">타이머</button>
                     <button id="tab-clock" class="tab-button" onclick="showTab('clock')">시계</button>
+                    <button id="tab-admin" class="tab-button" onclick="showTab('admin')">어드민</button>
                 </nav>
             </div>
             <div class="flex items-center gap-2">
@@ -400,6 +439,10 @@
             <button class="mobile-menu-item" data-tab="clock" onclick="showTabMobile('clock')">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 시계
+            </button>
+            <button class="mobile-menu-item" data-tab="admin" onclick="showTabMobile('admin')">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                어드민
             </button>
         </nav>
 
@@ -995,7 +1038,66 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Admin Tools Tab -->
+            <div id="admin-content" class="tab-content">
+                <div class="max-w-6xl">
+                    <div class="card">
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">어드민 활용 도구</h2>
+                            <p class="text-gray-600">자주 사용하는 어드민 도구를 관리합니다</p>
+                        </div>
+
+                        <div class="flex justify-end mb-4 gap-2">
+                            <button onclick="openAdminManager()" class="btn-secondary text-sm px-4 py-2">
+                                ⚙️ 도구 관리
+                            </button>
+                        </div>
+
+                        <div id="adminToolsGrid" class="grid grid-3 gap-4">
+                            <!-- Admin tools will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
+    </div>
+
+    <!-- Admin Detail Modal -->
+    <div id="admin-detail-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width:500px">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="adminDetailTitle" class="text-xl font-bold text-gray-800"></h3>
+                <button onclick="closeAdminDetailModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <p id="adminDetailDesc" class="text-gray-600 mb-4"></p>
+            <div id="adminSubAdminList" class="space-y-2">
+                <!-- Sub admins will be listed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Manager Modal -->
+    <div id="admin-manager-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width:700px;max-height:80vh;overflow-y:auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">어드민 도구 관리</h3>
+                <button onclick="closeAdminManager()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+
+            <div class="flex gap-2 mb-4">
+                <button onclick="addAdminTool()" class="btn-primary text-sm px-4 py-2">+ 도구 추가</button>
+                <button onclick="exportAdminConfig()" class="btn-secondary text-sm px-4 py-2">📤 내보내기</button>
+                <label class="btn-secondary text-sm px-4 py-2 cursor-pointer">
+                    📥 가져오기
+                    <input type="file" accept=".json" onchange="importAdminConfig(event)" class="hidden">
+                </label>
+            </div>
+
+            <div id="adminManagerList" class="space-y-4">
+                <!-- Tool management list will be rendered here -->
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1013,6 +1115,57 @@
         let lapTimes = [];
         let clockInterval = null;
         let csvData = [];
+
+        // ========== Admin Tools ==========
+        const ADMIN_TOOLS_KEY = 'work_admin_tools';
+        let adminToolsConfig = [];
+
+        const defaultAdminTools = [
+            {
+                id: 'qr-create',
+                name: '가맹점 생성 및 QR 활성화',
+                nameEn: 'Create Store & Activate QR',
+                desc: '새로운 가맹점을 등록하고 QR 코드를 활성화합니다',
+                icon: '➕',
+                subAdmins: [
+                    { name: '파트너 서비스 어드민', nameEn: 'Partner Service Admin', url: 'https://partner.admin.example.com' },
+                    { name: '가맹점 관리 어드민', nameEn: 'Store Management Admin', url: 'https://store.admin.example.com' },
+                    { name: 'QR 관리 어드민', nameEn: 'QR Management Admin', url: 'https://qr.admin.example.com' }
+                ]
+            },
+            {
+                id: 'payment-check',
+                name: '결제 내역 조회',
+                nameEn: 'Payment History',
+                desc: '결제 및 정산 내역을 조회합니다',
+                icon: '💳',
+                subAdmins: [
+                    { name: '결제 어드민', nameEn: 'Payment Admin', url: 'https://payment.admin.example.com' },
+                    { name: '정산 어드민', nameEn: 'Settlement Admin', url: 'https://settlement.admin.example.com' }
+                ]
+            },
+            {
+                id: 'user-manage',
+                name: '사용자 관리',
+                nameEn: 'User Management',
+                desc: '사용자 정보를 조회하고 관리합니다',
+                icon: '👤',
+                subAdmins: [
+                    { name: '사용자 어드민', nameEn: 'User Admin', url: 'https://user.admin.example.com' },
+                    { name: '권한 관리 어드민', nameEn: 'Permission Admin', url: 'https://permission.admin.example.com' }
+                ]
+            },
+            {
+                id: 'log-check',
+                name: '로그 조회',
+                nameEn: 'Log Viewer',
+                desc: '시스템 로그를 조회합니다',
+                icon: '📋',
+                subAdmins: [
+                    { name: '로그 어드민', nameEn: 'Log Admin', url: 'https://log.admin.example.com' }
+                ]
+            }
+        ];
 
         // ========== Offline Detection ==========
         function checkLibraries() {
@@ -1034,6 +1187,7 @@
             setTimeout(checkLibraries, 1000);
             initializeProfileGenerator();
             initializeClock();
+            initAdminTools();
             setupEventListeners();
         });
 
@@ -2170,6 +2324,216 @@
                 console.error('XLSX 생성 오류:', error);
                 showToast(currentLanguage === 'ko' ? 'XLSX 파일 생성 중 오류가 발생했습니다' : 'Error generating XLSX file');
             }
+        }
+
+        // ========== Admin Tools Functions ==========
+        function initAdminTools() {
+            const saved = localStorage.getItem(ADMIN_TOOLS_KEY);
+            if (saved) {
+                try {
+                    adminToolsConfig = JSON.parse(saved);
+                } catch (e) {
+                    adminToolsConfig = [...defaultAdminTools];
+                }
+            } else {
+                adminToolsConfig = [...defaultAdminTools];
+            }
+            renderAdminTools();
+        }
+
+        function saveAdminTools() {
+            localStorage.setItem(ADMIN_TOOLS_KEY, JSON.stringify(adminToolsConfig));
+        }
+
+        function renderAdminTools() {
+            const grid = document.getElementById('adminToolsGrid');
+            if (!grid) return;
+
+            if (adminToolsConfig.length === 0) {
+                grid.innerHTML = '<div class="col-span-3 text-center text-gray-500 py-8">등록된 도구가 없습니다. "도구 관리"를 클릭하여 추가하세요.</div>';
+                return;
+            }
+
+            grid.innerHTML = adminToolsConfig.map((tool, index) => `
+                <div class="admin-tool-card bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:shadow-lg transition-all" onclick="openAdminTool(${index})">
+                    <div class="text-3xl mb-2">${tool.icon || '🔧'}</div>
+                    <h4 class="font-semibold text-gray-800 mb-1">${currentLanguage === 'ko' ? tool.name : (tool.nameEn || tool.name)}</h4>
+                    <p class="text-sm text-gray-500">${tool.desc || ''}</p>
+                    <div class="text-xs text-gray-400 mt-2">${tool.subAdmins?.length || 0}개 어드민</div>
+                </div>
+            `).join('');
+        }
+
+        function openAdminTool(index) {
+            const tool = adminToolsConfig[index];
+            if (!tool) return;
+
+            document.getElementById('adminDetailTitle').textContent = currentLanguage === 'ko' ? tool.name : (tool.nameEn || tool.name);
+            document.getElementById('adminDetailDesc').textContent = tool.desc || '';
+
+            const listEl = document.getElementById('adminSubAdminList');
+            if (tool.subAdmins && tool.subAdmins.length > 0) {
+                listEl.innerHTML = tool.subAdmins.map(sub => `
+                    <a href="${sub.url}" target="_blank" class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-3 transition-colors">
+                        <div class="font-medium text-gray-800">${currentLanguage === 'ko' ? sub.name : (sub.nameEn || sub.name)}</div>
+                        <div class="text-xs text-gray-400 truncate">${sub.url}</div>
+                    </a>
+                `).join('');
+            } else {
+                listEl.innerHTML = '<p class="text-gray-500 text-center py-4">등록된 서브 어드민이 없습니다.</p>';
+            }
+
+            document.getElementById('admin-detail-modal').classList.remove('hidden');
+        }
+
+        function closeAdminDetailModal() {
+            document.getElementById('admin-detail-modal').classList.add('hidden');
+        }
+
+        function openAdminManager() {
+            renderAdminManagerList();
+            document.getElementById('admin-manager-modal').classList.remove('hidden');
+        }
+
+        function closeAdminManager() {
+            document.getElementById('admin-manager-modal').classList.add('hidden');
+        }
+
+        function renderAdminManagerList() {
+            const listEl = document.getElementById('adminManagerList');
+            if (adminToolsConfig.length === 0) {
+                listEl.innerHTML = '<p class="text-gray-500 text-center py-8">등록된 도구가 없습니다.</p>';
+                return;
+            }
+
+            listEl.innerHTML = adminToolsConfig.map((tool, index) => `
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <input type="text" value="${tool.icon || '🔧'}" onchange="updateToolField(${index}, 'icon', this.value)" class="w-12 text-center text-xl p-1 border rounded">
+                                <input type="text" value="${tool.name}" onchange="updateToolField(${index}, 'name', this.value)" class="flex-1 p-2 border rounded font-semibold" placeholder="도구 이름 (한글)">
+                            </div>
+                            <input type="text" value="${tool.nameEn || ''}" onchange="updateToolField(${index}, 'nameEn', this.value)" class="w-full p-2 border rounded text-sm mb-2" placeholder="Tool Name (English)">
+                            <input type="text" value="${tool.desc || ''}" onchange="updateToolField(${index}, 'desc', this.value)" class="w-full p-2 border rounded text-sm" placeholder="설명">
+                        </div>
+                        <button onclick="removeAdminTool(${index})" class="text-red-500 hover:text-red-700 ml-2 text-xl">🗑️</button>
+                    </div>
+                    <div class="border-t pt-3 mt-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-gray-700">서브 어드민</span>
+                            <button onclick="addSubAdmin(${index})" class="text-sm text-blue-600 hover:text-blue-800">+ 추가</button>
+                        </div>
+                        <div class="space-y-2" id="subAdminList-${index}">
+                            ${(tool.subAdmins || []).map((sub, subIdx) => `
+                                <div class="flex gap-2 items-center bg-white p-2 rounded border">
+                                    <input type="text" value="${sub.name}" onchange="updateSubAdmin(${index}, ${subIdx}, 'name', this.value)" class="flex-1 p-1 border rounded text-sm" placeholder="이름">
+                                    <input type="text" value="${sub.url}" onchange="updateSubAdmin(${index}, ${subIdx}, 'url', this.value)" class="flex-1 p-1 border rounded text-sm" placeholder="URL">
+                                    <button onclick="removeSubAdmin(${index}, ${subIdx})" class="text-red-400 hover:text-red-600">✕</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addAdminTool() {
+            adminToolsConfig.push({
+                id: 'tool-' + Date.now(),
+                name: '새 도구',
+                nameEn: 'New Tool',
+                desc: '',
+                icon: '🔧',
+                subAdmins: []
+            });
+            saveAdminTools();
+            renderAdminManagerList();
+            renderAdminTools();
+        }
+
+        function removeAdminTool(index) {
+            if (confirm('이 도구를 삭제하시겠습니까?')) {
+                adminToolsConfig.splice(index, 1);
+                saveAdminTools();
+                renderAdminManagerList();
+                renderAdminTools();
+            }
+        }
+
+        function updateToolField(index, field, value) {
+            if (adminToolsConfig[index]) {
+                adminToolsConfig[index][field] = value;
+                saveAdminTools();
+                renderAdminTools();
+            }
+        }
+
+        function addSubAdmin(toolIndex) {
+            if (adminToolsConfig[toolIndex]) {
+                if (!adminToolsConfig[toolIndex].subAdmins) {
+                    adminToolsConfig[toolIndex].subAdmins = [];
+                }
+                adminToolsConfig[toolIndex].subAdmins.push({
+                    name: '새 어드민',
+                    nameEn: 'New Admin',
+                    url: 'https://'
+                });
+                saveAdminTools();
+                renderAdminManagerList();
+            }
+        }
+
+        function removeSubAdmin(toolIndex, subIndex) {
+            if (adminToolsConfig[toolIndex]?.subAdmins) {
+                adminToolsConfig[toolIndex].subAdmins.splice(subIndex, 1);
+                saveAdminTools();
+                renderAdminManagerList();
+            }
+        }
+
+        function updateSubAdmin(toolIndex, subIndex, field, value) {
+            if (adminToolsConfig[toolIndex]?.subAdmins?.[subIndex]) {
+                adminToolsConfig[toolIndex].subAdmins[subIndex][field] = value;
+                saveAdminTools();
+            }
+        }
+
+        function exportAdminConfig() {
+            const dataStr = JSON.stringify(adminToolsConfig, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'admin-tools-config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('설정이 내보내졌습니다');
+        }
+
+        function importAdminConfig(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        adminToolsConfig = imported;
+                        saveAdminTools();
+                        renderAdminManagerList();
+                        renderAdminTools();
+                        showToast('설정을 가져왔습니다');
+                    } else {
+                        showToast('올바른 형식의 파일이 아닙니다');
+                    }
+                } catch (err) {
+                    showToast('파일 읽기 오류');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
         }
     </script>
 </body>

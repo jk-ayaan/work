@@ -507,6 +507,9 @@
                     <button id="tab-clock" class="tab-button" onclick="showTab('clock')">
                         <span data-kr="시계" data-en="Clock">시계</span>
                     </button>
+                    <button id="tab-admin" class="tab-button" onclick="showTab('admin')">
+                        <span data-kr="어드민" data-en="Admin">어드민</span>
+                    </button>
                 </nav>
             </div>
 
@@ -583,6 +586,14 @@
                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span data-kr="시계" data-en="Clock">시계</span>
+            </button>
+            <button class="mobile-menu-item" data-tab="admin" onclick="showTabMobile('admin')">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span data-kr="어드민" data-en="Admin">어드민</span>
             </button>
         </nav>
 
@@ -1609,7 +1620,108 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Admin Tools Tab -->
+            <div id="admin-content" class="tab-content hidden">
+                <div class="max-w-6xl mx-auto">
+                    <div class="card p-6 md:p-8">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                            <div class="text-center md:text-left">
+                                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2" data-kr="어드민 활용" data-en="Admin Tools">어드민 활용</h2>
+                                <p class="text-gray-600" data-kr="가맹점 관리 및 시스템 운영 도구들" data-en="Store management and system operation tools">가맹점 관리 및 시스템 운영 도구들</p>
+                            </div>
+                            <div class="flex gap-2 justify-center md:justify-end flex-wrap">
+                                <button onclick="openAdminToolManager()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    <span data-kr="관리" data-en="Manage">관리</span>
+                                </button>
+                                <button onclick="exportAdminConfig()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                    </svg>
+                                    <span data-kr="내보내기" data-en="Export">내보내기</span>
+                                </button>
+                                <label class="px-4 py-2 bg-kakao-yellow text-kakao-brown rounded-lg hover:bg-kakao-darkYellow transition-colors text-sm cursor-pointer">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+                                    <span data-kr="불러오기" data-en="Import">불러오기</span>
+                                    <input type="file" accept=".json" onchange="importAdminConfig(event)" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="admin-tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- 동적으로 로드될 어드민 도구 카드들 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
+    </div>
+
+    <!-- 어드민 도구 상세 모달 -->
+    <div id="admin-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 id="admin-detail-title" class="text-xl font-bold text-gray-800">도구 이름</h3>
+                <button onclick="closeAdminDetailModal()" class="p-2 hover:bg-gray-100 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                <p id="admin-detail-desc" class="text-gray-600 mb-4">도구 설명</p>
+                <div id="admin-sub-list" class="space-y-3">
+                    <!-- 서브 어드민 목록 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 어드민 도구 관리 모달 -->
+    <div id="admin-manager-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800" data-kr="어드민 도구 관리" data-en="Admin Tool Manager">어드민 도구 관리</h3>
+                <button onclick="closeAdminToolManager()" class="p-2 hover:bg-gray-100 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[70vh]">
+                <!-- 새 도구 추가 폼 -->
+                <div class="bg-blue-50 rounded-xl p-4 mb-6">
+                    <h4 class="font-semibold text-blue-800 mb-3" data-kr="새 도구 추가" data-en="Add New Tool">새 도구 추가</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input type="text" id="new-tool-name" placeholder="도구 이름" class="px-3 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
+                        <input type="text" id="new-tool-desc" placeholder="설명" class="px-3 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
+                    </div>
+                    <button onclick="addAdminTool()" class="mt-3 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        <span data-kr="도구 추가" data-en="Add Tool">도구 추가</span>
+                    </button>
+                </div>
+
+                <!-- 기존 도구 목록 -->
+                <div>
+                    <h4 class="font-semibold text-gray-800 mb-3" data-kr="등록된 도구" data-en="Registered Tools">등록된 도구</h4>
+                    <div id="admin-tools-list" class="space-y-3">
+                        <!-- 도구 목록 -->
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <button onclick="loadDefaultAdminTools()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
+                        <span data-kr="기본값으로 초기화" data-en="Reset to Default">기본값으로 초기화</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1632,11 +1744,16 @@
         // Clock interval
         let clockInterval = null;
 
+        // Admin Tools variables
+        const ADMIN_TOOLS_KEY = 'work_admin_tools';
+        let adminToolsConfig = [];
+
         // ========== Initialize ==========
         document.addEventListener('DOMContentLoaded', function () {
             initializeProfileGenerator();
             initializeSampleGenerator();
             initializeClock();
+            initAdminTools();
             setupEventListeners();
         });
 
@@ -4185,6 +4302,314 @@
                 currentLanguage === 'ko' ? 'CSV 파일이 다운로드되었습니다' : 'CSV file downloaded',
                 'success'
             );
+        }
+
+        // ========== Admin Tools ==========
+        const defaultAdminTools = [
+            {
+                id: 'qr-create',
+                name: '가맹점 생성 및 QR 활성화',
+                nameEn: 'Create Store & Activate QR',
+                desc: '새로운 가맹점을 등록하고 QR 코드를 활성화합니다',
+                descEn: 'Register a new store and activate QR code',
+                icon: 'plus',
+                subAdmins: [
+                    { name: '파트너 서비스 어드민', nameEn: 'Partner Service Admin', url: 'https://partner.admin.example.com' },
+                    { name: '커머스 어드민', nameEn: 'Commerce Admin', url: 'https://commerce.admin.example.com' },
+                    { name: 'QR 관리 어드민', nameEn: 'QR Management Admin', url: 'https://qr.admin.example.com' }
+                ]
+            },
+            {
+                id: 'qr-recovery',
+                name: '가맹점 QR 복구',
+                nameEn: 'Store QR Recovery',
+                desc: '손상된 QR 코드를 복구하고 재활성화합니다',
+                descEn: 'Recover and reactivate damaged QR codes',
+                icon: 'refresh',
+                subAdmins: [
+                    { name: 'QR 복구 어드민', nameEn: 'QR Recovery Admin', url: 'https://recovery.admin.example.com' },
+                    { name: '매장 관리 어드민', nameEn: 'Store Management Admin', url: 'https://store.admin.example.com' }
+                ]
+            },
+            {
+                id: 'permission',
+                name: '매장 권한 변경',
+                nameEn: 'Store Permission Management',
+                desc: '매장별 사용자 권한을 관리하고 수정합니다',
+                descEn: 'Manage and modify user permissions per store',
+                icon: 'lock',
+                subAdmins: [
+                    { name: '권한 관리 어드민', nameEn: 'Permission Admin', url: 'https://permission.admin.example.com' },
+                    { name: '사용자 관리 어드민', nameEn: 'User Management Admin', url: 'https://user.admin.example.com' }
+                ]
+            }
+        ];
+
+        const adminIconSvg = {
+            plus: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>',
+            refresh: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>',
+            lock: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>',
+            settings: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>',
+            users: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>'
+        };
+
+        function initAdminTools() {
+            const stored = localStorage.getItem(ADMIN_TOOLS_KEY);
+            if (stored) {
+                try {
+                    adminToolsConfig = JSON.parse(stored);
+                } catch (e) {
+                    adminToolsConfig = [...defaultAdminTools];
+                }
+            } else {
+                adminToolsConfig = [...defaultAdminTools];
+            }
+            renderAdminTools();
+        }
+
+        function renderAdminTools() {
+            const grid = document.getElementById('admin-tools-grid');
+            if (!grid) return;
+
+            if (adminToolsConfig.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500">
+                    <p data-kr="등록된 어드민 도구가 없습니다" data-en="No admin tools registered">${currentLanguage === 'ko' ? '등록된 어드민 도구가 없습니다' : 'No admin tools registered'}</p>
+                </div>`;
+                return;
+            }
+
+            grid.innerHTML = adminToolsConfig.map(tool => `
+                <div class="bg-white border border-gray-200 rounded-xl p-5 hover:border-kakao-yellow hover:shadow-lg transition-all cursor-pointer" onclick="openAdminTool('${tool.id}')">
+                    <div class="w-12 h-12 bg-gradient-to-br from-kakao-yellow to-primary-400 rounded-xl flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-kakao-brown" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            ${adminIconSvg[tool.icon] || adminIconSvg.settings}
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">${currentLanguage === 'ko' ? tool.name : (tool.nameEn || tool.name)}</h3>
+                    <p class="text-sm text-gray-600 mb-3">${currentLanguage === 'ko' ? tool.desc : (tool.descEn || tool.desc)}</p>
+                    <span class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-kakao-lightYellow text-kakao-brown">
+                        ${tool.subAdmins ? tool.subAdmins.length : 0}${currentLanguage === 'ko' ? '개 어드민' : ' Admins'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function openAdminTool(toolId) {
+            const tool = adminToolsConfig.find(t => t.id === toolId);
+            if (!tool) return;
+
+            document.getElementById('admin-detail-title').textContent = currentLanguage === 'ko' ? tool.name : (tool.nameEn || tool.name);
+            document.getElementById('admin-detail-desc').textContent = currentLanguage === 'ko' ? tool.desc : (tool.descEn || tool.desc);
+
+            const subList = document.getElementById('admin-sub-list');
+            if (tool.subAdmins && tool.subAdmins.length > 0) {
+                subList.innerHTML = tool.subAdmins.map(sub => `
+                    <a href="${sub.url}" target="_blank" class="block p-4 bg-gray-50 rounded-xl hover:bg-kakao-lightYellow transition-colors">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium text-gray-800">${currentLanguage === 'ko' ? sub.name : (sub.nameEn || sub.name)}</p>
+                                <p class="text-sm text-gray-500 truncate">${sub.url}</p>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </div>
+                    </a>
+                `).join('');
+            } else {
+                subList.innerHTML = `<p class="text-center text-gray-500 py-4">${currentLanguage === 'ko' ? '등록된 서브 어드민이 없습니다' : 'No sub-admins registered'}</p>`;
+            }
+
+            document.getElementById('admin-detail-modal').classList.remove('hidden');
+        }
+
+        function closeAdminDetailModal() {
+            document.getElementById('admin-detail-modal').classList.add('hidden');
+        }
+
+        function openAdminToolManager() {
+            renderAdminToolsList();
+            document.getElementById('admin-manager-modal').classList.remove('hidden');
+        }
+
+        function closeAdminToolManager() {
+            document.getElementById('admin-manager-modal').classList.add('hidden');
+        }
+
+        function renderAdminToolsList() {
+            const list = document.getElementById('admin-tools-list');
+            if (adminToolsConfig.length === 0) {
+                list.innerHTML = `<p class="text-center text-gray-500 py-4">${currentLanguage === 'ko' ? '등록된 도구가 없습니다' : 'No tools registered'}</p>`;
+                return;
+            }
+
+            list.innerHTML = adminToolsConfig.map((tool, index) => `
+                <div class="bg-gray-50 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h5 class="font-medium text-gray-800">${tool.name}</h5>
+                        <button onclick="removeAdminTool(${index})" class="p-1 text-red-500 hover:bg-red-100 rounded">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">${tool.desc}</p>
+
+                    <!-- 서브 어드민 목록 -->
+                    <div class="space-y-2">
+                        ${(tool.subAdmins || []).map((sub, subIdx) => `
+                            <div class="flex items-center gap-2 bg-white rounded-lg p-2 text-sm">
+                                <span class="flex-1 truncate">${sub.name}</span>
+                                <input type="text" value="${sub.url}" onchange="updateSubAdminUrl(${index}, ${subIdx}, this.value)" class="flex-1 px-2 py-1 border border-gray-200 rounded text-xs">
+                                <button onclick="removeSubAdmin(${index}, ${subIdx})" class="text-red-400 hover:text-red-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- 서브 어드민 추가 -->
+                    <div class="mt-2 flex gap-2">
+                        <input type="text" id="sub-name-${index}" placeholder="이름" class="flex-1 px-2 py-1 border border-gray-200 rounded text-sm">
+                        <input type="text" id="sub-url-${index}" placeholder="URL" class="flex-1 px-2 py-1 border border-gray-200 rounded text-sm">
+                        <button onclick="addSubAdmin(${index})" class="px-3 py-1 bg-kakao-yellow text-kakao-brown rounded text-sm">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addAdminTool() {
+            const name = document.getElementById('new-tool-name').value.trim();
+            const desc = document.getElementById('new-tool-desc').value.trim();
+
+            if (!name) {
+                showToast(currentLanguage === 'ko' ? '도구 이름을 입력해주세요' : 'Please enter tool name');
+                return;
+            }
+
+            const newTool = {
+                id: 'tool-' + Date.now(),
+                name: name,
+                nameEn: name,
+                desc: desc || (currentLanguage === 'ko' ? '설명 없음' : 'No description'),
+                descEn: desc || 'No description',
+                icon: 'settings',
+                subAdmins: []
+            };
+
+            adminToolsConfig.push(newTool);
+            saveAdminTools();
+            renderAdminTools();
+            renderAdminToolsList();
+
+            document.getElementById('new-tool-name').value = '';
+            document.getElementById('new-tool-desc').value = '';
+            showToast(currentLanguage === 'ko' ? '도구가 추가되었습니다' : 'Tool added');
+        }
+
+        function addSubAdmin(toolIndex) {
+            const nameInput = document.getElementById(`sub-name-${toolIndex}`);
+            const urlInput = document.getElementById(`sub-url-${toolIndex}`);
+            const name = nameInput.value.trim();
+            const url = urlInput.value.trim();
+
+            if (!name || !url) {
+                showToast(currentLanguage === 'ko' ? '이름과 URL을 입력해주세요' : 'Please enter name and URL');
+                return;
+            }
+
+            if (!adminToolsConfig[toolIndex].subAdmins) {
+                adminToolsConfig[toolIndex].subAdmins = [];
+            }
+
+            adminToolsConfig[toolIndex].subAdmins.push({ name, nameEn: name, url });
+            saveAdminTools();
+            renderAdminTools();
+            renderAdminToolsList();
+
+            nameInput.value = '';
+            urlInput.value = '';
+        }
+
+        function updateSubAdminUrl(toolIndex, subIndex, newUrl) {
+            if (adminToolsConfig[toolIndex] && adminToolsConfig[toolIndex].subAdmins[subIndex]) {
+                adminToolsConfig[toolIndex].subAdmins[subIndex].url = newUrl;
+                saveAdminTools();
+            }
+        }
+
+        function removeSubAdmin(toolIndex, subIndex) {
+            if (adminToolsConfig[toolIndex] && adminToolsConfig[toolIndex].subAdmins) {
+                adminToolsConfig[toolIndex].subAdmins.splice(subIndex, 1);
+                saveAdminTools();
+                renderAdminTools();
+                renderAdminToolsList();
+            }
+        }
+
+        function removeAdminTool(index) {
+            if (confirm(currentLanguage === 'ko' ? '이 도구를 삭제하시겠습니까?' : 'Delete this tool?')) {
+                adminToolsConfig.splice(index, 1);
+                saveAdminTools();
+                renderAdminTools();
+                renderAdminToolsList();
+                showToast(currentLanguage === 'ko' ? '도구가 삭제되었습니다' : 'Tool deleted');
+            }
+        }
+
+        function saveAdminTools() {
+            localStorage.setItem(ADMIN_TOOLS_KEY, JSON.stringify(adminToolsConfig));
+        }
+
+        function loadDefaultAdminTools() {
+            if (confirm(currentLanguage === 'ko' ? '기본값으로 초기화하시겠습니까?' : 'Reset to default?')) {
+                adminToolsConfig = [...defaultAdminTools];
+                saveAdminTools();
+                renderAdminTools();
+                renderAdminToolsList();
+                showToast(currentLanguage === 'ko' ? '기본값으로 초기화되었습니다' : 'Reset to default');
+            }
+        }
+
+        function exportAdminConfig() {
+            const config = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                tools: adminToolsConfig
+            };
+
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `admin_tools_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            showToast(currentLanguage === 'ko' ? '설정이 내보내기되었습니다' : 'Config exported');
+        }
+
+        function importAdminConfig(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const config = JSON.parse(e.target.result);
+                    if (config.tools && Array.isArray(config.tools)) {
+                        adminToolsConfig = config.tools;
+                        saveAdminTools();
+                        renderAdminTools();
+                        showToast(currentLanguage === 'ko' ? '설정을 불러왔습니다' : 'Config imported');
+                    } else {
+                        throw new Error('Invalid format');
+                    }
+                } catch (err) {
+                    showToast(currentLanguage === 'ko' ? '잘못된 파일 형식입니다' : 'Invalid file format');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
         }
     </script>
 </body>
