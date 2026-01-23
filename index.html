@@ -452,15 +452,10 @@
                         <!-- Generation Options -->
                         <div class="bg-gray-50 rounded-xl p-6 mb-6">
                             <h3 class="text-lg font-semibold text-gray-800 mb-4" data-kr="생성 옵션" data-en="Generation Options">생성 옵션</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="생성 개수" data-en="Number to Generate">생성 개수</label>
-                                    <select id="generateCount" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
-                                        <option value="10">10개</option>
-                                        <option value="20">20개</option>
-                                        <option value="30">30개</option>
-                                        <option value="50">50개</option>
-                                    </select>
+                                    <input type="number" id="generateCount" value="10" min="1" max="1000" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="사업자 유형" data-en="Business Type">사업자 유형</label>
@@ -473,6 +468,16 @@
                                         <option value="voluntary" data-kr="임의단체 (80,89)" data-en="Voluntary Organization (80,89)">임의단체 (80,89)</option>
                                         <option value="all" data-kr="전체 랜덤" data-en="All Random">전체 랜덤</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="fixedPrefix" checked class="w-5 h-5 accent-kakao-yellow">
+                                    <label for="fixedPrefix" class="text-sm text-gray-700" data-kr="프리픽스 000 고정" data-en="Fixed prefix 000">프리픽스 000 고정</label>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="removeHyphen" class="w-5 h-5 accent-kakao-yellow">
+                                    <label for="removeHyphen" class="text-sm text-gray-700" data-kr="하이픈(-) 제거" data-en="Remove hyphen (-)">하이픈(-) 제거</label>
                                 </div>
                             </div>
                         </div>
@@ -557,11 +562,37 @@
                                             <input type="number" id="sampleHeight" value="600" min="50" max="4096" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
                                         </div>
                                     </div>
-                                    <div class="flex flex-wrap gap-2">
+                                    <div class="flex flex-wrap gap-2 mb-4">
                                         <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="100" data-height="100">100×100</button>
                                         <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="640" data-height="480">640×480</button>
                                         <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="800" data-height="600">800×600</button>
                                         <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="1920" data-height="1080">1920×1080</button>
+                                    </div>
+
+                                    <!-- Background Image Tiling -->
+                                    <div class="border-t border-gray-200 pt-4 mt-4">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <input type="checkbox" id="useBgImage" class="w-5 h-5 accent-kakao-yellow">
+                                            <label for="useBgImage" class="text-sm font-medium text-gray-700" data-kr="배경 이미지로 크기 맞추기 (바둑판 배열)" data-en="Fill with background image (tiled)">배경 이미지로 크기 맞추기 (바둑판 배열)</label>
+                                        </div>
+                                        <div id="bgImageSettings" class="hidden space-y-3">
+                                            <div class="flex items-center gap-3">
+                                                <label class="flex-1 flex items-center justify-center px-4 py-3 bg-white border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-kakao-yellow transition-colors">
+                                                    <input type="file" id="bgImageInput" accept="image/*" class="hidden">
+                                                    <span class="text-gray-600" data-kr="이미지 파일 선택" data-en="Select image file">이미지 파일 선택</span>
+                                                </label>
+                                            </div>
+                                            <div id="bgImagePreview" class="hidden">
+                                                <p class="text-sm text-gray-600 mb-2" data-kr="선택된 이미지:" data-en="Selected image:">선택된 이미지:</p>
+                                                <div class="flex items-center gap-3">
+                                                    <img id="bgImageThumb" class="w-16 h-16 object-cover rounded-lg border border-gray-200" src="" alt="">
+                                                    <div class="text-sm text-gray-600">
+                                                        <p id="bgImageName"></p>
+                                                        <p id="bgImageSize"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -679,6 +710,7 @@
         let currentTab = 'profile';
         let generatedNumbers = [];
         let generatedSampleImages = [];
+        let loadedBgImage = null;
         const profileCanvas = document.getElementById('profileCanvas');
         const profileCtx = profileCanvas.getContext('2d');
 
@@ -805,6 +837,25 @@
 
             document.getElementById('sampleWatermarkOpacity').addEventListener('input', function() {
                 document.getElementById('sampleOpacityValue').textContent = this.value + '%';
+            });
+
+            // Background image settings
+            document.getElementById('useBgImage').addEventListener('change', function() {
+                document.getElementById('bgImageSettings').classList.toggle('hidden', !this.checked);
+            });
+
+            document.getElementById('bgImageInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    loadedBgImage = new Image();
+                    loadedBgImage.onload = function() {
+                        document.getElementById('bgImagePreview').classList.remove('hidden');
+                        document.getElementById('bgImageThumb').src = loadedBgImage.src;
+                        document.getElementById('bgImageName').textContent = file.name;
+                        document.getElementById('bgImageSize').textContent = `${loadedBgImage.width} × ${loadedBgImage.height}px`;
+                    };
+                    loadedBgImage.src = URL.createObjectURL(file);
+                }
             });
         }
 
@@ -1050,8 +1101,10 @@
         }
 
         function generateBusinessNumbers() {
-            const count = parseInt(document.getElementById('generateCount').value);
+            const count = Math.min(parseInt(document.getElementById('generateCount').value) || 10, 1000);
             const businessType = document.getElementById('businessType').value;
+            const fixedPrefix = document.getElementById('fixedPrefix').checked;
+            const removeHyphen = document.getElementById('removeHyphen').checked;
             const today = new Date();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
@@ -1064,14 +1117,26 @@
             while (generatedNumbers.length < count && attempts < maxAttempts) {
                 attempts++;
                 const middle = getMiddleDigits(businessType);
+
+                // Generate prefix: 000 if fixed, otherwise random 3 digits
+                let prefix;
+                if (fixedPrefix) {
+                    prefix = '000';
+                } else {
+                    prefix = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+                }
+
                 const suffix = month + day + String(Math.floor(Math.random() * 10));
-                const number = generateValidBusinessNumber('000', middle, suffix.substring(0, 4));
+                const number = generateValidBusinessNumber(prefix, middle, suffix.substring(0, 4));
 
                 if (number && !usedNumbers.has(number)) {
                     usedNumbers.add(number);
+                    const formatted = removeHyphen
+                        ? number
+                        : `${number.substring(0, 3)}-${number.substring(3, 5)}-${number.substring(5, 10)}`;
                     generatedNumbers.push({
                         raw: number,
-                        formatted: `${number.substring(0, 3)}-${number.substring(3, 5)}-${number.substring(5, 10)}`,
+                        formatted: formatted,
                         type: getBusinessTypeName(businessType, middle)
                     });
                 }
@@ -1181,14 +1246,27 @@
             ctx.restore();
         }
 
-        function createSampleCanvas(text, width, height, textColor, bgColor, watermarkText, watermarkOpacity) {
+        function createSampleCanvas(text, width, height, textColor, bgColor, watermarkText, watermarkOpacity, bgImage = null) {
             const canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
             const ctx = canvas.getContext('2d');
 
-            ctx.fillStyle = bgColor;
-            ctx.fillRect(0, 0, width, height);
+            // Background: either tiled image or solid color
+            if (bgImage) {
+                // Draw tiled background image (checkerboard/tile pattern)
+                const imgWidth = bgImage.width;
+                const imgHeight = bgImage.height;
+
+                for (let y = 0; y < height; y += imgHeight) {
+                    for (let x = 0; x < width; x += imgWidth) {
+                        ctx.drawImage(bgImage, x, y, imgWidth, imgHeight);
+                    }
+                }
+            } else {
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, width, height);
+            }
 
             if (watermarkText) {
                 drawWatermark(ctx, width, height, watermarkText, watermarkOpacity);
@@ -1199,10 +1277,21 @@
             ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
+
+            // Add text shadow for better visibility on image backgrounds
+            if (bgImage) {
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+            }
+
             ctx.fillText(text, width / 2, height / 2 - fontSize / 2);
 
             ctx.font = `${fontSize * 0.5}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
             ctx.fillText(`${width} × ${height}`, width / 2, height / 2 + fontSize / 2);
+
+            ctx.shadowColor = 'transparent';
 
             return canvas;
         }
@@ -1264,6 +1353,15 @@
             const watermarkText = watermarkEnabled ? document.getElementById('sampleWatermarkText').value : null;
             const watermarkOpacity = parseInt(document.getElementById('sampleWatermarkOpacity').value) || 15;
 
+            // Check if using background image
+            const useBgImage = document.getElementById('useBgImage').checked;
+            const bgImage = useBgImage && loadedBgImage ? loadedBgImage : null;
+
+            if (useBgImage && !loadedBgImage) {
+                showToast(currentLanguage === 'ko' ? '배경 이미지를 선택해주세요' : 'Please select a background image');
+                return;
+            }
+
             if (width < 50 || width > 4096 || height < 50 || height > 4096) {
                 showToast(currentLanguage === 'ko' ? '이미지 크기는 50-4096px 사이여야 합니다' : 'Image size must be between 50-4096px');
                 return;
@@ -1278,7 +1376,7 @@
 
             for (let i = 0; i < count; i++) {
                 const displayText = count > 1 ? `${text} #${i + 1}` : text;
-                const canvas = createSampleCanvas(displayText, width, height, textColor, bgColor, watermarkText, watermarkOpacity);
+                const canvas = createSampleCanvas(displayText, width, height, textColor, bgColor, watermarkText, watermarkOpacity, bgImage);
 
                 const previewItem = document.createElement('div');
                 previewItem.className = 'sample-preview-item';
