@@ -2467,7 +2467,9 @@
                     const { blob } = await adjustQualityForSize(canvas, format, targetBytes);
 
                     const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
-                    const filename = `${safeText}_${i + 1}.${format}`;
+                    const padLength = String(count).length;
+                    const paddedIndex = String(i + 1).padStart(padLength, '0');
+                    const filename = `${safeText}_${paddedIndex}.${format}`;
 
                     const sizeInfo = document.createElement('span');
                     sizeInfo.className = 'text-xs bg-kakao-lightYellow text-kakao-brown px-2 py-1 rounded';
@@ -2571,7 +2573,9 @@
                 for (const format of formats) {
                     const finalBlob = await adjustToExactSize(baseCanvas, format, targetBytes);
                     const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
-                    const filename = `${safeText}_${i + 1}.${format}`;
+                    const padLength = String(count).length;
+                    const paddedIndex = String(i + 1).padStart(padLength, '0');
+                    const filename = `${safeText}_${paddedIndex}.${format}`;
 
                     const sizeInfo = document.createElement('span');
                     sizeInfo.className = 'text-xs bg-kakao-lightYellow text-kakao-brown px-2 py-1 rounded';
