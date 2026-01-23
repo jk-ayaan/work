@@ -374,15 +374,506 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
 
+        /* Admin Header */
+        .admin-header {
+            position: relative;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+            border-radius: 1rem 1rem 0 0;
+            overflow: hidden;
+        }
+        .admin-header-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0.1;
+        }
+        .admin-header-content {
+            position: relative;
+            z-index: 1;
+        }
+        .admin-icon-wrapper {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+        .admin-header-icon {
+            width: 32px;
+            height: 32px;
+            color: white;
+        }
+
+        /* Admin Actions */
+        .admin-actions {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .admin-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .admin-action-manage {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .admin-action-manage:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .admin-action-export {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        .admin-action-export:hover {
+            background: #e5e7eb;
+        }
+        .admin-action-import {
+            background: var(--kakao-yellow);
+            color: var(--kakao-brown);
+        }
+        .admin-action-import:hover {
+            background: #e6cf00;
+        }
+
+        /* Admin Tools Grid */
+        .admin-tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
         /* Admin Tool Card */
         .admin-tool-card {
-            transition: transform 0.2s, box-shadow 0.2s;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .admin-tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.2s;
         }
         .admin-tool-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+        .admin-tool-card:hover::before {
+            opacity: 1;
+        }
+        .admin-tool-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .admin-tool-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        .admin-tool-desc {
+            font-size: 0.75rem;
+            color: #6b7280;
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+        }
+        .admin-tool-count {
+            display: inline-block;
+            background: #eff6ff;
+            color: #3b82f6;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+        }
+
+        /* Admin Empty State */
+        .admin-empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        /* Admin Modal Styles */
+        .admin-modal {
+            background: white;
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+        .admin-modal-large {
+            max-width: 640px;
+        }
+        .admin-modal-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: relative;
+        }
+        .admin-modal-header h3, .admin-modal-header p {
+            color: white;
+        }
+        .admin-modal-header p {
+            opacity: 0.85;
+        }
+        .admin-modal-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .admin-modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .admin-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .admin-modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            max-height: calc(90vh - 120px);
+        }
+
+        /* Admin Sub List */
+        .admin-sub-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .admin-sub-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            background: #f9fafb;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .admin-sub-item:hover {
+            background: #f3f4f6;
+            border-color: #667eea;
+            transform: translateX(4px);
+        }
+        .admin-sub-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .admin-sub-icon svg {
+            width: 18px;
+            height: 18px;
+            color: white;
+        }
+        .admin-sub-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .admin-sub-name {
+            font-weight: 500;
+            color: #1f2937;
+        }
+        .admin-sub-url {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .admin-sub-arrow {
+            color: #9ca3af;
+            transition: transform 0.2s;
+        }
+        .admin-sub-item:hover .admin-sub-arrow {
+            transform: translateX(4px);
+            color: #667eea;
+        }
+
+        /* Admin Add Section */
+        .admin-add-section {
+            background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .admin-add-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4f46e5;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        .admin-add-form {
+            display: grid;
+            grid-template-columns: 60px 1fr 1fr auto;
+            gap: 0.5rem;
+        }
+        .admin-input {
+            padding: 0.625rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .admin-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .admin-input-icon {
+            text-align: center;
+            font-size: 1.25rem;
+        }
+        .admin-add-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .admin-add-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Admin Tools Section */
+        .admin-tools-section {
+            margin-bottom: 1rem;
+        }
+        .admin-manager-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .admin-manager-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+        .admin-manager-item-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .admin-manager-item-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .admin-manager-item-inputs {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+        .admin-manager-item-inputs input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+        .admin-manager-item-inputs input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .admin-manager-delete {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .admin-manager-delete:hover {
+            background: #fecaca;
+        }
+
+        /* Sub Admin Management */
+        .admin-sub-manage {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed #e5e7eb;
+        }
+        .admin-sub-manage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .admin-sub-manage-header span {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .admin-sub-add-btn {
+            font-size: 0.75rem;
+            color: #667eea;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .admin-sub-add-btn:hover {
+            text-decoration: underline;
+        }
+        .admin-sub-manage-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+        .admin-sub-manage-item {
+            display: flex;
+            gap: 0.375rem;
+            align-items: center;
+        }
+        .admin-sub-manage-item input {
+            flex: 1;
+            padding: 0.375rem 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+        .admin-sub-manage-item input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .admin-sub-remove {
+            background: none;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+            padding: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        /* Reset Section */
+        .admin-reset-section {
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        .admin-reset-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f3f4f6;
+            color: #6b7280;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .admin-reset-btn:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .admin-add-form {
+                grid-template-columns: 1fr 1fr;
+            }
+            .admin-input-icon {
+                grid-column: 1;
+            }
+            .admin-input-name {
+                grid-column: 2;
+            }
+            .admin-input-desc {
+                grid-column: 1 / -1;
+            }
+            .admin-add-btn {
+                grid-column: 1 / -1;
+            }
+            .admin-tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
     </style>
 </head>
 <body>
@@ -1043,19 +1534,57 @@
             <div id="admin-content" class="tab-content">
                 <div class="max-w-6xl">
                     <div class="card">
-                        <div class="text-center mb-6">
-                            <h2 class="text-2xl font-bold text-gray-800 mb-2">어드민 활용 도구</h2>
-                            <p class="text-gray-600">자주 사용하는 어드민 도구를 관리합니다</p>
+                        <!-- 헤더 영역 -->
+                        <div class="admin-header">
+                            <div class="admin-header-bg"></div>
+                            <div class="admin-header-content">
+                                <div class="admin-icon-wrapper">
+                                    <svg class="admin-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </div>
+                                <h2 class="text-2xl font-bold text-gray-800 mb-2">어드민 활용 도구</h2>
+                                <p class="text-gray-600">자주 사용하는 어드민 도구를 한 곳에서 관리하세요</p>
+                            </div>
                         </div>
 
-                        <div class="flex justify-end mb-4 gap-2">
-                            <button onclick="openAdminManager()" class="btn-secondary text-sm px-4 py-2">
-                                ⚙️ 도구 관리
+                        <!-- 액션 버튼 영역 -->
+                        <div class="admin-actions">
+                            <button onclick="openAdminManager()" class="admin-action-btn admin-action-manage">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                <span>도구 관리</span>
                             </button>
+                            <button onclick="exportAdminConfig()" class="admin-action-btn admin-action-export">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                <span>내보내기</span>
+                            </button>
+                            <label class="admin-action-btn admin-action-import">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                <span>가져오기</span>
+                                <input type="file" accept=".json" onchange="importAdminConfig(event)" class="hidden">
+                            </label>
                         </div>
 
-                        <div id="adminToolsGrid" class="grid grid-3 gap-4">
+                        <!-- 도구 그리드 -->
+                        <div id="adminToolsGrid" class="admin-tools-grid">
                             <!-- Admin tools will be rendered here -->
+                        </div>
+
+                        <!-- 빈 상태 표시 -->
+                        <div id="adminEmptyState" class="admin-empty-state hidden">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            <p class="text-gray-500 mb-2">등록된 도구가 없습니다</p>
+                            <p class="text-sm text-gray-400">위 "도구 관리" 버튼을 클릭하여 도구를 추가하세요</p>
                         </div>
                     </div>
                 </div>
@@ -1065,37 +1594,68 @@
 
     <!-- Admin Detail Modal -->
     <div id="admin-detail-modal" class="modal-overlay hidden">
-        <div class="modal-content" style="max-width:500px">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="adminDetailTitle" class="text-xl font-bold text-gray-800"></h3>
-                <button onclick="closeAdminDetailModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <div class="admin-modal">
+            <div class="admin-modal-header">
+                <div class="admin-modal-icon" id="adminDetailIcon"></div>
+                <div>
+                    <h3 id="adminDetailTitle" class="text-xl font-bold text-gray-800"></h3>
+                    <p id="adminDetailDesc" class="text-sm text-gray-500 mt-1"></p>
+                </div>
+                <button onclick="closeAdminDetailModal()" class="admin-modal-close">&times;</button>
             </div>
-            <p id="adminDetailDesc" class="text-gray-600 mb-4"></p>
-            <div id="adminSubAdminList" class="space-y-2">
-                <!-- Sub admins will be listed here -->
+            <div class="admin-modal-body">
+                <p class="text-sm text-gray-600 mb-3 font-medium">연결된 어드민 목록</p>
+                <div id="adminSubAdminList" class="admin-sub-list">
+                    <!-- Sub admins will be listed here -->
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Admin Manager Modal -->
     <div id="admin-manager-modal" class="modal-overlay hidden">
-        <div class="modal-content" style="max-width:700px;max-height:80vh;overflow-y:auto">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800">어드민 도구 관리</h3>
-                <button onclick="closeAdminManager()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <div class="admin-modal admin-modal-large">
+            <div class="admin-modal-header">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">어드민 도구 관리</h3>
+                    <p class="text-sm text-gray-500 mt-1">도구를 추가, 수정, 삭제할 수 있습니다</p>
+                </div>
+                <button onclick="closeAdminManager()" class="admin-modal-close">&times;</button>
             </div>
+            <div class="admin-modal-body">
+                <!-- 새 도구 추가 섹션 -->
+                <div class="admin-add-section">
+                    <div class="admin-add-header">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        <span>새 도구 추가</span>
+                    </div>
+                    <div class="admin-add-form">
+                        <input type="text" id="newToolIcon" placeholder="아이콘 (이모지)" class="admin-input admin-input-icon" value="🔧">
+                        <input type="text" id="newToolName" placeholder="도구 이름" class="admin-input admin-input-name">
+                        <input type="text" id="newToolDesc" placeholder="설명 (선택사항)" class="admin-input admin-input-desc">
+                        <button onclick="addAdminTool()" class="admin-add-btn">추가</button>
+                    </div>
+                </div>
 
-            <div class="flex gap-2 mb-4">
-                <button onclick="addAdminTool()" class="btn-primary text-sm px-4 py-2">+ 도구 추가</button>
-                <button onclick="exportAdminConfig()" class="btn-secondary text-sm px-4 py-2">📤 내보내기</button>
-                <label class="btn-secondary text-sm px-4 py-2 cursor-pointer">
-                    📥 가져오기
-                    <input type="file" accept=".json" onchange="importAdminConfig(event)" class="hidden">
-                </label>
-            </div>
+                <!-- 등록된 도구 목록 -->
+                <div class="admin-tools-section">
+                    <p class="text-sm text-gray-600 mb-3 font-medium">등록된 도구 목록</p>
+                    <div id="adminManagerList" class="admin-manager-list">
+                        <!-- Tool management list will be rendered here -->
+                    </div>
+                </div>
 
-            <div id="adminManagerList" class="space-y-4">
-                <!-- Tool management list will be rendered here -->
+                <!-- 초기화 버튼 -->
+                <div class="admin-reset-section">
+                    <button onclick="loadDefaultAdminTools()" class="admin-reset-btn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>기본값으로 초기화</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -2347,19 +2907,25 @@
 
         function renderAdminTools() {
             const grid = document.getElementById('adminToolsGrid');
+            const emptyState = document.getElementById('adminEmptyState');
             if (!grid) return;
 
             if (adminToolsConfig.length === 0) {
-                grid.innerHTML = '<div class="col-span-3 text-center text-gray-500 py-8">등록된 도구가 없습니다. "도구 관리"를 클릭하여 추가하세요.</div>';
+                grid.innerHTML = '';
+                grid.classList.add('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
                 return;
             }
 
+            grid.classList.remove('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
+
             grid.innerHTML = adminToolsConfig.map((tool, index) => `
-                <div class="admin-tool-card bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:shadow-lg transition-all" onclick="openAdminTool(${index})">
-                    <div class="text-3xl mb-2">${tool.icon || '🔧'}</div>
-                    <h4 class="font-semibold text-gray-800 mb-1">${currentLanguage === 'ko' ? tool.name : (tool.nameEn || tool.name)}</h4>
-                    <p class="text-sm text-gray-500">${tool.desc || ''}</p>
-                    <div class="text-xs text-gray-400 mt-2">${tool.subAdmins?.length || 0}개 어드민</div>
+                <div class="admin-tool-card" onclick="openAdminTool(${index})">
+                    <div class="admin-tool-icon">${tool.icon || '🔧'}</div>
+                    <div class="admin-tool-name">${currentLanguage === 'ko' ? tool.name : (tool.nameEn || tool.name)}</div>
+                    <div class="admin-tool-desc">${tool.desc || '설명 없음'}</div>
+                    <span class="admin-tool-count">${tool.subAdmins?.length || 0}개 어드민</span>
                 </div>
             `).join('');
         }
@@ -2368,19 +2934,37 @@
             const tool = adminToolsConfig[index];
             if (!tool) return;
 
+            document.getElementById('adminDetailIcon').textContent = tool.icon || '🔧';
             document.getElementById('adminDetailTitle').textContent = currentLanguage === 'ko' ? tool.name : (tool.nameEn || tool.name);
             document.getElementById('adminDetailDesc').textContent = tool.desc || '';
 
             const listEl = document.getElementById('adminSubAdminList');
             if (tool.subAdmins && tool.subAdmins.length > 0) {
                 listEl.innerHTML = tool.subAdmins.map(sub => `
-                    <a href="${sub.url}" target="_blank" class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-3 transition-colors">
-                        <div class="font-medium text-gray-800">${currentLanguage === 'ko' ? sub.name : (sub.nameEn || sub.name)}</div>
-                        <div class="text-xs text-gray-400 truncate">${sub.url}</div>
+                    <a href="${sub.url}" target="_blank" class="admin-sub-item">
+                        <div class="admin-sub-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </div>
+                        <div class="admin-sub-info">
+                            <div class="admin-sub-name">${currentLanguage === 'ko' ? sub.name : (sub.nameEn || sub.name)}</div>
+                            <div class="admin-sub-url">${sub.url}</div>
+                        </div>
+                        <svg class="admin-sub-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
                     </a>
                 `).join('');
             } else {
-                listEl.innerHTML = '<p class="text-gray-500 text-center py-4">등록된 서브 어드민이 없습니다.</p>';
+                listEl.innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                        </svg>
+                        <p>등록된 서브 어드민이 없습니다</p>
+                    </div>
+                `;
             }
 
             document.getElementById('admin-detail-modal').classList.remove('hidden');
@@ -2402,34 +2986,45 @@
         function renderAdminManagerList() {
             const listEl = document.getElementById('adminManagerList');
             if (adminToolsConfig.length === 0) {
-                listEl.innerHTML = '<p class="text-gray-500 text-center py-8">등록된 도구가 없습니다.</p>';
+                listEl.innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        <p>등록된 도구가 없습니다</p>
+                        <p class="text-sm mt-1">위에서 새 도구를 추가해보세요</p>
+                    </div>
+                `;
                 return;
             }
 
             listEl.innerHTML = adminToolsConfig.map((tool, index) => `
-                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <input type="text" value="${tool.icon || '🔧'}" onchange="updateToolField(${index}, 'icon', this.value)" class="w-12 text-center text-xl p-1 border rounded">
-                                <input type="text" value="${tool.name}" onchange="updateToolField(${index}, 'name', this.value)" class="flex-1 p-2 border rounded font-semibold" placeholder="도구 이름 (한글)">
-                            </div>
-                            <input type="text" value="${tool.nameEn || ''}" onchange="updateToolField(${index}, 'nameEn', this.value)" class="w-full p-2 border rounded text-sm mb-2" placeholder="Tool Name (English)">
-                            <input type="text" value="${tool.desc || ''}" onchange="updateToolField(${index}, 'desc', this.value)" class="w-full p-2 border rounded text-sm" placeholder="설명">
+                <div class="admin-manager-item">
+                    <div class="admin-manager-item-header">
+                        <div class="admin-manager-item-icon">
+                            <input type="text" value="${tool.icon || '🔧'}" onchange="updateToolField(${index}, 'icon', this.value)" style="width:100%;height:100%;border:none;text-align:center;font-size:1.25rem;background:transparent;">
                         </div>
-                        <button onclick="removeAdminTool(${index})" class="text-red-500 hover:text-red-700 ml-2 text-xl">🗑️</button>
+                        <div class="admin-manager-item-inputs">
+                            <input type="text" value="${tool.name}" onchange="updateToolField(${index}, 'name', this.value)" placeholder="도구 이름">
+                            <input type="text" value="${tool.desc || ''}" onchange="updateToolField(${index}, 'desc', this.value)" placeholder="설명 (선택사항)" style="font-size:0.75rem;color:#6b7280;">
+                        </div>
+                        <button onclick="removeAdminTool(${index})" class="admin-manager-delete">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
                     </div>
-                    <div class="border-t pt-3 mt-3">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-medium text-gray-700">서브 어드민</span>
-                            <button onclick="addSubAdmin(${index})" class="text-sm text-blue-600 hover:text-blue-800">+ 추가</button>
+                    <div class="admin-sub-manage">
+                        <div class="admin-sub-manage-header">
+                            <span>서브 어드민 (${tool.subAdmins?.length || 0})</span>
+                            <button onclick="addSubAdmin(${index})" class="admin-sub-add-btn">+ 추가</button>
                         </div>
-                        <div class="space-y-2" id="subAdminList-${index}">
+                        <div class="admin-sub-manage-list">
                             ${(tool.subAdmins || []).map((sub, subIdx) => `
-                                <div class="flex gap-2 items-center bg-white p-2 rounded border">
-                                    <input type="text" value="${sub.name}" onchange="updateSubAdmin(${index}, ${subIdx}, 'name', this.value)" class="flex-1 p-1 border rounded text-sm" placeholder="이름">
-                                    <input type="text" value="${sub.url}" onchange="updateSubAdmin(${index}, ${subIdx}, 'url', this.value)" class="flex-1 p-1 border rounded text-sm" placeholder="URL">
-                                    <button onclick="removeSubAdmin(${index}, ${subIdx})" class="text-red-400 hover:text-red-600">✕</button>
+                                <div class="admin-sub-manage-item">
+                                    <input type="text" value="${sub.name}" onchange="updateSubAdmin(${index}, ${subIdx}, 'name', this.value)" placeholder="이름">
+                                    <input type="text" value="${sub.url}" onchange="updateSubAdmin(${index}, ${subIdx}, 'url', this.value)" placeholder="URL">
+                                    <button onclick="removeSubAdmin(${index}, ${subIdx})" class="admin-sub-remove">✕</button>
                                 </div>
                             `).join('')}
                         </div>
@@ -2439,17 +3034,42 @@
         }
 
         function addAdminTool() {
+            const iconEl = document.getElementById('newToolIcon');
+            const nameEl = document.getElementById('newToolName');
+            const descEl = document.getElementById('newToolDesc');
+
+            const icon = iconEl?.value?.trim() || '🔧';
+            const name = nameEl?.value?.trim() || '새 도구';
+            const desc = descEl?.value?.trim() || '';
+
             adminToolsConfig.push({
                 id: 'tool-' + Date.now(),
-                name: '새 도구',
-                nameEn: 'New Tool',
-                desc: '',
-                icon: '🔧',
+                name: name,
+                nameEn: name,
+                desc: desc,
+                icon: icon,
                 subAdmins: []
             });
+
+            // 입력 필드 초기화
+            if (iconEl) iconEl.value = '🔧';
+            if (nameEl) nameEl.value = '';
+            if (descEl) descEl.value = '';
+
             saveAdminTools();
             renderAdminManagerList();
             renderAdminTools();
+            showToast('도구가 추가되었습니다');
+        }
+
+        function loadDefaultAdminTools() {
+            if (confirm('기본 도구 목록으로 초기화하시겠습니까? 현재 설정이 모두 삭제됩니다.')) {
+                adminToolsConfig = [...defaultAdminTools];
+                saveAdminTools();
+                renderAdminManagerList();
+                renderAdminTools();
+                showToast('기본값으로 초기화되었습니다');
+            }
         }
 
         function removeAdminTool(index) {
