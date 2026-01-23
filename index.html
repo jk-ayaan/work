@@ -2466,6 +2466,9 @@
                 for (const format of formats) {
                     const { blob } = await adjustQualityForSize(canvas, format, targetBytes);
 
+                    const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
+                    const filename = `${safeText}_${i + 1}.${format}`;
+
                     const sizeInfo = document.createElement('span');
                     sizeInfo.className = 'text-xs bg-kakao-lightYellow text-kakao-brown px-2 py-1 rounded';
                     sizeInfo.textContent = `${format.toUpperCase()}: ${formatFileSize(blob.size)}`;
@@ -2473,12 +2476,12 @@
                     const downloadBtn = document.createElement('button');
                     downloadBtn.className = 'px-3 py-1.5 bg-kakao-yellow text-kakao-brown rounded-lg text-sm font-medium hover:bg-kakao-darkYellow transition-colors';
                     downloadBtn.textContent = format.toUpperCase();
-                    downloadBtn.onclick = () => downloadSampleImage(canvas, `sample_${i + 1}.${format}`, format, targetBytes);
+                    downloadBtn.onclick = () => downloadSampleImage(canvas, filename, format, targetBytes);
 
                     downloadButtons.appendChild(sizeInfo);
                     downloadButtons.appendChild(downloadBtn);
 
-                    generatedSampleImages.push({ canvas, filename: `sample_${i + 1}.${format}`, format, targetBytes });
+                    generatedSampleImages.push({ canvas, filename, format, targetBytes, index: i + 1, text: safeText });
                 }
 
                 previewItem.appendChild(previewCanvas);
@@ -2567,6 +2570,8 @@
                 // 2단계: 각 포맷에 대해 정확한 파일 크기 맞추기
                 for (const format of formats) {
                     const finalBlob = await adjustToExactSize(baseCanvas, format, targetBytes);
+                    const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
+                    const filename = `${safeText}_${i + 1}.${format}`;
 
                     const sizeInfo = document.createElement('span');
                     sizeInfo.className = 'text-xs bg-kakao-lightYellow text-kakao-brown px-2 py-1 rounded';
@@ -2582,7 +2587,7 @@
                     const blobToDownload = finalBlob;
                     downloadBtn.onclick = () => {
                         const link = document.createElement('a');
-                        link.download = `sample_${i + 1}.${format}`;
+                        link.download = filename;
                         link.href = URL.createObjectURL(blobToDownload);
                         link.click();
                         URL.revokeObjectURL(link.href);
@@ -2591,7 +2596,7 @@
                     downloadButtons.appendChild(sizeInfo);
                     downloadButtons.appendChild(downloadBtn);
 
-                    generatedSampleImages.push({ blob: finalBlob, filename: `sample_${i + 1}.${format}`, format, targetBytes, isTiled: true });
+                    generatedSampleImages.push({ blob: finalBlob, filename, format, targetBytes, isTiled: true, index: i + 1, text: safeText });
                 }
 
                 previewItem.appendChild(previewCanvas);

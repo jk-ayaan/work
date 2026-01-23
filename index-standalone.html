@@ -1452,12 +1452,14 @@
                     currentStep++;
                     updateProgress(currentStep, totalSteps, `이미지 ${i + 1}/${count} - ${format.toUpperCase()} 처리 중...`);
 
+                    const safeText = text.replace(/[\\/:*?"<>|]/g, '_'); // 파일명에 사용할 수 없는 문자 제거
+                    const filename = `${safeText}_${i + 1}.${format}`;
                     const downloadBtn = document.createElement('button');
                     downloadBtn.className = 'btn btn-primary text-sm';
                     downloadBtn.textContent = format.toUpperCase();
-                    downloadBtn.onclick = () => downloadSampleImage(canvas, `sample_${i + 1}.${format}`, format);
+                    downloadBtn.onclick = () => downloadSampleImage(canvas, filename, format);
                     downloadButtons.appendChild(downloadBtn);
-                    generatedSampleImages.push({ canvas, filename: `sample_${i + 1}.${format}`, format });
+                    generatedSampleImages.push({ canvas, filename, format, index: i + 1, text: safeText });
 
                     await new Promise(resolve => setTimeout(resolve, 30));
                 }
@@ -1571,8 +1573,18 @@
 
             const total = generatedSampleImages.length;
 
+            // 포맷별 폴더 생성
+            const formatFolders = {};
+            generatedSampleImages.forEach(item => {
+                const folderName = item.format.toUpperCase();
+                if (!formatFolders[folderName]) {
+                    formatFolders[folderName] = zip.folder(folderName);
+                }
+            });
+
             for (let i = 0; i < total; i++) {
                 const item = generatedSampleImages[i];
+                const folderName = item.format.toUpperCase();
 
                 updateProgress(i + 1, total, `${item.filename} 추가 중... (${i + 1}/${total})`);
 
@@ -1599,7 +1611,8 @@
                     }
 
                     if (blob) {
-                        zip.file(item.filename, blob);
+                        // 포맷별 폴더에 파일 추가
+                        formatFolders[folderName].file(item.filename, blob);
                     }
                 } catch (error) {
                     console.error(`Error adding ${item.filename}:`, error);
