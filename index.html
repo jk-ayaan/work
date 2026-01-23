@@ -289,6 +289,12 @@
                     <button id="tab-sample" class="tab-button" onclick="showTab('sample')">
                         <span data-kr="샘플 이미지" data-en="Sample Image">샘플 이미지</span>
                     </button>
+                    <button id="tab-stopwatch" class="tab-button" onclick="showTab('stopwatch')">
+                        <span data-kr="스톱워치" data-en="Stopwatch">스톱워치</span>
+                    </button>
+                    <button id="tab-clock" class="tab-button" onclick="showTab('clock')">
+                        <span data-kr="현재시각" data-en="Clock">현재시각</span>
+                    </button>
                 </nav>
             </div>
 
@@ -432,21 +438,7 @@
                     <div class="card p-6 md:p-8">
                         <div class="text-center mb-8">
                             <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2" data-kr="사업자번호 생성기" data-en="Business Number Generator">사업자번호 생성기</h2>
-                            <p class="text-gray-600" data-kr="오늘 날짜 기반 유효한 사업자번호를 생성합니다" data-en="Generate valid business numbers based on today's date">오늘 날짜 기반 유효한 사업자번호를 생성합니다</p>
-                        </div>
-
-                        <!-- Today's Date Display -->
-                        <div class="bg-gradient-to-r from-kakao-lightYellow to-primary-100 rounded-xl p-6 mb-6">
-                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-2" data-kr="오늘 날짜" data-en="Today's Date">오늘 날짜</h3>
-                                    <p id="todayDate" class="text-2xl font-bold text-primary-600"></p>
-                                </div>
-                                <div class="text-left md:text-right">
-                                    <p class="text-sm text-gray-600 mb-1" data-kr="생성 패턴" data-en="Generation Pattern">생성 패턴</p>
-                                    <p class="font-mono text-lg">000-<span class="text-primary-600">XX</span>-<span class="text-blue-600">MMDD</span>X</p>
-                                </div>
-                            </div>
+                            <p class="text-gray-600" data-kr="유효한 사업자번호를 생성합니다" data-en="Generate valid business numbers">유효한 사업자번호를 생성합니다</p>
                         </div>
 
                         <!-- Generation Options -->
@@ -701,6 +693,127 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Stopwatch Tab -->
+            <div id="stopwatch-content" class="tab-content hidden">
+                <div class="max-w-2xl mx-auto">
+                    <div class="card p-6 md:p-8">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2" data-kr="스톱워치" data-en="Stopwatch">스톱워치</h2>
+                            <p class="text-gray-600" data-kr="시간을 측정하고 랩 타임을 기록하세요" data-en="Measure time and record lap times">시간을 측정하고 랩 타임을 기록하세요</p>
+                        </div>
+
+                        <!-- Stopwatch Display -->
+                        <div class="bg-gradient-to-r from-kakao-lightYellow to-primary-100 rounded-2xl p-8 mb-6 text-center">
+                            <div id="stopwatchDisplay" class="font-mono text-6xl md:text-7xl font-bold text-kakao-brown tracking-wider">
+                                00:00:00<span class="text-4xl md:text-5xl">.000</span>
+                            </div>
+                        </div>
+
+                        <!-- Stopwatch Controls -->
+                        <div class="flex justify-center gap-4 mb-6">
+                            <button id="stopwatchStartBtn" onclick="startStopwatch()" class="px-8 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all transform hover:scale-105">
+                                <span data-kr="시작" data-en="Start">시작</span>
+                            </button>
+                            <button id="stopwatchStopBtn" onclick="stopStopwatch()" disabled class="px-8 py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-all transform hover:scale-105 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                                <span data-kr="정지" data-en="Stop">정지</span>
+                            </button>
+                            <button id="stopwatchLapBtn" onclick="recordLap()" disabled class="px-8 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                                <span data-kr="랩" data-en="Lap">랩</span>
+                            </button>
+                            <button id="stopwatchResetBtn" onclick="resetStopwatch()" class="px-8 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-all transform hover:scale-105">
+                                <span data-kr="리셋" data-en="Reset">리셋</span>
+                            </button>
+                        </div>
+
+                        <!-- Lap Times -->
+                        <div id="lapTimesContainer" class="bg-gray-50 rounded-xl p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800" data-kr="랩 타임" data-en="Lap Times">랩 타임</h3>
+                                <button onclick="clearLaps()" class="text-sm text-gray-500 hover:text-red-500 transition-colors" data-kr="전체 삭제" data-en="Clear All">전체 삭제</button>
+                            </div>
+                            <div id="lapTimesList" class="space-y-2 max-h-64 overflow-y-auto">
+                                <p class="text-center text-gray-500 py-4" data-kr="랩 버튼을 눌러 기록하세요" data-en="Press Lap to record">랩 버튼을 눌러 기록하세요</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clock Tab -->
+            <div id="clock-content" class="tab-content hidden">
+                <div class="max-w-2xl mx-auto">
+                    <div class="card p-6 md:p-8">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2" data-kr="현재 시각" data-en="Current Time">현재 시각</h2>
+                            <p class="text-gray-600" data-kr="정확한 현재 시간을 확인하세요" data-en="Check the exact current time">정확한 현재 시간을 확인하세요</p>
+                        </div>
+
+                        <!-- Current Time Display -->
+                        <div class="bg-gradient-to-r from-kakao-lightYellow to-primary-100 rounded-2xl p-8 mb-6 text-center">
+                            <div id="currentTimeDisplay" class="font-mono text-6xl md:text-7xl font-bold text-kakao-brown tracking-wider mb-4">
+                                --:--:--
+                            </div>
+                            <div id="currentDateDisplay" class="text-2xl text-kakao-brown/80">
+                                ----년 --월 --일
+                            </div>
+                            <div id="currentDayDisplay" class="text-lg text-gray-600 mt-2">
+                                --요일
+                            </div>
+                        </div>
+
+                        <!-- Time Zone Info -->
+                        <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4" data-kr="시간대 정보" data-en="Timezone Info">시간대 정보</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <p class="text-sm text-gray-600 mb-1" data-kr="타임존" data-en="Timezone">타임존</p>
+                                    <p id="timezoneDisplay" class="font-semibold text-kakao-brown">--</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <p class="text-sm text-gray-600 mb-1" data-kr="UTC 오프셋" data-en="UTC Offset">UTC 오프셋</p>
+                                    <p id="utcOffsetDisplay" class="font-semibold text-kakao-brown">--</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- World Clock -->
+                        <div class="bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4" data-kr="세계 시각" data-en="World Clock">세계 시각</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="bg-white rounded-lg p-4 flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">🇺🇸 New York</p>
+                                        <p class="text-xs text-gray-400">UTC-5</p>
+                                    </div>
+                                    <p id="timeNewYork" class="font-mono font-semibold text-kakao-brown">--:--:--</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">🇬🇧 London</p>
+                                        <p class="text-xs text-gray-400">UTC+0</p>
+                                    </div>
+                                    <p id="timeLondon" class="font-mono font-semibold text-kakao-brown">--:--:--</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">🇯🇵 Tokyo</p>
+                                        <p class="text-xs text-gray-400">UTC+9</p>
+                                    </div>
+                                    <p id="timeTokyo" class="font-mono font-semibold text-kakao-brown">--:--:--</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">🇦🇺 Sydney</p>
+                                        <p class="text-xs text-gray-400">UTC+11</p>
+                                    </div>
+                                    <p id="timeSydney" class="font-mono font-semibold text-kakao-brown">--:--:--</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -714,11 +827,21 @@
         const profileCanvas = document.getElementById('profileCanvas');
         const profileCtx = profileCanvas.getContext('2d');
 
+        // Stopwatch variables
+        let stopwatchInterval = null;
+        let stopwatchStartTime = 0;
+        let stopwatchElapsed = 0;
+        let stopwatchRunning = false;
+        let lapTimes = [];
+
+        // Clock interval
+        let clockInterval = null;
+
         // ========== Initialize ==========
         document.addEventListener('DOMContentLoaded', function() {
-            updateTodayDate();
             initializeProfileGenerator();
             initializeSampleGenerator();
+            initializeClock();
             setupEventListeners();
         });
 
@@ -748,22 +871,6 @@
                 const text = element.getAttribute(`data-${lang === 'ko' ? 'kr' : 'en'}`);
                 if (text) element.textContent = text;
             });
-
-            updateTodayDate();
-        }
-
-        function updateTodayDate() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-
-            const dateElement = document.getElementById('todayDate');
-            if (dateElement) {
-                dateElement.textContent = currentLanguage === 'ko'
-                    ? `${year}년 ${month}월 ${day}일`
-                    : `${year}-${month}-${day}`;
-            }
         }
 
         // ========== Toast ==========
@@ -1586,6 +1693,189 @@
             }
 
             showToast(currentLanguage === 'ko' ? '모든 이미지가 다운로드되었습니다' : 'All images downloaded');
+        }
+
+        // ========== Stopwatch ==========
+        function formatStopwatchTime(ms) {
+            const hours = Math.floor(ms / 3600000);
+            const minutes = Math.floor((ms % 3600000) / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const milliseconds = ms % 1000;
+
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}<span class="text-4xl md:text-5xl">.${String(milliseconds).padStart(3, '0')}</span>`;
+        }
+
+        function updateStopwatchDisplay() {
+            const now = Date.now();
+            const elapsed = stopwatchElapsed + (stopwatchRunning ? now - stopwatchStartTime : 0);
+            document.getElementById('stopwatchDisplay').innerHTML = formatStopwatchTime(elapsed);
+        }
+
+        function startStopwatch() {
+            if (!stopwatchRunning) {
+                stopwatchRunning = true;
+                stopwatchStartTime = Date.now();
+                stopwatchInterval = setInterval(updateStopwatchDisplay, 10);
+
+                document.getElementById('stopwatchStartBtn').disabled = true;
+                document.getElementById('stopwatchStopBtn').disabled = false;
+                document.getElementById('stopwatchLapBtn').disabled = false;
+            }
+        }
+
+        function stopStopwatch() {
+            if (stopwatchRunning) {
+                stopwatchRunning = false;
+                stopwatchElapsed += Date.now() - stopwatchStartTime;
+                clearInterval(stopwatchInterval);
+
+                document.getElementById('stopwatchStartBtn').disabled = false;
+                document.getElementById('stopwatchStopBtn').disabled = true;
+                document.getElementById('stopwatchLapBtn').disabled = true;
+            }
+        }
+
+        function resetStopwatch() {
+            stopStopwatch();
+            stopwatchElapsed = 0;
+            updateStopwatchDisplay();
+            clearLaps();
+        }
+
+        function recordLap() {
+            if (stopwatchRunning) {
+                const now = Date.now();
+                const totalElapsed = stopwatchElapsed + (now - stopwatchStartTime);
+                const lapNumber = lapTimes.length + 1;
+                const previousTotal = lapTimes.length > 0 ? lapTimes[lapTimes.length - 1].total : 0;
+                const lapTime = totalElapsed - previousTotal;
+
+                lapTimes.push({
+                    number: lapNumber,
+                    lap: lapTime,
+                    total: totalElapsed
+                });
+
+                displayLapTimes();
+            }
+        }
+
+        function formatLapTime(ms) {
+            const hours = Math.floor(ms / 3600000);
+            const minutes = Math.floor((ms % 3600000) / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const milliseconds = ms % 1000;
+
+            if (hours > 0) {
+                return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`;
+            }
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`;
+        }
+
+        function displayLapTimes() {
+            const container = document.getElementById('lapTimesList');
+
+            if (lapTimes.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 py-4" data-kr="랩 버튼을 눌러 기록하세요" data-en="Press Lap to record">${currentLanguage === 'ko' ? '랩 버튼을 눌러 기록하세요' : 'Press Lap to record'}</p>`;
+                return;
+            }
+
+            // Find best and worst lap times
+            const lapTimesOnly = lapTimes.map(l => l.lap);
+            const bestLap = Math.min(...lapTimesOnly);
+            const worstLap = Math.max(...lapTimesOnly);
+
+            container.innerHTML = lapTimes.slice().reverse().map(lap => {
+                let bgClass = 'bg-white';
+                let badge = '';
+                if (lapTimes.length > 1) {
+                    if (lap.lap === bestLap) {
+                        bgClass = 'bg-green-50 border-green-200';
+                        badge = `<span class="text-xs text-green-600 font-medium">${currentLanguage === 'ko' ? '최고' : 'Best'}</span>`;
+                    } else if (lap.lap === worstLap) {
+                        bgClass = 'bg-red-50 border-red-200';
+                        badge = `<span class="text-xs text-red-600 font-medium">${currentLanguage === 'ko' ? '최저' : 'Worst'}</span>`;
+                    }
+                }
+
+                return `
+                    <div class="flex items-center justify-between p-3 ${bgClass} rounded-lg border border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm text-gray-500 font-medium">#${String(lap.number).padStart(2, '0')}</span>
+                            ${badge}
+                        </div>
+                        <div class="text-right">
+                            <span class="font-mono font-semibold text-kakao-brown">${formatLapTime(lap.lap)}</span>
+                            <span class="text-xs text-gray-500 ml-2">(${formatLapTime(lap.total)})</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function clearLaps() {
+            lapTimes = [];
+            displayLapTimes();
+        }
+
+        // ========== Clock ==========
+        function initializeClock() {
+            updateClock();
+            clockInterval = setInterval(updateClock, 1000);
+        }
+
+        function updateClock() {
+            const now = new Date();
+
+            // Current time
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('currentTimeDisplay').textContent = `${hours}:${minutes}:${seconds}`;
+
+            // Current date
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+
+            if (currentLanguage === 'ko') {
+                document.getElementById('currentDateDisplay').textContent = `${year}년 ${month}월 ${day}일`;
+            } else {
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                document.getElementById('currentDateDisplay').textContent = `${monthNames[month - 1]} ${day}, ${year}`;
+            }
+
+            // Day of week
+            const daysKo = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+            const daysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            document.getElementById('currentDayDisplay').textContent = currentLanguage === 'ko' ? daysKo[now.getDay()] : daysEn[now.getDay()];
+
+            // Timezone info
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            document.getElementById('timezoneDisplay').textContent = timezone;
+
+            const offset = -now.getTimezoneOffset();
+            const offsetHours = Math.floor(Math.abs(offset) / 60);
+            const offsetMinutes = Math.abs(offset) % 60;
+            const offsetSign = offset >= 0 ? '+' : '-';
+            document.getElementById('utcOffsetDisplay').textContent = `UTC${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+
+            // World clocks
+            updateWorldClock('timeNewYork', 'America/New_York');
+            updateWorldClock('timeLondon', 'Europe/London');
+            updateWorldClock('timeTokyo', 'Asia/Tokyo');
+            updateWorldClock('timeSydney', 'Australia/Sydney');
+        }
+
+        function updateWorldClock(elementId, timezone) {
+            try {
+                const now = new Date();
+                const options = { timeZone: timezone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+                const timeString = now.toLocaleTimeString('en-GB', options);
+                document.getElementById(elementId).textContent = timeString;
+            } catch (e) {
+                document.getElementById(elementId).textContent = '--:--:--';
+            }
         }
     </script>
 </body>
