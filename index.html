@@ -2237,114 +2237,46 @@
             for (let i = 0; i < count; i++) {
                 const displayText = count > 1 ? `${text} #${i + 1}` : text;
 
-                // Find optimal canvas size by tiling background image
+                // 1단계: 타일링으로 목표 크기 이상이 될 때까지 이미지 확장
                 let tilesX = 1;
                 let tilesY = 1;
-                let finalCanvas = null;
-                let finalBlob = null;
-                let finalWidth = bgImgWidth;
-                let finalHeight = bgImgHeight;
+                let baseCanvas = null;
+                let baseBlob = null;
+                const maxTiles = 30;
 
-                // Start with 1x1 tile and expand until target size is reached
-                const maxTiles = 20; // Maximum 20x20 tiles to prevent infinite loop
-                const tolerance = 0.05; // 5% tolerance
-
+                // 먼저 목표 크기를 초과할 때까지 타일 확장
                 for (let attempt = 0; attempt < maxTiles * maxTiles; attempt++) {
                     const canvasWidth = bgImgWidth * tilesX;
                     const canvasHeight = bgImgHeight * tilesY;
 
-                    // Check max canvas size limit
-                    if (canvasWidth > 8192 || canvasHeight > 8192) {
+                    if (canvasWidth > 10000 || canvasHeight > 10000) break;
+
+                    const canvas = createTiledCanvas(bgImgWidth, bgImgHeight, tilesX, tilesY, displayText, textColor, watermarkText, watermarkOpacity);
+                    const testBlob = await canvasToBlob(canvas, 'png', 1);
+
+                    baseCanvas = canvas;
+                    baseBlob = testBlob;
+
+                    // 목표 크기의 1.1배 이상이면 충분히 확장됨
+                    if (testBlob.size >= targetBytes * 1.1) {
                         break;
                     }
 
-                    // Create canvas with tiled background
-                    const canvas = document.createElement('canvas');
-                    canvas.width = canvasWidth;
-                    canvas.height = canvasHeight;
-                    const ctx = canvas.getContext('2d');
-
-                    // Tile the background image
-                    for (let tx = 0; tx < tilesX; tx++) {
-                        for (let ty = 0; ty < tilesY; ty++) {
-                            ctx.drawImage(loadedBgImage, tx * bgImgWidth, ty * bgImgHeight, bgImgWidth, bgImgHeight);
-                        }
-                    }
-
-                    // Add text overlay
-                    ctx.fillStyle = textColor;
-                    const fontSize = Math.min(canvasWidth, canvasHeight) * 0.1;
-                    ctx.font = `bold ${fontSize}px 'Segoe UI', Arial, sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(displayText, canvasWidth / 2, canvasHeight / 2);
-
-                    // Add watermark if enabled
-                    if (watermarkText) {
-                        ctx.save();
-                        ctx.globalAlpha = watermarkOpacity / 100;
-                        ctx.fillStyle = textColor;
-                        ctx.font = `${Math.max(14, fontSize * 0.3)}px Arial`;
-                        ctx.translate(canvasWidth / 2, canvasHeight / 2);
-                        ctx.rotate(-Math.PI / 6);
-
-                        const watermarkSpacingX = fontSize * 3;
-                        const watermarkSpacingY = fontSize * 2;
-                        for (let wx = -canvasWidth; wx < canvasWidth * 2; wx += watermarkSpacingX) {
-                            for (let wy = -canvasHeight; wy < canvasHeight * 2; wy += watermarkSpacingY) {
-                                ctx.fillText(watermarkText, wx, wy);
-                            }
-                        }
-                        ctx.restore();
-                    }
-
-                    // Check file size for each format
-                    let allFormatsOk = true;
-                    for (const format of formats) {
-                        const blob = await canvasToBlob(canvas, format, format === 'jpg' || format === 'jpeg' ? 0.92 : 1);
-
-                        if (blob.size >= targetBytes * (1 - tolerance)) {
-                            finalCanvas = canvas;
-                            finalBlob = blob;
-                            finalWidth = canvasWidth;
-                            finalHeight = canvasHeight;
-                        } else {
-                            allFormatsOk = false;
-                        }
-                    }
-
-                    // If we've reached or exceeded target for all formats, stop
-                    if (finalBlob && finalBlob.size >= targetBytes * (1 - tolerance) && finalBlob.size <= targetBytes * (1 + tolerance)) {
-                        break;
-                    }
-
-                    // If file size is still too small, expand tiles
-                    if (!finalBlob || finalBlob.size < targetBytes * (1 - tolerance)) {
-                        // Alternate between adding width and height
-                        if (tilesX <= tilesY) {
-                            tilesX++;
-                        } else {
-                            tilesY++;
-                        }
-                        finalCanvas = canvas;
-                        finalWidth = canvasWidth;
-                        finalHeight = canvasHeight;
+                    // 타일 확장
+                    if (tilesX <= tilesY) {
+                        tilesX++;
                     } else {
-                        // Size reached or exceeded
-                        break;
+                        tilesY++;
                     }
                 }
 
-                // If no suitable canvas found, use the last one created
-                if (!finalCanvas) {
-                    finalCanvas = document.createElement('canvas');
-                    finalCanvas.width = bgImgWidth;
-                    finalCanvas.height = bgImgHeight;
-                    const ctx = finalCanvas.getContext('2d');
-                    ctx.drawImage(loadedBgImage, 0, 0);
-                    finalWidth = bgImgWidth;
-                    finalHeight = bgImgHeight;
+                // 기본 캔버스가 없으면 생성
+                if (!baseCanvas) {
+                    baseCanvas = createTiledCanvas(bgImgWidth, bgImgHeight, 1, 1, displayText, textColor, watermarkText, watermarkOpacity);
                 }
+
+                const finalWidth = baseCanvas.width;
+                const finalHeight = baseCanvas.height;
 
                 const previewItem = document.createElement('div');
                 previewItem.className = 'sample-preview-item';
@@ -2354,7 +2286,7 @@
                 const scale = Math.min(maxPreviewSize / finalWidth, maxPreviewSize / finalHeight, 1);
                 previewCanvas.width = finalWidth * scale;
                 previewCanvas.height = finalHeight * scale;
-                previewCanvas.getContext('2d').drawImage(finalCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+                previewCanvas.getContext('2d').drawImage(baseCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
 
                 const info = document.createElement('div');
                 info.className = 'text-sm text-gray-600 mb-2';
@@ -2363,25 +2295,34 @@
                 const downloadButtons = document.createElement('div');
                 downloadButtons.className = 'flex flex-wrap justify-center gap-2';
 
+                // 2단계: 각 포맷에 대해 정확한 파일 크기 맞추기
                 for (const format of formats) {
-                    const blob = await canvasToBlob(finalCanvas, format, format === 'jpg' || format === 'jpeg' ? 0.92 : 1);
+                    const finalBlob = await adjustToExactSize(baseCanvas, format, targetBytes);
 
                     const sizeInfo = document.createElement('span');
                     sizeInfo.className = 'text-xs bg-kakao-lightYellow text-kakao-brown px-2 py-1 rounded';
-                    sizeInfo.textContent = `${format.toUpperCase()}: ${formatFileSize(blob.size)}`;
+                    const accuracy = Math.abs(finalBlob.size - targetBytes) / targetBytes * 100;
+                    const accuracyText = accuracy < 1 ? '✓' : `±${accuracy.toFixed(1)}%`;
+                    sizeInfo.textContent = `${format.toUpperCase()}: ${formatFileSize(finalBlob.size)} ${accuracyText}`;
 
                     const downloadBtn = document.createElement('button');
                     downloadBtn.className = 'px-3 py-1.5 bg-kakao-yellow text-kakao-brown rounded-lg text-sm font-medium hover:bg-kakao-darkYellow transition-colors';
                     downloadBtn.textContent = format.toUpperCase();
 
-                    // Store finalCanvas for download
-                    const canvasToDownload = finalCanvas;
-                    downloadBtn.onclick = () => downloadTiledImage(canvasToDownload, `sample_${i + 1}.${format}`, format);
+                    // 저장된 blob 사용
+                    const blobToDownload = finalBlob;
+                    downloadBtn.onclick = () => {
+                        const link = document.createElement('a');
+                        link.download = `sample_${i + 1}.${format}`;
+                        link.href = URL.createObjectURL(blobToDownload);
+                        link.click();
+                        URL.revokeObjectURL(link.href);
+                    };
 
                     downloadButtons.appendChild(sizeInfo);
                     downloadButtons.appendChild(downloadBtn);
 
-                    generatedSampleImages.push({ canvas: finalCanvas, filename: `sample_${i + 1}.${format}`, format, targetBytes, isTiled: true });
+                    generatedSampleImages.push({ blob: finalBlob, filename: `sample_${i + 1}.${format}`, format, targetBytes, isTiled: true });
                 }
 
                 previewItem.appendChild(previewCanvas);
@@ -2392,6 +2333,271 @@
 
             document.getElementById('sampleDownloadAllBtn').disabled = false;
             showToast(currentLanguage === 'ko' ? `${count}개의 이미지가 생성되었습니다` : `${count} images generated`);
+        }
+
+        // 타일 캔버스 생성 헬퍼 함수
+        function createTiledCanvas(bgImgWidth, bgImgHeight, tilesX, tilesY, displayText, textColor, watermarkText, watermarkOpacity) {
+            const canvasWidth = bgImgWidth * tilesX;
+            const canvasHeight = bgImgHeight * tilesY;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            const ctx = canvas.getContext('2d');
+
+            // 배경 이미지 타일링
+            for (let tx = 0; tx < tilesX; tx++) {
+                for (let ty = 0; ty < tilesY; ty++) {
+                    ctx.drawImage(loadedBgImage, tx * bgImgWidth, ty * bgImgHeight, bgImgWidth, bgImgHeight);
+                }
+            }
+
+            // 텍스트 오버레이
+            ctx.fillStyle = textColor;
+            const fontSize = Math.min(canvasWidth, canvasHeight) * 0.1;
+            ctx.font = `bold ${fontSize}px 'Segoe UI', Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(displayText, canvasWidth / 2, canvasHeight / 2);
+
+            // 워터마크
+            if (watermarkText) {
+                ctx.save();
+                ctx.globalAlpha = watermarkOpacity / 100;
+                ctx.fillStyle = textColor;
+                ctx.font = `${Math.max(14, fontSize * 0.3)}px Arial`;
+                ctx.translate(canvasWidth / 2, canvasHeight / 2);
+                ctx.rotate(-Math.PI / 6);
+
+                const watermarkSpacingX = fontSize * 3;
+                const watermarkSpacingY = fontSize * 2;
+                for (let wx = -canvasWidth; wx < canvasWidth * 2; wx += watermarkSpacingX) {
+                    for (let wy = -canvasHeight; wy < canvasHeight * 2; wy += watermarkSpacingY) {
+                        ctx.fillText(watermarkText, wx, wy);
+                    }
+                }
+                ctx.restore();
+            }
+
+            return canvas;
+        }
+
+        // 정확한 파일 크기 맞추기 (Binary Search + PNG Chunk Padding)
+        async function adjustToExactSize(canvas, format, targetBytes) {
+            const isJpeg = format === 'jpg' || format === 'jpeg';
+
+            if (isJpeg) {
+                // JPEG: Binary Search로 품질 조절하여 크기 맞추기
+                return await binarySearchJpegQuality(canvas, targetBytes);
+            } else if (format === 'png') {
+                // PNG: 청크 패딩으로 정확한 크기 맞추기
+                return await padPngToExactSize(canvas, targetBytes);
+            } else {
+                // 기타 포맷: 기본 처리
+                return await canvasToBlob(canvas, format, 1);
+            }
+        }
+
+        // JPEG Binary Search 품질 조절
+        async function binarySearchJpegQuality(canvas, targetBytes) {
+            let low = 0.01;
+            let high = 1.0;
+            let bestBlob = null;
+            let bestDiff = Infinity;
+
+            // 15회 반복으로 정밀하게 탐색
+            for (let i = 0; i < 15; i++) {
+                const mid = (low + high) / 2;
+                const blob = await canvasToBlob(canvas, 'jpeg', mid);
+                const diff = Math.abs(blob.size - targetBytes);
+
+                if (diff < bestDiff) {
+                    bestDiff = diff;
+                    bestBlob = blob;
+                }
+
+                if (blob.size < targetBytes) {
+                    low = mid;
+                } else {
+                    high = mid;
+                }
+
+                // 목표의 1% 이내면 충분히 정확함
+                if (diff / targetBytes < 0.01) {
+                    break;
+                }
+            }
+
+            // 크기가 부족하면 노이즈 추가로 크기 증가
+            if (bestBlob.size < targetBytes * 0.98) {
+                bestBlob = await inflateWithNoise(canvas, 'jpeg', targetBytes, bestBlob);
+            }
+
+            return bestBlob;
+        }
+
+        // PNG 청크 패딩으로 정확한 크기 맞추기
+        async function padPngToExactSize(canvas, targetBytes) {
+            // 기본 PNG 생성
+            let blob = await canvasToBlob(canvas, 'png', 1);
+
+            // 이미 목표보다 크면 크기를 줄여야 함 (스케일 다운)
+            if (blob.size > targetBytes) {
+                // 스케일 팩터 계산
+                const scaleFactor = Math.sqrt(targetBytes / blob.size) * 0.95;
+                const newWidth = Math.floor(canvas.width * scaleFactor);
+                const newHeight = Math.floor(canvas.height * scaleFactor);
+
+                const scaledCanvas = document.createElement('canvas');
+                scaledCanvas.width = newWidth;
+                scaledCanvas.height = newHeight;
+                scaledCanvas.getContext('2d').drawImage(canvas, 0, 0, newWidth, newHeight);
+                blob = await canvasToBlob(scaledCanvas, 'png', 1);
+            }
+
+            // 목표보다 작으면 tEXt 청크 추가로 패딩
+            if (blob.size < targetBytes) {
+                const paddingNeeded = targetBytes - blob.size;
+                blob = await addPngTextChunk(blob, paddingNeeded);
+            }
+
+            return blob;
+        }
+
+        // PNG에 tEXt 청크 추가하여 패딩
+        async function addPngTextChunk(pngBlob, paddingBytes) {
+            const arrayBuffer = await pngBlob.arrayBuffer();
+            const data = new Uint8Array(arrayBuffer);
+
+            // PNG 시그니처 확인 (89 50 4E 47 0D 0A 1A 0A)
+            if (data[0] !== 0x89 || data[1] !== 0x50 || data[2] !== 0x4E || data[3] !== 0x47) {
+                return pngBlob; // PNG가 아니면 그대로 반환
+            }
+
+            // tEXt 청크 생성
+            // 청크 구조: Length(4) + Type(4) + Data(n) + CRC(4) = 12 + n bytes
+            // tEXt 데이터: Keyword + Null + Text
+            const keyword = 'Comment';
+            const keywordBytes = new TextEncoder().encode(keyword);
+
+            // 패딩 텍스트 크기 계산 (청크 오버헤드 12바이트 + 키워드 + null 제외)
+            const chunkOverhead = 12; // length(4) + type(4) + crc(4)
+            const textDataSize = Math.max(0, paddingBytes - chunkOverhead - keywordBytes.length - 1);
+
+            // 패딩 텍스트 생성 (공백으로 채움)
+            const paddingText = ' '.repeat(textDataSize);
+            const textBytes = new TextEncoder().encode(paddingText);
+
+            // tEXt 청크 데이터
+            const chunkData = new Uint8Array(keywordBytes.length + 1 + textBytes.length);
+            chunkData.set(keywordBytes, 0);
+            chunkData[keywordBytes.length] = 0; // Null separator
+            chunkData.set(textBytes, keywordBytes.length + 1);
+
+            // 청크 타입 "tEXt"
+            const chunkType = new Uint8Array([0x74, 0x45, 0x58, 0x74]);
+
+            // CRC32 계산
+            const crcData = new Uint8Array(chunkType.length + chunkData.length);
+            crcData.set(chunkType, 0);
+            crcData.set(chunkData, chunkType.length);
+            const crc = crc32(crcData);
+
+            // 청크 길이 (빅 엔디안)
+            const lengthBytes = new Uint8Array(4);
+            const dataView = new DataView(lengthBytes.buffer);
+            dataView.setUint32(0, chunkData.length, false);
+
+            // CRC 바이트 (빅 엔디안)
+            const crcBytes = new Uint8Array(4);
+            const crcView = new DataView(crcBytes.buffer);
+            crcView.setUint32(0, crc, false);
+
+            // 새 청크 생성
+            const newChunk = new Uint8Array(12 + chunkData.length);
+            newChunk.set(lengthBytes, 0);
+            newChunk.set(chunkType, 4);
+            newChunk.set(chunkData, 8);
+            newChunk.set(crcBytes, 8 + chunkData.length);
+
+            // IEND 청크 위치 찾기 (마지막 12바이트)
+            const iendStart = data.length - 12;
+
+            // 새 PNG 생성 (기존 데이터 + 새 청크 + IEND)
+            const newPng = new Uint8Array(data.length + newChunk.length);
+            newPng.set(data.subarray(0, iendStart), 0);
+            newPng.set(newChunk, iendStart);
+            newPng.set(data.subarray(iendStart), iendStart + newChunk.length);
+
+            return new Blob([newPng], { type: 'image/png' });
+        }
+
+        // CRC32 계산 함수
+        function crc32(data) {
+            let crc = 0xFFFFFFFF;
+            const table = getCrc32Table();
+
+            for (let i = 0; i < data.length; i++) {
+                crc = (crc >>> 8) ^ table[(crc ^ data[i]) & 0xFF];
+            }
+
+            return (crc ^ 0xFFFFFFFF) >>> 0;
+        }
+
+        // CRC32 테이블 생성 (캐싱)
+        let crc32Table = null;
+        function getCrc32Table() {
+            if (crc32Table) return crc32Table;
+
+            crc32Table = new Uint32Array(256);
+            for (let i = 0; i < 256; i++) {
+                let c = i;
+                for (let j = 0; j < 8; j++) {
+                    c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+                }
+                crc32Table[i] = c;
+            }
+            return crc32Table;
+        }
+
+        // 노이즈 추가로 이미지 크기 증가
+        async function inflateWithNoise(canvas, format, targetBytes, currentBlob) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const ctx = canvas.getContext('2d');
+            const originalImageData = ctx.getImageData(0, 0, width, height);
+
+            let blob = currentBlob;
+            let noiseLevel = 1;
+
+            for (let iteration = 0; iteration < 30 && blob.size < targetBytes * 0.98; iteration++) {
+                const noiseCanvas = document.createElement('canvas');
+                noiseCanvas.width = width;
+                noiseCanvas.height = height;
+                const noiseCtx = noiseCanvas.getContext('2d');
+
+                noiseCtx.putImageData(originalImageData, 0, 0);
+                const imageData = noiseCtx.getImageData(0, 0, width, height);
+                const data = imageData.data;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    if (data[i + 3] > 0) {
+                        data[i] = Math.max(0, Math.min(255, data[i] + (Math.random() * noiseLevel * 2 - noiseLevel)));
+                        data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + (Math.random() * noiseLevel * 2 - noiseLevel)));
+                        data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + (Math.random() * noiseLevel * 2 - noiseLevel)));
+                    }
+                }
+
+                noiseCtx.putImageData(imageData, 0, 0);
+                const quality = format === 'jpeg' || format === 'jpg' ? 0.95 : 1;
+                blob = await canvasToBlob(noiseCanvas, format, quality);
+
+                if (blob.size >= targetBytes * 0.98) break;
+                noiseLevel = Math.min(noiseLevel + 2, 30);
+            }
+
+            ctx.putImageData(originalImageData, 0, 0);
+            return blob;
         }
 
         async function downloadTiledImage(canvas, filename, format) {
@@ -2457,8 +2663,18 @@
         async function downloadAllSampleImages() {
             if (generatedSampleImages.length === 0) return;
 
-            for (const { canvas, filename, format, targetBytes } of generatedSampleImages) {
-                await downloadSampleImage(canvas, filename, format, targetBytes);
+            for (const item of generatedSampleImages) {
+                if (item.blob) {
+                    // Tiled 이미지 (blob이 직접 저장된 경우)
+                    const link = document.createElement('a');
+                    link.download = item.filename;
+                    link.href = URL.createObjectURL(item.blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                } else if (item.canvas) {
+                    // 일반 이미지 (canvas가 저장된 경우)
+                    await downloadSampleImage(item.canvas, item.filename, item.format, item.targetBytes);
+                }
                 await new Promise(resolve => setTimeout(resolve, 300));
             }
 
