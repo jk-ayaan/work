@@ -97,6 +97,35 @@
         }
         .input:focus, .select:focus { border-color: var(--kakao-yellow); }
 
+        /* QR XLSX Input Group Styles */
+        .qr-input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .qr-input-group label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        .qr-input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        .qr-input-group input:focus {
+            outline: none;
+            border-color: var(--kakao-yellow);
+            box-shadow: 0 0 0 3px rgba(254, 229, 0, 0.2);
+        }
+        .qr-input-group input::placeholder {
+            color: #9ca3af;
+        }
+
         .grid { display: grid; gap: 1rem; }
         .grid-2 { grid-template-columns: repeat(2, 1fr); }
         .flex { display: flex; }
@@ -774,46 +803,61 @@
                 <div class="max-w-4xl">
                     <div class="card">
                         <div class="text-center mb-8">
+                            <div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;background:linear-gradient(135deg,#FEE500,#fbbf24);border-radius:16px;margin-bottom:16px;box-shadow:0 4px 12px rgba(251,191,36,0.3)">
+                                <svg width="32" height="32" fill="none" stroke="#3C1E1E" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                                </svg>
+                            </div>
                             <h2 class="text-2xl font-bold text-gray-800 mb-2" data-kr="QR XLSX 생성기" data-en="QR XLSX Generator">QR XLSX 생성기</h2>
                             <p class="text-gray-600" data-kr="QR 코드 정보가 포함된 엑셀 파일을 생성합니다" data-en="Generate Excel files with QR code information">QR 코드 정보가 포함된 엑셀 파일을 생성합니다</p>
                         </div>
 
-                        <div class="space-y-6">
-                            <div class="grid grid-2">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">CID</label>
-                                    <input type="text" id="qr-cid" placeholder="빈값" class="input-field">
+                        <div style="background:#f8fafc;border-radius:12px;padding:24px;margin-bottom:24px">
+                            <div class="grid grid-2" style="gap:20px">
+                                <div class="qr-input-group">
+                                    <label>CID</label>
+                                    <input type="text" id="qr-cid" placeholder="빈값">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">TID</label>
-                                    <input type="text" id="qr-tid" placeholder="빈값" class="input-field">
+                                <div class="qr-input-group">
+                                    <label>TID</label>
+                                    <input type="text" id="qr-tid" placeholder="빈값">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="지역코드" data-en="Region Code">지역코드</label>
-                                    <input type="text" id="qr-region" value="JEJU" class="input-field">
+                                <div class="qr-input-group">
+                                    <label data-kr="지역코드" data-en="Region Code">지역코드</label>
+                                    <input type="text" id="qr-region" value="JEJU">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">VAN</label>
-                                    <input type="text" id="qr-van" value="KIS" class="input-field">
+                                <div class="qr-input-group">
+                                    <label>VAN</label>
+                                    <input type="text" id="qr-van" value="KIS">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="휴대폰번호" data-en="Phone Number">휴대폰번호</label>
-                                    <input type="text" id="qr-phone" value="01012345678" class="input-field">
+                                <div class="qr-input-group">
+                                    <label data-kr="휴대폰번호" data-en="Phone Number">휴대폰번호</label>
+                                    <input type="text" id="qr-phone" value="01012345678">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="비고" data-en="Remark">비고</label>
-                                    <input type="text" id="qr-remark" placeholder="빈값" class="input-field">
+                                <div class="qr-input-group">
+                                    <label data-kr="비고" data-en="Remark">비고</label>
+                                    <input type="text" id="qr-remark" placeholder="빈값">
                                 </div>
                             </div>
+                        </div>
 
-                            <button onclick="generateQRXlsx()" class="btn btn-primary">
+                        <div style="text-align:center">
+                            <button onclick="generateQRXlsx()" class="btn btn-primary" style="padding:14px 32px;font-size:16px;display:inline-flex;align-items:center;gap:8px">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
                                 <span data-kr="QR XLSX 파일 생성" data-en="Generate QR XLSX">QR XLSX 파일 생성</span>
                             </button>
+                        </div>
 
-                            <div id="qr-preview" class="hidden mt-6 p-4 border border-green-200 rounded-lg bg-green-50">
-                                <h4 class="font-medium text-green-800 mb-2" data-kr="생성 완료!" data-en="Generated!">생성 완료!</h4>
-                                <p class="text-green-700" data-kr="XLSX 파일이 다운로드되었습니다." data-en="XLSX file has been downloaded.">XLSX 파일이 다운로드되었습니다.</p>
+                        <div id="qr-preview" class="hidden" style="margin-top:24px;padding:20px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:12px;border:1px solid #a7f3d0;text-align:center">
+                            <div style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;background:#10b981;border-radius:50%;margin-bottom:12px">
+                                <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                </svg>
                             </div>
+                            <h4 style="font-weight:600;color:#065f46;margin-bottom:4px" data-kr="생성 완료!" data-en="Generated!">생성 완료!</h4>
+                            <p style="color:#047857" data-kr="XLSX 파일이 다운로드되었습니다." data-en="XLSX file has been downloaded.">XLSX 파일이 다운로드되었습니다.</p>
                         </div>
                     </div>
                 </div>
