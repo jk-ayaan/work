@@ -1563,6 +1563,11 @@
             const text = document.getElementById('sampleImageText').value || 'Sample';
             const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
 
+            // 워터마크 텍스트 가져오기
+            const watermarkEnabled = document.getElementById('sampleWatermarkEnabled').checked;
+            const watermarkText = watermarkEnabled ? document.getElementById('sampleWatermarkText').value : '';
+            const safeWatermarkText = watermarkText.replace(/[\\/:*?"<>|]/g, '_');
+
             const zip = new JSZip();
             const previewGrid = document.getElementById('samplePreviewGrid');
             const originalContent = previewGrid.innerHTML;
@@ -1641,7 +1646,10 @@
 
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(content);
-                link.download = `이미지모음_${safeText}.zip`;
+                const zipFilename = safeWatermarkText
+                    ? `이미지모음_${safeText}_${safeWatermarkText}.zip`
+                    : `이미지모음_${safeText}.zip`;
+                link.download = zipFilename;
                 link.click();
                 URL.revokeObjectURL(link.href);
 
