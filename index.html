@@ -437,6 +437,15 @@
                     <button id="tab-sample" class="tab-button" onclick="showTab('sample')">
                         <span data-kr="샘플 이미지" data-en="Sample Image">샘플 이미지</span>
                     </button>
+                    <button id="tab-csv" class="tab-button" onclick="showTab('csv')">
+                        <span data-kr="CSV 생성" data-en="CSV">CSV 생성</span>
+                    </button>
+                    <button id="tab-qrxlsx" class="tab-button" onclick="showTab('qrxlsx')">
+                        <span data-kr="QR XLSX" data-en="QR XLSX">QR XLSX</span>
+                    </button>
+                    <button id="tab-pairwise" class="tab-button" onclick="showTab('pairwise')">
+                        <span data-kr="조합확인" data-en="Pairwise">조합확인</span>
+                    </button>
                     <button id="tab-stopwatch" class="tab-button" onclick="showTab('stopwatch')">
                         <span data-kr="스톱워치" data-en="Stopwatch">스톱워치</span>
                     </button>
@@ -477,6 +486,24 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
                 <span data-kr="샘플 이미지" data-en="Sample Image">샘플 이미지</span>
+            </button>
+            <button class="mobile-menu-item" data-tab="csv" onclick="showTabMobile('csv')">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span data-kr="CSV 생성" data-en="CSV Generator">CSV 생성</span>
+            </button>
+            <button class="mobile-menu-item" data-tab="qrxlsx" onclick="showTabMobile('qrxlsx')">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span data-kr="QR XLSX" data-en="QR XLSX">QR XLSX</span>
+            </button>
+            <button class="mobile-menu-item" data-tab="pairwise" onclick="showTabMobile('pairwise')">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                </svg>
+                <span data-kr="조합확인" data-en="Pairwise">조합확인</span>
             </button>
             <button class="mobile-menu-item" data-tab="stopwatch" onclick="showTabMobile('stopwatch')">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -872,6 +899,258 @@
                                         </svg>
                                         <p data-kr="설정 후 '이미지 생성하기' 버튼을 클릭하세요" data-en="Configure settings and click 'Generate Images'">설정 후 '이미지 생성하기' 버튼을 클릭하세요</p>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CSV Generator Tab -->
+            <div id="csv-content" class="tab-content hidden">
+                <div class="max-w-4xl mx-auto">
+                    <div class="card p-6 md:p-8">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2" data-kr="CSV 생성기" data-en="CSV Generator">CSV 생성기</h2>
+                            <p class="text-gray-600" data-kr="커스텀 CSV 파일을 생성하고 다운로드합니다" data-en="Generate and download custom CSV files">커스텀 CSV 파일을 생성하고 다운로드합니다</p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="생성할 행 수" data-en="Number of rows">생성할 행 수</label>
+                                <input type="number" id="csv-rowCount" value="10" min="1" max="1000" class="w-full max-w-xs px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
+                            </div>
+
+                            <div class="space-y-4">
+                                <h4 class="text-lg font-medium text-gray-800" data-kr="열 설정" data-en="Column Settings">열 설정</h4>
+
+                                <!-- Column 1 -->
+                                <div class="bg-gray-50 rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <span class="font-medium" data-kr="1열 (필수)" data-en="Column 1 (Required)">1열 (필수)</span>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="flex items-center">
+                                            <input type="radio" name="col1Type" value="text" checked class="mr-2 accent-kakao-yellow">
+                                            <span data-kr="텍스트 입력" data-en="Text Input">텍스트 입력</span>
+                                        </label>
+                                        <input type="text" id="col1-text" placeholder="텍스트를 입력하세요" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
+                                        <label class="flex items-center">
+                                            <input type="radio" name="col1Type" value="random" class="mr-2 accent-kakao-yellow">
+                                            <span data-kr="난수발생" data-en="Random String">난수발생</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Column 2 -->
+                                <div class="bg-gray-50 rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <span class="font-medium" data-kr="2열" data-en="Column 2">2열</span>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="col2-enable" checked class="mr-2 w-5 h-5 accent-kakao-yellow" onchange="toggleCsvColumn(2)">
+                                            <span data-kr="사용" data-en="Enable">사용</span>
+                                        </label>
+                                    </div>
+                                    <div class="space-y-3" id="col2-options">
+                                        <label class="flex items-center">
+                                            <input type="radio" name="col2Type" value="text" checked class="mr-2 accent-kakao-yellow">
+                                            <span data-kr="텍스트 입력" data-en="Text Input">텍스트 입력</span>
+                                        </label>
+                                        <input type="text" id="col2-text" placeholder="텍스트를 입력하세요" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
+                                        <label class="flex items-center">
+                                            <input type="radio" name="col2Type" value="random" class="mr-2 accent-kakao-yellow">
+                                            <span data-kr="난수발생" data-en="Random String">난수발생</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Column 3 -->
+                                <div class="bg-gray-50 rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <span class="font-medium" data-kr="3열" data-en="Column 3">3열</span>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="col3-enable" class="mr-2 w-5 h-5 accent-kakao-yellow" onchange="toggleCsvColumn(3)">
+                                            <span data-kr="사용" data-en="Enable">사용</span>
+                                        </label>
+                                    </div>
+                                    <div class="space-y-3 hidden" id="col3-options">
+                                        <label class="flex items-center">
+                                            <input type="radio" name="col3Type" value="text" checked class="mr-2 accent-kakao-yellow">
+                                            <span data-kr="텍스트 입력" data-en="Text Input">텍스트 입력</span>
+                                        </label>
+                                        <input type="text" id="col3-text" placeholder="텍스트를 입력하세요" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
+                                        <label class="flex items-center">
+                                            <input type="radio" name="col3Type" value="random" class="mr-2 accent-kakao-yellow">
+                                            <span data-kr="난수발생" data-en="Random String">난수발생</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button onclick="generateCsvFile()" class="px-8 py-3 bg-kakao-yellow text-kakao-brown font-semibold rounded-lg hover:bg-kakao-darkYellow transition-all">
+                                <span data-kr="CSV 미리보기" data-en="Preview CSV">CSV 미리보기</span>
+                            </button>
+
+                            <div id="csv-preview" class="hidden">
+                                <h4 class="text-lg font-medium text-gray-800 mb-4" data-kr="CSV 미리보기" data-en="CSV Preview">CSV 미리보기</h4>
+                                <div class="overflow-auto max-h-64 border border-gray-200 rounded-lg">
+                                    <table class="min-w-full">
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th class="border border-gray-300 px-4 py-2">1열</th>
+                                                <th class="border border-gray-300 px-4 py-2">2열</th>
+                                                <th class="border border-gray-300 px-4 py-2">3열</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="csv-preview-body"></tbody>
+                                    </table>
+                                </div>
+                                <button onclick="downloadCsvFile()" class="mt-4 px-6 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all">
+                                    <span data-kr="CSV 다운로드" data-en="Download CSV">CSV 다운로드</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR XLSX Generator Tab -->
+            <div id="qrxlsx-content" class="tab-content hidden">
+                <div class="max-w-4xl mx-auto">
+                    <div class="card p-6 md:p-8">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2" data-kr="QR XLSX 생성기" data-en="QR XLSX Generator">QR XLSX 생성기</h2>
+                            <p class="text-gray-600" data-kr="QR 코드 정보가 포함된 엑셀 파일을 생성합니다" data-en="Generate Excel files with QR code information">QR 코드 정보가 포함된 엑셀 파일을 생성합니다</p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">CID</label>
+                                    <input type="text" id="qr-cid" placeholder="빈값" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">TID</label>
+                                    <input type="text" id="qr-tid" placeholder="빈값" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="지역코드" data-en="Region Code">지역코드</label>
+                                    <input type="text" id="qr-region" value="JEJU" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">VAN</label>
+                                    <input type="text" id="qr-van" value="KIS" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="휴대폰번호" data-en="Phone Number">휴대폰번호</label>
+                                    <input type="text" id="qr-phone" value="01012345678" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="비고" data-en="Remark">비고</label>
+                                    <input type="text" id="qr-remark" placeholder="빈값" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
+                                </div>
+                            </div>
+
+                            <button onclick="generateQRXlsx()" class="px-8 py-3 bg-kakao-yellow text-kakao-brown font-semibold rounded-lg hover:bg-kakao-darkYellow transition-all">
+                                <span data-kr="QR XLSX 파일 생성" data-en="Generate QR XLSX">QR XLSX 파일 생성</span>
+                            </button>
+
+                            <div id="qr-preview" class="hidden mt-6 p-4 border border-green-200 rounded-lg bg-green-50">
+                                <h4 class="font-medium text-green-800 mb-2" data-kr="생성 완료!" data-en="Generated!">생성 완료!</h4>
+                                <p class="text-green-700" data-kr="XLSX 파일이 다운로드되었습니다." data-en="XLSX file has been downloaded.">XLSX 파일이 다운로드되었습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pairwise Combination Check Tab -->
+            <div id="pairwise-content" class="tab-content hidden">
+                <div class="max-w-6xl mx-auto">
+                    <div class="card p-6 md:p-8">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2" data-kr="조합확인 (Pairwise)" data-en="Combination Check (Pairwise)">조합확인 (Pairwise)</h2>
+                            <p class="text-gray-600" data-kr="페어와이즈 기법으로 최적화된 테스트 케이스를 생성합니다" data-en="Generate optimized test cases using pairwise testing">페어와이즈 기법으로 최적화된 테스트 케이스를 생성합니다</p>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                            <p class="text-sm text-blue-800" data-kr="🔬 페어와이즈 테스팅으로 최소한의 테스트 케이스로 모든 파라미터 조합을 효과적으로 검증합니다." data-en="🔬 Pairwise testing effectively validates all parameter combinations with minimal test cases.">🔬 페어와이즈 테스팅으로 최소한의 테스트 케이스로 모든 파라미터 조합을 효과적으로 검증합니다.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Parameter Settings -->
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-lg font-semibold" data-kr="파라미터 설정" data-en="Parameter Settings">파라미터 설정</h3>
+                                    <button onclick="addCombinationParameter()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                                        <span data-kr="➕ 파라미터 추가" data-en="➕ Add Parameter">➕ 파라미터 추가</span>
+                                    </button>
+                                </div>
+
+                                <div id="combination-parameters" class="space-y-3">
+                                    <div class="text-center text-gray-500 py-8" data-kr="파라미터 추가 버튼을 클릭하여 시작하세요" data-en="Click Add Parameter button to start">파라미터 추가 버튼을 클릭하여 시작하세요</div>
+                                </div>
+                            </div>
+
+                            <!-- Generation Options -->
+                            <div class="space-y-4">
+                                <h3 class="text-lg font-semibold" data-kr="생성 옵션" data-en="Generation Options">생성 옵션</h3>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="생성 모드" data-en="Generation Mode">생성 모드</label>
+                                    <select id="combination-mode" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none" onchange="updateCombinationStats()">
+                                        <option value="pairwise">Pairwise (2-way)</option>
+                                        <option value="3way">3-way Coverage</option>
+                                        <option value="full" data-kr="Full Combination (모든 조합)" data-en="Full Combination (All)">Full Combination (모든 조합)</option>
+                                    </select>
+                                </div>
+
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="font-medium mb-2" data-kr="📊 예상 결과" data-en="📊 Expected Results">📊 예상 결과</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex justify-between">
+                                            <span data-kr="전체 조합 수:" data-en="Total Combinations:">전체 조합 수:</span>
+                                            <span id="total-combinations" class="font-medium">0</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span data-kr="생성될 케이스:" data-en="Cases to Generate:">생성될 케이스:</span>
+                                            <span id="generated-cases" class="font-medium">0</span>
+                                        </div>
+                                        <div class="flex justify-between text-green-600">
+                                            <span data-kr="감소율:" data-en="Reduction:">감소율:</span>
+                                            <span id="reduction-rate" class="font-medium">0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button onclick="generateCombinations()" class="w-full px-8 py-3 bg-kakao-yellow text-kakao-brown font-semibold rounded-lg hover:bg-kakao-darkYellow transition-all">
+                                    <span data-kr="🎯 조합 생성" data-en="🎯 Generate Combinations">🎯 조합 생성</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div id="combination-results" class="hidden mt-6">
+                            <div class="border-t pt-6">
+                                <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
+                                    <h3 class="text-lg font-semibold" data-kr="생성된 테스트 케이스" data-en="Generated Test Cases">생성된 테스트 케이스</h3>
+                                    <div class="flex gap-2">
+                                        <button onclick="copyCombinationResults()" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors text-sm">
+                                            <span data-kr="📋 복사" data-en="📋 Copy">📋 복사</span>
+                                        </button>
+                                        <button onclick="downloadCombinationCSV()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm">
+                                            <span data-kr="💾 CSV 다운로드" data-en="💾 Download CSV">💾 CSV 다운로드</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr id="combination-table-header"></tr>
+                                        </thead>
+                                        <tbody id="combination-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -2105,6 +2384,584 @@
             } catch (e) {
                 document.getElementById(elementId).textContent = '--:--:--';
             }
+        }
+
+        // ========== CSV Generator ==========
+        let csvData = [];
+
+        function toggleCsvColumn(columnNumber) {
+            const options = document.getElementById(`col${columnNumber}-options`);
+            const checkbox = document.getElementById(`col${columnNumber}-enable`);
+
+            if (checkbox && options) {
+                if (checkbox.checked) {
+                    options.classList.remove('hidden');
+                } else {
+                    options.classList.add('hidden');
+                }
+            }
+        }
+
+        function generateRandomString() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 10; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function generateCsvFile() {
+            try {
+                const rowCount = parseInt(document.getElementById('csv-rowCount').value);
+
+                if (rowCount <= 0 || rowCount > 1000) {
+                    showToast(currentLanguage === 'ko' ? '행 수는 1~1000 범위로 입력해주세요' : 'Please enter row count between 1-1000', 'error');
+                    return;
+                }
+
+                const col2Enabled = document.getElementById('col2-enable').checked;
+                const col3Enabled = document.getElementById('col3-enable').checked;
+
+                csvData = [];
+
+                for (let i = 0; i < rowCount; i++) {
+                    const row = [];
+
+                    // 1열
+                    const col1Type = document.querySelector('input[name="col1Type"]:checked').value;
+                    if (col1Type === 'text') {
+                        const col1Text = document.getElementById('col1-text').value || 'Data';
+                        row.push(col1Text);
+                    } else {
+                        row.push(generateRandomString());
+                    }
+
+                    // 2열
+                    if (col2Enabled) {
+                        const col2Type = document.querySelector('input[name="col2Type"]:checked').value;
+                        if (col2Type === 'text') {
+                            const col2Text = document.getElementById('col2-text').value || 'Data';
+                            row.push(col2Text);
+                        } else {
+                            row.push(generateRandomString());
+                        }
+                    }
+
+                    // 3열
+                    if (col3Enabled) {
+                        const col3Type = document.querySelector('input[name="col3Type"]:checked').value;
+                        if (col3Type === 'text') {
+                            const col3Text = document.getElementById('col3-text').value || 'Data';
+                            row.push(col3Text);
+                        } else {
+                            row.push(generateRandomString());
+                        }
+                    }
+
+                    csvData.push(row);
+                }
+
+                displayCsvPreview();
+                showToast(currentLanguage === 'ko' ? 'CSV 미리보기가 생성되었습니다' : 'CSV preview generated', 'success');
+            } catch (error) {
+                console.error('CSV 생성 오류:', error);
+                showToast(currentLanguage === 'ko' ? 'CSV 파일 생성 중 오류가 발생했습니다' : 'Error generating CSV file', 'error');
+            }
+        }
+
+        function displayCsvPreview() {
+            const previewDiv = document.getElementById('csv-preview');
+            const tbody = document.getElementById('csv-preview-body');
+
+            if (!tbody) {
+                previewDiv.classList.remove('hidden');
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            const previewRows = Math.min(10, csvData.length);
+            for (let i = 0; i < previewRows; i++) {
+                const tr = document.createElement('tr');
+                csvData[i].forEach(cell => {
+                    const td = document.createElement('td');
+                    td.className = 'border border-gray-300 px-4 py-2';
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            }
+
+            if (csvData.length > 10) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = csvData[0].length;
+                td.className = 'border border-gray-300 px-4 py-2 text-center text-gray-500';
+                td.textContent = `... 외 ${csvData.length - 10}개 행`;
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            }
+
+            previewDiv.classList.remove('hidden');
+        }
+
+        function downloadCsvFile() {
+            if (csvData.length === 0) {
+                showToast(currentLanguage === 'ko' ? '먼저 CSV를 생성해주세요' : 'Please generate CSV first', 'error');
+                return;
+            }
+
+            let csvContent = '';
+            csvData.forEach(row => {
+                csvContent += row.join(',') + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            const rowCount = csvData.length;
+            link.setAttribute('download', `custom_data_${rowCount}rows_${timestamp}.csv`);
+            link.click();
+
+            showToast(currentLanguage === 'ko' ? 'CSV 파일이 다운로드되었습니다' : 'CSV file downloaded', 'success');
+        }
+
+        // ========== QR XLSX Generator ==========
+        function generateQRXlsx() {
+            try {
+                const cid = document.getElementById('qr-cid').value || '';
+                const tid = document.getElementById('qr-tid').value || '';
+                const region = document.getElementById('qr-region').value || 'JEJU';
+                const van = document.getElementById('qr-van').value || 'KIS';
+                const phone = document.getElementById('qr-phone').value || '01012345678';
+                const remark = document.getElementById('qr-remark').value || '';
+
+                const data = [
+                    ['cid', 'tid', '지역코드', 'van', '휴대폰번호', '비고'],
+                    [cid, tid, region, van, phone, remark]
+                ];
+
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'QR_Data');
+                const timestamp = new Date().toISOString().split('T')[0];
+                const cidPart = cid ? `_${cid}` : '';
+                XLSX.writeFile(wb, `QR_Data${cidPart}_${timestamp}.xlsx`);
+
+                document.getElementById('qr-preview').classList.remove('hidden');
+                showToast(currentLanguage === 'ko' ? 'QR XLSX 파일이 생성되었습니다' : 'QR XLSX file generated', 'success');
+            } catch (error) {
+                console.error('XLSX 생성 오류:', error);
+                showToast(currentLanguage === 'ko' ? 'XLSX 파일 생성 중 오류가 발생했습니다' : 'Error generating XLSX file', 'error');
+            }
+        }
+
+        // ========== Pairwise Combination Check ==========
+        let combinationParameters = [];
+        let combinationResults = [];
+
+        function addCombinationParameter() {
+            const paramId = Date.now();
+            const parameterDiv = document.getElementById('combination-parameters');
+
+            // 초기 안내 메시지 제거
+            if (combinationParameters.length === 0) {
+                parameterDiv.innerHTML = '';
+            }
+
+            if (combinationParameters.length >= 10) {
+                showToast(
+                    currentLanguage === 'ko' ?
+                        '최대 10개의 파라미터만 추가할 수 있습니다' :
+                        'Maximum 10 parameters allowed',
+                    'error'
+                );
+                return;
+            }
+
+            const paramHtml = `
+                <div class="border rounded-lg p-4 bg-white" id="param-${paramId}">
+                    <div class="flex justify-between items-start mb-3">
+                        <input type="text"
+                               placeholder="${currentLanguage === 'ko' ? '파라미터명' : 'Parameter Name'}"
+                               class="px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium w-48 focus:border-kakao-yellow focus:outline-none"
+                               id="param-name-${paramId}"
+                               onchange="updateCombinationStats()">
+                        <button onclick="removeCombinationParameter(${paramId})" class="text-red-500 hover:text-red-700">
+                            ❌
+                        </button>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex gap-2">
+                            <input type="text"
+                                   placeholder="${currentLanguage === 'ko' ? '값 입력 (콤마로 구분)' : 'Enter values (comma separated)'}"
+                                   class="px-3 py-2 border border-gray-200 rounded-lg text-sm flex-1 focus:border-kakao-yellow focus:outline-none"
+                                   id="param-values-${paramId}">
+                            <button onclick="addParamValues(${paramId})" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors text-sm">
+                                ${currentLanguage === 'ko' ? '추가' : 'Add'}
+                            </button>
+                        </div>
+                        <div id="param-value-list-${paramId}" class="flex flex-wrap gap-2">
+                            <!-- 값들이 태그로 표시될 영역 -->
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            parameterDiv.insertAdjacentHTML('beforeend', paramHtml);
+
+            combinationParameters.push({
+                id: paramId,
+                name: '',
+                values: []
+            });
+
+            updateCombinationStats();
+        }
+
+        function removeCombinationParameter(paramId) {
+            document.getElementById(`param-${paramId}`).remove();
+            combinationParameters = combinationParameters.filter(p => p.id !== paramId);
+
+            if (combinationParameters.length === 0) {
+                document.getElementById('combination-parameters').innerHTML = `
+                    <div class="text-center text-gray-500 py-8" data-kr="파라미터 추가 버튼을 클릭하여 시작하세요" data-en="Click Add Parameter button to start">
+                        ${currentLanguage === 'ko' ? '파라미터 추가 버튼을 클릭하여 시작하세요' : 'Click Add Parameter button to start'}
+                    </div>
+                `;
+            }
+
+            updateCombinationStats();
+        }
+
+        function addParamValues(paramId) {
+            const input = document.getElementById(`param-values-${paramId}`);
+            const values = input.value.split(',').map(v => v.trim()).filter(v => v);
+
+            if (values.length === 0) return;
+
+            const param = combinationParameters.find(p => p.id === paramId);
+            const valueList = document.getElementById(`param-value-list-${paramId}`);
+
+            values.forEach(value => {
+                if (!param.values.includes(value)) {
+                    param.values.push(value);
+
+                    const valueTag = `
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                            ${value}
+                            <button onclick="removeParamValue(${paramId}, '${value.replace(/'/g, "\\'")}')" class="ml-2 text-blue-600 hover:text-blue-800">
+                                ×
+                            </button>
+                        </span>
+                    `;
+
+                    valueList.insertAdjacentHTML('beforeend', valueTag);
+                }
+            });
+
+            input.value = '';
+            updateCombinationStats();
+        }
+
+        function removeParamValue(paramId, value) {
+            const param = combinationParameters.find(p => p.id === paramId);
+            param.values = param.values.filter(v => v !== value);
+
+            // UI 업데이트
+            const valueList = document.getElementById(`param-value-list-${paramId}`);
+            valueList.innerHTML = '';
+
+            param.values.forEach(val => {
+                const valueTag = `
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                        ${val}
+                        <button onclick="removeParamValue(${paramId}, '${val.replace(/'/g, "\\'")}')" class="ml-2 text-blue-600 hover:text-blue-800">
+                            ×
+                        </button>
+                    </span>
+                `;
+                valueList.insertAdjacentHTML('beforeend', valueTag);
+            });
+
+            updateCombinationStats();
+        }
+
+        function updateCombinationStats() {
+            // 파라미터 이름 업데이트
+            combinationParameters.forEach(param => {
+                const nameInput = document.getElementById(`param-name-${param.id}`);
+                if (nameInput) {
+                    param.name = nameInput.value || `Param${param.id}`;
+                }
+            });
+
+            const validParams = combinationParameters.filter(p => p.values.length > 0);
+
+            if (validParams.length === 0) {
+                document.getElementById('total-combinations').textContent = '0';
+                document.getElementById('generated-cases').textContent = '0';
+                document.getElementById('reduction-rate').textContent = '0%';
+                return;
+            }
+
+            // 전체 조합 수 계산
+            const totalCombinations = validParams.reduce((acc, param) => acc * param.values.length, 1);
+
+            // 예상 생성 케이스 수
+            const mode = document.getElementById('combination-mode').value;
+            let estimatedCases = 0;
+
+            if (mode === 'full') {
+                estimatedCases = totalCombinations;
+            } else if (mode === 'pairwise') {
+                // 페어와이즈 추정: 대략적으로 최대 값 개수의 제곱
+                const maxValues = Math.max(...validParams.map(p => p.values.length));
+                estimatedCases = Math.min(maxValues * maxValues, totalCombinations);
+            } else if (mode === '3way') {
+                // 3-way 추정
+                const maxValues = Math.max(...validParams.map(p => p.values.length));
+                estimatedCases = Math.min(maxValues * maxValues * maxValues, totalCombinations);
+            }
+
+            const reduction = totalCombinations > 0 ?
+                Math.round((1 - estimatedCases / totalCombinations) * 100) : 0;
+
+            document.getElementById('total-combinations').textContent = totalCombinations.toLocaleString();
+            document.getElementById('generated-cases').textContent = estimatedCases.toLocaleString();
+            document.getElementById('reduction-rate').textContent = `${reduction}%`;
+        }
+
+        function generatePairwiseCombinations(parameters) {
+            if (parameters.length === 0) return [];
+            if (parameters.length === 1) {
+                return parameters[0].values.map(v => ({ [parameters[0].name]: v }));
+            }
+
+            const result = [];
+            const pairs = [];
+
+            // 모든 2-way 페어 생성
+            for (let i = 0; i < parameters.length; i++) {
+                for (let j = i + 1; j < parameters.length; j++) {
+                    for (const val1 of parameters[i].values) {
+                        for (const val2 of parameters[j].values) {
+                            pairs.push({
+                                params: [i, j],
+                                values: [val1, val2]
+                            });
+                        }
+                    }
+                }
+            }
+
+            // 페어를 커버하는 최소 테스트 케이스 생성
+            const coveredPairs = new Set();
+
+            while (coveredPairs.size < pairs.length) {
+                const testCase = {};
+
+                // 각 파라미터에 대해 가장 많은 미커버 페어를 커버하는 값 선택
+                for (let i = 0; i < parameters.length; i++) {
+                    let bestValue = parameters[i].values[0];
+                    let maxNewPairs = 0;
+
+                    for (const value of parameters[i].values) {
+                        let newPairs = 0;
+
+                        // 이 값을 선택했을 때 새로 커버되는 페어 수 계산
+                        for (const pair of pairs) {
+                            if (coveredPairs.has(JSON.stringify(pair))) continue;
+
+                            const paramIndex = pair.params.indexOf(i);
+                            if (paramIndex !== -1 && pair.values[paramIndex] === value) {
+                                // 다른 파라미터 값도 일치하는지 확인
+                                const otherParamIndex = pair.params[1 - paramIndex];
+                                if (!testCase[parameters[otherParamIndex].name] ||
+                                    testCase[parameters[otherParamIndex].name] === pair.values[1 - paramIndex]) {
+                                    newPairs++;
+                                }
+                            }
+                        }
+
+                        if (newPairs > maxNewPairs) {
+                            maxNewPairs = newPairs;
+                            bestValue = value;
+                        }
+                    }
+
+                    testCase[parameters[i].name] = bestValue;
+                }
+
+                // 이 테스트 케이스가 커버하는 페어들 표시
+                for (const pair of pairs) {
+                    const values = pair.params.map(i => testCase[parameters[i].name]);
+                    if (values[0] === pair.values[0] && values[1] === pair.values[1]) {
+                        coveredPairs.add(JSON.stringify(pair));
+                    }
+                }
+
+                result.push(testCase);
+
+                // 무한루프 방지
+                if (result.length > pairs.length) break;
+            }
+
+            return result;
+        }
+
+        function generateFullCombinations(parameters) {
+            if (parameters.length === 0) return [];
+
+            const result = [];
+
+            function generateRecursive(index, current) {
+                if (index === parameters.length) {
+                    result.push({ ...current });
+                    return;
+                }
+
+                for (const value of parameters[index].values) {
+                    current[parameters[index].name] = value;
+                    generateRecursive(index + 1, current);
+                }
+            }
+
+            generateRecursive(0, {});
+            return result;
+        }
+
+        function generateCombinations() {
+            const validParams = combinationParameters.filter(p => p.values.length > 0);
+
+            if (validParams.length === 0) {
+                showToast(
+                    currentLanguage === 'ko' ?
+                        '최소 1개 이상의 파라미터와 값을 추가해주세요' :
+                        'Please add at least one parameter with values',
+                    'error'
+                );
+                return;
+            }
+
+            const mode = document.getElementById('combination-mode').value;
+
+            if (mode === 'full') {
+                combinationResults = generateFullCombinations(validParams);
+            } else if (mode === 'pairwise') {
+                combinationResults = generatePairwiseCombinations(validParams);
+            } else if (mode === '3way') {
+                // 3-way는 간단히 full combination 사용 (실제로는 더 복잡한 알고리즘 필요)
+                combinationResults = generateFullCombinations(validParams);
+                // 여기서는 데모용으로 일부만 선택
+                if (combinationResults.length > 100) {
+                    combinationResults = combinationResults.slice(0, 100);
+                }
+            }
+
+            displayCombinationResults();
+
+            showToast(
+                currentLanguage === 'ko' ?
+                    `${combinationResults.length}개의 테스트 케이스가 생성되었습니다` :
+                    `${combinationResults.length} test cases generated`,
+                'success'
+            );
+        }
+
+        function displayCombinationResults() {
+            if (combinationResults.length === 0) return;
+
+            const resultsDiv = document.getElementById('combination-results');
+            const headerRow = document.getElementById('combination-table-header');
+            const tbody = document.getElementById('combination-table-body');
+
+            // 헤더 생성
+            const headers = Object.keys(combinationResults[0]);
+            headerRow.innerHTML = `
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    #
+                </th>
+                ${headers.map(h => `
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ${h}
+                    </th>
+                `).join('')}
+            `;
+
+            // 바디 생성
+            tbody.innerHTML = combinationResults.map((row, index) => `
+                <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ${index + 1}
+                    </td>
+                    ${headers.map(h => `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${row[h]}
+                        </td>
+                    `).join('')}
+                </tr>
+            `).join('');
+
+            resultsDiv.classList.remove('hidden');
+        }
+
+        function copyCombinationResults() {
+            if (combinationResults.length === 0) {
+                showToast(
+                    currentLanguage === 'ko' ? '복사할 데이터가 없습니다' : 'No data to copy',
+                    'error'
+                );
+                return;
+            }
+
+            const headers = Object.keys(combinationResults[0]);
+            const tsv = [
+                headers.join('\t'),
+                ...combinationResults.map(row => headers.map(h => row[h]).join('\t'))
+            ].join('\n');
+
+            navigator.clipboard.writeText(tsv).then(() => {
+                showToast(
+                    currentLanguage === 'ko' ?
+                        'Google Sheets에 붙여넣기 가능한 형식으로 복사되었습니다' :
+                        'Copied in format pasteable to Google Sheets',
+                    'success'
+                );
+            });
+        }
+
+        function downloadCombinationCSV() {
+            if (combinationResults.length === 0) {
+                showToast(
+                    currentLanguage === 'ko' ? '다운로드할 데이터가 없습니다' : 'No data to download',
+                    'error'
+                );
+                return;
+            }
+
+            const headers = Object.keys(combinationResults[0]);
+            const csv = [
+                headers.join(','),
+                ...combinationResults.map(row =>
+                    headers.map(h => `"${row[h]}"`).join(',')
+                )
+            ].join('\n');
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().split('T')[0];
+            link.download = `test_combinations_${timestamp}.csv`;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+
+            showToast(
+                currentLanguage === 'ko' ? 'CSV 파일이 다운로드되었습니다' : 'CSV file downloaded',
+                'success'
+            );
         }
     </script>
 </body>
