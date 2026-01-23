@@ -42,6 +42,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- jsPDF 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- JSZip 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
         :root {
@@ -1099,10 +1101,16 @@
                                 <div class="flex justify-between items-center mb-4">
                                     <h3 class="text-lg font-semibold text-gray-800" data-kr="미리보기" data-en="Preview">
                                         미리보기</h3>
-                                    <button id="sampleDownloadAllBtn" onclick="downloadAllSampleImages()" disabled
-                                        class="px-4 py-2 bg-kakao-brown text-white rounded-lg hover:bg-kakao-black transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm">
-                                        <span data-kr="전체 다운로드" data-en="Download All">전체 다운로드</span>
-                                    </button>
+                                    <div class="flex items-center gap-4">
+                                        <label class="flex items-center gap-2 text-sm" style="cursor:pointer;white-space:nowrap">
+                                            <input type="checkbox" id="zipDownloadCheck" style="width:18px;height:18px">
+                                            <span data-kr="ZIP 압축" data-en="ZIP">ZIP 압축</span>
+                                        </label>
+                                        <button id="sampleDownloadAllBtn" onclick="downloadAllSampleImages()" disabled
+                                            class="px-4 py-2 bg-kakao-brown text-white rounded-lg hover:bg-kakao-black transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm" style="white-space:nowrap">
+                                            <span data-kr="전체 다운로드" data-en="Download All">전체 다운로드</span>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div id="samplePreviewGrid"
                                     class="grid grid-cols-1 gap-4 max-h-[600px] overflow-y-auto">
@@ -3044,6 +3052,19 @@
             }
         }
 
+        // dataURL을 Blob으로 변환하는 헬퍼 함수
+        function dataURLtoBlob(dataURL) {
+            const parts = dataURL.split(',');
+            const mime = parts[0].match(/:(.*?);/)[1];
+            const bstr = atob(parts[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], { type: mime });
+        }
+
         async function downloadSampleImage(canvas, filename, format, targetBytes) {
             try {
                 if (format === 'pdf') {
@@ -3077,6 +3098,13 @@
         async function downloadAllSampleImages() {
             if (generatedSampleImages.length === 0) return;
 
+            // ZIP 압축 옵션 체크
+            const zipCheck = document.getElementById('zipDownloadCheck');
+            if (zipCheck && zipCheck.checked) {
+                await downloadAllAsZip();
+                return;
+            }
+
             for (const item of generatedSampleImages) {
                 if (item.blob) {
                     // Tiled 이미지 (blob이 직접 저장된 경우)
@@ -3093,6 +3121,106 @@
             }
 
             showToast(currentLanguage === 'ko' ? '모든 이미지가 다운로드되었습니다' : 'All images downloaded');
+        }
+
+        // ZIP 압축 다운로드 함수
+        async function downloadAllAsZip() {
+            if (generatedSampleImages.length === 0) return;
+
+            // 텍스트 가져오기
+            const text = document.getElementById('sampleImageText').value || 'Sample';
+            const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
+
+            // 워터마크 텍스트 가져오기
+            const watermarkEnabled = document.getElementById('sampleWatermarkEnabled').checked;
+            const watermarkText = watermarkEnabled ? document.getElementById('sampleWatermarkText').value : '';
+            const safeWatermarkText = watermarkText.replace(/[\\/:*?"<>|]/g, '_');
+
+            const zip = new JSZip();
+            const previewGrid = document.getElementById('samplePreviewGrid');
+
+            // 진행률 표시
+            const progressDiv = document.createElement('div');
+            progressDiv.className = 'text-center py-4 text-gray-700';
+            progressDiv.innerHTML = currentLanguage === 'ko' ? 'ZIP 파일 생성 중... 0%' : 'Creating ZIP... 0%';
+            previewGrid.insertBefore(progressDiv, previewGrid.firstChild);
+
+            try {
+                // 포맷별 폴더 생성
+                const formatFolders = {};
+                generatedSampleImages.forEach(item => {
+                    const folderName = item.format.toUpperCase();
+                    if (!formatFolders[folderName]) {
+                        formatFolders[folderName] = zip.folder(folderName);
+                    }
+                });
+
+                // 파일명에 사용할 자릿수 계산
+                const padLength = String(generatedSampleImages.length).length;
+
+                for (let i = 0; i < generatedSampleImages.length; i++) {
+                    const item = generatedSampleImages[i];
+                    const folderName = item.format.toUpperCase();
+                    const folder = formatFolders[folderName];
+
+                    // 진행률 업데이트
+                    const progress = Math.round(((i + 1) / generatedSampleImages.length) * 100);
+                    progressDiv.innerHTML = currentLanguage === 'ko'
+                        ? `ZIP 파일 생성 중... ${progress}%`
+                        : `Creating ZIP... ${progress}%`;
+
+                    // 파일명 생성 (텍스트_01.png 형식)
+                    const paddedIndex = String(i + 1).padStart(padLength, '0');
+                    const filename = `${safeText}_${paddedIndex}.${item.format}`;
+
+                    let blob;
+                    if (item.blob) {
+                        blob = item.blob;
+                    } else if (item.canvas) {
+                        if (item.format === 'pdf') {
+                            const { jsPDF } = window.jspdf;
+                            const pdf = new jsPDF({
+                                orientation: item.canvas.width > item.canvas.height ? 'landscape' : 'portrait',
+                                unit: 'px',
+                                format: [item.canvas.width, item.canvas.height]
+                            });
+                            const imgData = item.canvas.toDataURL('image/jpeg', 0.92);
+                            pdf.addImage(imgData, 'JPEG', 0, 0, item.canvas.width, item.canvas.height);
+                            blob = pdf.output('blob');
+                        } else {
+                            const mimeType = item.format === 'png' ? 'image/png' : 'image/jpeg';
+                            const dataURL = item.canvas.toDataURL(mimeType, 0.92);
+                            blob = dataURLtoBlob(dataURL);
+                        }
+                    }
+
+                    if (blob) {
+                        folder.file(filename, blob);
+                    }
+                }
+
+                // ZIP 파일 생성
+                progressDiv.innerHTML = currentLanguage === 'ko' ? 'ZIP 파일 압축 중...' : 'Compressing ZIP...';
+                const content = await zip.generateAsync({ type: 'blob' });
+
+                // 다운로드
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                // ZIP 파일명: 이미지모음_텍스트_워터마크.zip
+                const zipFilename = safeWatermarkText
+                    ? `이미지모음_${safeText}_${safeWatermarkText}.zip`
+                    : `이미지모음_${safeText}.zip`;
+                link.download = zipFilename;
+                link.click();
+                URL.revokeObjectURL(link.href);
+
+                showToast(currentLanguage === 'ko' ? 'ZIP 파일이 다운로드되었습니다' : 'ZIP file downloaded');
+            } catch (error) {
+                console.error('ZIP 생성 오류:', error);
+                showToast(currentLanguage === 'ko' ? 'ZIP 생성 중 오류가 발생했습니다' : 'Error creating ZIP file');
+            } finally {
+                progressDiv.remove();
+            }
         }
 
         // ========== Stopwatch ==========
