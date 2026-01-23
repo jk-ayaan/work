@@ -1559,6 +1559,10 @@
         async function downloadAllAsZip() {
             if (generatedSampleImages.length === 0) return;
 
+            // 텍스트 가져오기
+            const text = document.getElementById('sampleImageText').value || 'Sample';
+            const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
+
             const zip = new JSZip();
             const previewGrid = document.getElementById('samplePreviewGrid');
             const originalContent = previewGrid.innerHTML;
@@ -1637,7 +1641,7 @@
 
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(content);
-                link.download = '이미지모음.zip';
+                link.download = `이미지모음_${safeText}.zip`;
                 link.click();
                 URL.revokeObjectURL(link.href);
 
