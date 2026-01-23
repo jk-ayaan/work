@@ -531,7 +531,7 @@
                                 </div>
                                 <div>
                                     <label class="text-sm font-semibold text-gray-600 mb-2" style="display:block">사업자 유형</label>
-                                    <select id="businessType" class="select">
+                                    <select id="businessType" class="select" onchange="toggleCustomTypeCount()">
                                         <option value="individual">개인사업자 (01-79)</option>
                                         <option value="individual2">개인사업자 (90-99)</option>
                                         <option value="corporate">법인 영리 국내 (81,85-88)</option>
@@ -539,9 +539,43 @@
                                         <option value="nonprofit">비영리/국가 및 지자체 (82,83)</option>
                                         <option value="voluntary">임의단체 (80,89)</option>
                                         <option value="all">전체 랜덤</option>
+                                        <option value="custom">⚙️ 전체 유형 수량 선택</option>
                                     </select>
                                 </div>
                             </div>
+
+                            <!-- 전체 유형 수량 선택 UI -->
+                            <div id="customTypeCountSection" class="hidden" style="margin-top:16px;padding:16px;background:#eff6ff;border-radius:12px;border:1px solid #bfdbfe">
+                                <h4 style="font-size:14px;font-weight:600;color:#1e40af;margin-bottom:12px">유형별 생성 수량</h4>
+                                <div class="grid grid-2" style="gap:12px">
+                                    <div style="display:flex;align-items:center;gap:8px">
+                                        <label style="font-size:12px;color:#374151;min-width:90px">개인 (01-79)</label>
+                                        <input type="number" id="countIndividual" value="0" min="0" max="500" class="input" style="padding:6px 10px;font-size:14px">
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px">
+                                        <label style="font-size:12px;color:#374151;min-width:90px">개인 (90-99)</label>
+                                        <input type="number" id="countIndividual2" value="0" min="0" max="500" class="input" style="padding:6px 10px;font-size:14px">
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px">
+                                        <label style="font-size:12px;color:#374151;min-width:90px">법인 국내</label>
+                                        <input type="number" id="countCorporate" value="0" min="0" max="500" class="input" style="padding:6px 10px;font-size:14px">
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px">
+                                        <label style="font-size:12px;color:#374151;min-width:90px">법인 해외</label>
+                                        <input type="number" id="countForeign" value="0" min="0" max="500" class="input" style="padding:6px 10px;font-size:14px">
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px">
+                                        <label style="font-size:12px;color:#374151;min-width:90px">비영리/국가</label>
+                                        <input type="number" id="countNonprofit" value="0" min="0" max="500" class="input" style="padding:6px 10px;font-size:14px">
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px">
+                                        <label style="font-size:12px;color:#374151;min-width:90px">임의단체</label>
+                                        <input type="number" id="countVoluntary" value="0" min="0" max="500" class="input" style="padding:6px 10px;font-size:14px">
+                                    </div>
+                                </div>
+                                <p style="font-size:12px;color:#2563eb;margin-top:10px">※ 위 '생성 개수' 설정은 무시되고, 여기서 지정한 수량만큼 생성됩니다.</p>
+                            </div>
+
                             <div class="flex gap-4 flex-wrap">
                                 <label class="flex items-center gap-2">
                                     <input type="checkbox" id="fixedPrefix" checked style="width:20px;height:20px">
@@ -1257,8 +1291,18 @@
             return '기타';
         }
 
+        // 전체 유형 수량 선택 UI 토글
+        function toggleCustomTypeCount() {
+            const businessType = document.getElementById('businessType').value;
+            const customSection = document.getElementById('customTypeCountSection');
+            if (businessType === 'custom') {
+                customSection.classList.remove('hidden');
+            } else {
+                customSection.classList.add('hidden');
+            }
+        }
+
         function generateBusinessNumbers() {
-            const count = Math.min(parseInt(document.getElementById('generateCount').value) || 10, 1000);
             const businessType = document.getElementById('businessType').value;
             const fixedPrefix = document.getElementById('fixedPrefix').checked;
             const removeHyphen = document.getElementById('removeHyphen').checked;
@@ -1268,19 +1312,63 @@
 
             generatedNumbers = [];
             const usedNumbers = new Set();
-            let attempts = 0;
 
-            while (generatedNumbers.length < count && attempts < count * 1000) {
-                attempts++;
-                const middle = getMiddleDigits(businessType);
-                const prefix = fixedPrefix ? '000' : String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-                const suffix = month + day + String(Math.floor(Math.random() * 10));
-                const number = generateValidBusinessNumber(prefix, middle, suffix.substring(0, 4));
+            // 전체 유형 수량 선택 모드인 경우
+            if (businessType === 'custom') {
+                const typeCounts = [
+                    { type: 'individual', count: parseInt(document.getElementById('countIndividual').value) || 0 },
+                    { type: 'individual2', count: parseInt(document.getElementById('countIndividual2').value) || 0 },
+                    { type: 'corporate', count: parseInt(document.getElementById('countCorporate').value) || 0 },
+                    { type: 'foreign', count: parseInt(document.getElementById('countForeign').value) || 0 },
+                    { type: 'nonprofit', count: parseInt(document.getElementById('countNonprofit').value) || 0 },
+                    { type: 'voluntary', count: parseInt(document.getElementById('countVoluntary').value) || 0 }
+                ];
 
-                if (number && !usedNumbers.has(number)) {
-                    usedNumbers.add(number);
-                    const formatted = removeHyphen ? number : `${number.substring(0, 3)}-${number.substring(3, 5)}-${number.substring(5, 10)}`;
-                    generatedNumbers.push({ raw: number, formatted: formatted, type: getBusinessTypeName(businessType, middle) });
+                const totalCount = typeCounts.reduce((sum, t) => sum + t.count, 0);
+                if (totalCount === 0) {
+                    showToast('최소 1개 이상의 유형 수량을 입력해주세요');
+                    return;
+                }
+
+                for (const typeConfig of typeCounts) {
+                    if (typeConfig.count <= 0) continue;
+
+                    let typeAttempts = 0;
+                    const maxTypeAttempts = typeConfig.count * 1000;
+                    let typeGenerated = 0;
+
+                    while (typeGenerated < typeConfig.count && typeAttempts < maxTypeAttempts) {
+                        typeAttempts++;
+                        const middle = getMiddleDigits(typeConfig.type);
+                        const prefix = fixedPrefix ? '000' : String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+                        const suffix = month + day + String(Math.floor(Math.random() * 10));
+                        const number = generateValidBusinessNumber(prefix, middle, suffix.substring(0, 4));
+
+                        if (number && !usedNumbers.has(number)) {
+                            usedNumbers.add(number);
+                            const formatted = removeHyphen ? number : `${number.substring(0, 3)}-${number.substring(3, 5)}-${number.substring(5, 10)}`;
+                            generatedNumbers.push({ raw: number, formatted: formatted, type: getBusinessTypeName(typeConfig.type, middle) });
+                            typeGenerated++;
+                        }
+                    }
+                }
+            } else {
+                // 기존 단일 유형 모드
+                const count = Math.min(parseInt(document.getElementById('generateCount').value) || 10, 1000);
+                let attempts = 0;
+
+                while (generatedNumbers.length < count && attempts < count * 1000) {
+                    attempts++;
+                    const middle = getMiddleDigits(businessType);
+                    const prefix = fixedPrefix ? '000' : String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+                    const suffix = month + day + String(Math.floor(Math.random() * 10));
+                    const number = generateValidBusinessNumber(prefix, middle, suffix.substring(0, 4));
+
+                    if (number && !usedNumbers.has(number)) {
+                        usedNumbers.add(number);
+                        const formatted = removeHyphen ? number : `${number.substring(0, 3)}-${number.substring(3, 5)}-${number.substring(5, 10)}`;
+                        generatedNumbers.push({ raw: number, formatted: formatted, type: getBusinessTypeName(businessType, middle) });
+                    }
                 }
             }
 
