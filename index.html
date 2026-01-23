@@ -434,6 +434,16 @@
                 font-size: 0.85rem;
             }
 
+            /* 모바일 콘텐츠 영역 스크롤 */
+            .tab-content {
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tab-content .card {
+                min-width: min-content;
+            }
+
             /* 모바일에서 가로 스크롤 가능하게 */
             .overflow-x-auto {
                 overflow-x: auto;
@@ -503,10 +513,10 @@
                 <div class="flex bg-white/30 rounded-lg p-1">
                     <button
                         class="lang-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-kakao-brown bg-white/50"
-                        onclick="changeLanguage('ko', this)">KR</button>
+                        onclick="changeLanguage('ko')">KR</button>
                     <button
                         class="lang-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-kakao-brown/70 hover:text-kakao-brown"
-                        onclick="changeLanguage('en', this)">EN</button>
+                        onclick="changeLanguage('en')">EN</button>
                 </div>
             </div>
         </header>
@@ -1644,7 +1654,7 @@
         }
 
         // ========== Language ==========
-        function changeLanguage(lang, element) {
+        function changeLanguage(lang) {
             currentLanguage = lang;
 
             document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -1652,10 +1662,8 @@
                 btn.classList.add('text-kakao-brown/70', 'hover:text-kakao-brown');
             });
 
-            if (element) {
-                element.classList.add('bg-white/50');
-                element.classList.remove('text-kakao-brown/70', 'hover:text-kakao-brown');
-            }
+            event.target.classList.add('bg-white/50');
+            event.target.classList.remove('text-kakao-brown/70', 'hover:text-kakao-brown');
 
             document.querySelectorAll('[data-kr][data-en]').forEach(element => {
                 const text = element.getAttribute(`data-${lang === 'ko' ? 'kr' : 'en'}`);

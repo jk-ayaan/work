@@ -1464,6 +1464,19 @@
             }
         }
 
+        // Base64를 Blob으로 변환하는 헬퍼 함수
+        function dataURLtoBlob(dataURL) {
+            const arr = dataURL.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], { type: mime });
+        }
+
         async function downloadAllAsZip() {
             if (generatedSampleImages.length === 0) return;
 
@@ -1485,7 +1498,6 @@
 
             for (let i = 0; i < total; i++) {
                 const item = generatedSampleImages[i];
-                const percent = Math.round(((i + 1) / total) * 100);
 
                 updateProgress(i + 1, total, `${item.filename} 추가 중... (${i + 1}/${total})`);
 
@@ -1504,7 +1516,11 @@
                             blob = pdf.output('blob');
                         }
                     } else {
-                        blob = await canvasToBlob(item.canvas, item.format, item.format === 'jpg' ? 0.92 : 1);
+                        // toDataURL 방식으로 변환
+                        const mimeType = (item.format === 'jpg' || item.format === 'jpeg') ? 'image/jpeg' : 'image/png';
+                        const quality = (item.format === 'jpg' || item.format === 'jpeg') ? 0.92 : 1;
+                        const dataUrl = item.canvas.toDataURL(mimeType, quality);
+                        blob = dataURLtoBlob(dataUrl);
                     }
 
                     if (blob) {
@@ -1531,7 +1547,7 @@
 
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(content);
-                link.download = `sample_images_${Date.now()}.zip`;
+                link.download = '이미지모음.zip';
                 link.click();
                 URL.revokeObjectURL(link.href);
 
