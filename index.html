@@ -756,45 +756,66 @@
                                 <!-- Size Settings -->
                                 <div class="bg-gray-50 rounded-xl p-4 md:p-6">
                                     <h3 class="text-lg font-semibold text-gray-800 mb-4" data-kr="크기 설정" data-en="Size Settings">크기 설정</h3>
-                                    <div class="grid grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="너비 (px)" data-en="Width (px)">너비 (px)</label>
-                                            <input type="number" id="sampleWidth" value="800" min="50" max="4096" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="높이 (px)" data-en="Height (px)">높이 (px)</label>
-                                            <input type="number" id="sampleHeight" value="600" min="50" max="4096" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-wrap gap-2 mb-4">
-                                        <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="100" data-height="100">100×100</button>
-                                        <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="640" data-height="480">640×480</button>
-                                        <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="800" data-height="600">800×600</button>
-                                        <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="1920" data-height="1080">1920×1080</button>
+
+                                    <!-- Size Mode Selection -->
+                                    <div class="space-y-3 mb-4">
+                                        <label class="flex items-center gap-3 p-3 bg-white rounded-lg border-2 cursor-pointer transition-colors" id="sizeMode-fixed-label">
+                                            <input type="radio" name="sizeMode" value="fixed" checked class="w-5 h-5 accent-kakao-yellow" onchange="toggleSizeMode()">
+                                            <div>
+                                                <span class="font-medium text-gray-800" data-kr="고정 사이즈" data-en="Fixed Size">고정 사이즈</span>
+                                                <p class="text-xs text-gray-500" data-kr="지정한 너비×높이로 이미지 생성" data-en="Generate image with specified width×height">지정한 너비×높이로 이미지 생성</p>
+                                            </div>
+                                        </label>
+                                        <label class="flex items-center gap-3 p-3 bg-white rounded-lg border-2 cursor-pointer transition-colors" id="sizeMode-tiled-label">
+                                            <input type="radio" name="sizeMode" value="tiled" class="w-5 h-5 accent-kakao-yellow" onchange="toggleSizeMode()">
+                                            <div>
+                                                <span class="font-medium text-gray-800" data-kr="목표 파일크기에 맞춰 바둑판 배열" data-en="Tiled to Target File Size">목표 파일크기에 맞춰 바둑판 배열</span>
+                                                <p class="text-xs text-gray-500" data-kr="배경이미지를 반복 배열하여 목표 파일 크기 달성" data-en="Tile background image to reach target file size">배경이미지를 반복 배열하여 목표 파일 크기 달성</p>
+                                            </div>
+                                        </label>
                                     </div>
 
-                                    <!-- Background Image Tiling -->
-                                    <div class="border-t border-gray-200 pt-4 mt-4">
-                                        <div class="flex items-center gap-3 mb-3">
-                                            <input type="checkbox" id="useBgImage" class="w-5 h-5 accent-kakao-yellow">
-                                            <label for="useBgImage" class="text-sm font-medium text-gray-700" data-kr="배경 이미지로 크기 맞추기 (바둑판 배열)" data-en="Fill with background image (tiled)">배경 이미지로 크기 맞추기 (바둑판 배열)</label>
-                                        </div>
-                                        <div id="bgImageSettings" class="hidden space-y-3">
-                                            <div class="flex items-center gap-3">
-                                                <label class="flex-1 flex items-center justify-center px-4 py-3 bg-white border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-kakao-yellow transition-colors">
-                                                    <input type="file" id="bgImageInput" accept="image/*" class="hidden">
-                                                    <span class="text-gray-600" data-kr="이미지 파일 선택" data-en="Select image file">이미지 파일 선택</span>
-                                                </label>
+                                    <!-- Fixed Size Settings -->
+                                    <div id="fixedSizeSettings">
+                                        <div class="grid grid-cols-2 gap-4 mb-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="너비 (px)" data-en="Width (px)">너비 (px)</label>
+                                                <input type="number" id="sampleWidth" value="800" min="50" max="4096" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
                                             </div>
-                                            <div id="bgImagePreview" class="hidden">
-                                                <p class="text-sm text-gray-600 mb-2" data-kr="선택된 이미지:" data-en="Selected image:">선택된 이미지:</p>
-                                                <div class="flex items-center gap-3">
-                                                    <img id="bgImageThumb" class="w-16 h-16 object-cover rounded-lg border border-gray-200" src="" alt="">
-                                                    <div class="text-sm text-gray-600">
-                                                        <p id="bgImageName"></p>
-                                                        <p id="bgImageSize"></p>
-                                                    </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="높이 (px)" data-en="Height (px)">높이 (px)</label>
+                                                <input type="number" id="sampleHeight" value="600" min="50" max="4096" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-wrap gap-2">
+                                            <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="100" data-height="100">100×100</button>
+                                            <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="640" data-height="480">640×480</button>
+                                            <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="800" data-height="600">800×600</button>
+                                            <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="1920" data-height="1080">1920×1080</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tiled Size Settings (Background Image) -->
+                                    <div id="tiledSizeSettings" class="hidden space-y-4">
+                                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                            <p class="text-sm text-blue-800" data-kr="💡 배경이미지를 선택하면 목표 파일 크기에 도달할 때까지 이미지 크기를 자동으로 늘려갑니다." data-en="💡 Select a background image and it will automatically expand by tiling until the target file size is reached.">💡 배경이미지를 선택하면 목표 파일 크기에 도달할 때까지 이미지 크기를 자동으로 늘려갑니다.</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="배경 이미지 선택" data-en="Select Background Image">배경 이미지 선택</label>
+                                            <label class="flex items-center justify-center px-4 py-3 bg-white border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-kakao-yellow transition-colors">
+                                                <input type="file" id="bgImageInput" accept="image/*" class="hidden">
+                                                <span class="text-gray-600" id="bgImageInputLabel" data-kr="이미지 파일 선택" data-en="Select image file">이미지 파일 선택</span>
+                                            </label>
+                                        </div>
+                                        <div id="bgImagePreview" class="hidden">
+                                            <p class="text-sm text-gray-600 mb-2" data-kr="선택된 이미지:" data-en="Selected image:">선택된 이미지:</p>
+                                            <div class="flex items-center gap-3">
+                                                <img id="bgImageThumb" class="w-16 h-16 object-cover rounded-lg border border-gray-200" src="" alt="">
+                                                <div class="text-sm text-gray-600">
+                                                    <p id="bgImageName"></p>
+                                                    <p id="bgImageSize"></p>
                                                 </div>
+                                                <button onclick="clearBgImage()" class="ml-auto px-3 py-1 bg-red-100 text-red-600 rounded-lg text-sm hover:bg-red-200 transition-colors" data-kr="제거" data-en="Remove">제거</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1455,10 +1476,6 @@
             });
 
             // Background image settings
-            document.getElementById('useBgImage').addEventListener('change', function() {
-                document.getElementById('bgImageSettings').classList.toggle('hidden', !this.checked);
-            });
-
             document.getElementById('bgImageInput').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file) {
@@ -1468,10 +1485,45 @@
                         document.getElementById('bgImageThumb').src = loadedBgImage.src;
                         document.getElementById('bgImageName').textContent = file.name;
                         document.getElementById('bgImageSize').textContent = `${loadedBgImage.width} × ${loadedBgImage.height}px`;
+                        document.getElementById('bgImageInputLabel').textContent = file.name;
                     };
                     loadedBgImage.src = URL.createObjectURL(file);
                 }
             });
+
+            // Initialize size mode
+            toggleSizeMode();
+        }
+
+        function toggleSizeMode() {
+            const sizeMode = document.querySelector('input[name="sizeMode"]:checked').value;
+            const fixedSettings = document.getElementById('fixedSizeSettings');
+            const tiledSettings = document.getElementById('tiledSizeSettings');
+            const fixedLabel = document.getElementById('sizeMode-fixed-label');
+            const tiledLabel = document.getElementById('sizeMode-tiled-label');
+
+            if (sizeMode === 'fixed') {
+                fixedSettings.classList.remove('hidden');
+                tiledSettings.classList.add('hidden');
+                fixedLabel.classList.add('border-kakao-yellow', 'bg-kakao-lightYellow');
+                fixedLabel.classList.remove('border-gray-200');
+                tiledLabel.classList.remove('border-kakao-yellow', 'bg-kakao-lightYellow');
+                tiledLabel.classList.add('border-gray-200');
+            } else {
+                fixedSettings.classList.add('hidden');
+                tiledSettings.classList.remove('hidden');
+                tiledLabel.classList.add('border-kakao-yellow', 'bg-kakao-lightYellow');
+                tiledLabel.classList.remove('border-gray-200');
+                fixedLabel.classList.remove('border-kakao-yellow', 'bg-kakao-lightYellow');
+                fixedLabel.classList.add('border-gray-200');
+            }
+        }
+
+        function clearBgImage() {
+            loadedBgImage = null;
+            document.getElementById('bgImageInput').value = '';
+            document.getElementById('bgImagePreview').classList.add('hidden');
+            document.getElementById('bgImageInputLabel').textContent = currentLanguage === 'ko' ? '이미지 파일 선택' : 'Select image file';
         }
 
         function setupColorSync(colorId, hexId, callback) {
@@ -2082,8 +2134,6 @@
             const text = document.getElementById('sampleImageText').value || 'Sample';
             const textColor = document.getElementById('sampleTextColor').value;
             const bgColor = document.getElementById('sampleBgColor').value;
-            const width = parseInt(document.getElementById('sampleWidth').value) || 800;
-            const height = parseInt(document.getElementById('sampleHeight').value) || 600;
             const count = Math.min(parseInt(document.getElementById('sampleCount').value) || 1, 20);
             const formats = getSelectedFormats();
             const targetBytes = getTargetSizeBytes();
@@ -2092,20 +2142,30 @@
             const watermarkText = watermarkEnabled ? document.getElementById('sampleWatermarkText').value : null;
             const watermarkOpacity = parseInt(document.getElementById('sampleWatermarkOpacity').value) || 15;
 
-            // Check if using background image
-            const useBgImage = document.getElementById('useBgImage').checked;
-            const bgImage = useBgImage && loadedBgImage ? loadedBgImage : null;
+            // Check size mode
+            const sizeMode = document.querySelector('input[name="sizeMode"]:checked').value;
 
-            if (useBgImage && !loadedBgImage) {
-                showToast(currentLanguage === 'ko' ? '배경 이미지를 선택해주세요' : 'Please select a background image');
-                return;
+            if (sizeMode === 'tiled') {
+                // Tiled mode: expand image to reach target file size
+                if (!loadedBgImage) {
+                    showToast(currentLanguage === 'ko' ? '배경 이미지를 선택해주세요' : 'Please select a background image');
+                    return;
+                }
+                await generateTiledImages(text, textColor, bgColor, count, formats, targetBytes, watermarkText, watermarkOpacity);
+            } else {
+                // Fixed mode: use specified width/height
+                const width = parseInt(document.getElementById('sampleWidth').value) || 800;
+                const height = parseInt(document.getElementById('sampleHeight').value) || 600;
+
+                if (width < 50 || width > 4096 || height < 50 || height > 4096) {
+                    showToast(currentLanguage === 'ko' ? '이미지 크기는 50-4096px 사이여야 합니다' : 'Image size must be between 50-4096px');
+                    return;
+                }
+                await generateFixedSizeImages(text, textColor, bgColor, width, height, count, formats, targetBytes, watermarkText, watermarkOpacity);
             }
+        }
 
-            if (width < 50 || width > 4096 || height < 50 || height > 4096) {
-                showToast(currentLanguage === 'ko' ? '이미지 크기는 50-4096px 사이여야 합니다' : 'Image size must be between 50-4096px');
-                return;
-            }
-
+        async function generateFixedSizeImages(text, textColor, bgColor, width, height, count, formats, targetBytes, watermarkText, watermarkOpacity) {
             const previewGrid = document.getElementById('samplePreviewGrid');
             previewGrid.innerHTML = '<div class="text-center py-8"><div class="loading-spinner mx-auto"></div></div>';
             generatedSampleImages = [];
@@ -2115,7 +2175,7 @@
 
             for (let i = 0; i < count; i++) {
                 const displayText = count > 1 ? `${text} #${i + 1}` : text;
-                const canvas = createSampleCanvas(displayText, width, height, textColor, bgColor, watermarkText, watermarkOpacity, bgImage);
+                const canvas = createSampleCanvas(displayText, width, height, textColor, bgColor, watermarkText, watermarkOpacity, null);
 
                 const previewItem = document.createElement('div');
                 previewItem.className = 'sample-preview-item';
@@ -2160,6 +2220,208 @@
 
             document.getElementById('sampleDownloadAllBtn').disabled = false;
             showToast(currentLanguage === 'ko' ? `${count}개의 이미지가 생성되었습니다` : `${count} images generated`);
+        }
+
+        async function generateTiledImages(text, textColor, bgColor, count, formats, targetBytes, watermarkText, watermarkOpacity) {
+            const previewGrid = document.getElementById('samplePreviewGrid');
+            previewGrid.innerHTML = '<div class="text-center py-8"><div class="loading-spinner mx-auto"></div><p class="mt-2 text-gray-600" data-kr="목표 파일 크기에 맞게 이미지 생성 중..." data-en="Generating image to match target file size...">' +
+                (currentLanguage === 'ko' ? '목표 파일 크기에 맞게 이미지 생성 중...' : 'Generating image to match target file size...') + '</p></div>';
+            generatedSampleImages = [];
+
+            await new Promise(resolve => setTimeout(resolve, 100));
+            previewGrid.innerHTML = '';
+
+            const bgImgWidth = loadedBgImage.width;
+            const bgImgHeight = loadedBgImage.height;
+
+            for (let i = 0; i < count; i++) {
+                const displayText = count > 1 ? `${text} #${i + 1}` : text;
+
+                // Find optimal canvas size by tiling background image
+                let tilesX = 1;
+                let tilesY = 1;
+                let finalCanvas = null;
+                let finalBlob = null;
+                let finalWidth = bgImgWidth;
+                let finalHeight = bgImgHeight;
+
+                // Start with 1x1 tile and expand until target size is reached
+                const maxTiles = 20; // Maximum 20x20 tiles to prevent infinite loop
+                const tolerance = 0.05; // 5% tolerance
+
+                for (let attempt = 0; attempt < maxTiles * maxTiles; attempt++) {
+                    const canvasWidth = bgImgWidth * tilesX;
+                    const canvasHeight = bgImgHeight * tilesY;
+
+                    // Check max canvas size limit
+                    if (canvasWidth > 8192 || canvasHeight > 8192) {
+                        break;
+                    }
+
+                    // Create canvas with tiled background
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvasWidth;
+                    canvas.height = canvasHeight;
+                    const ctx = canvas.getContext('2d');
+
+                    // Tile the background image
+                    for (let tx = 0; tx < tilesX; tx++) {
+                        for (let ty = 0; ty < tilesY; ty++) {
+                            ctx.drawImage(loadedBgImage, tx * bgImgWidth, ty * bgImgHeight, bgImgWidth, bgImgHeight);
+                        }
+                    }
+
+                    // Add text overlay
+                    ctx.fillStyle = textColor;
+                    const fontSize = Math.min(canvasWidth, canvasHeight) * 0.1;
+                    ctx.font = `bold ${fontSize}px 'Segoe UI', Arial, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(displayText, canvasWidth / 2, canvasHeight / 2);
+
+                    // Add watermark if enabled
+                    if (watermarkText) {
+                        ctx.save();
+                        ctx.globalAlpha = watermarkOpacity / 100;
+                        ctx.fillStyle = textColor;
+                        ctx.font = `${Math.max(14, fontSize * 0.3)}px Arial`;
+                        ctx.translate(canvasWidth / 2, canvasHeight / 2);
+                        ctx.rotate(-Math.PI / 6);
+
+                        const watermarkSpacingX = fontSize * 3;
+                        const watermarkSpacingY = fontSize * 2;
+                        for (let wx = -canvasWidth; wx < canvasWidth * 2; wx += watermarkSpacingX) {
+                            for (let wy = -canvasHeight; wy < canvasHeight * 2; wy += watermarkSpacingY) {
+                                ctx.fillText(watermarkText, wx, wy);
+                            }
+                        }
+                        ctx.restore();
+                    }
+
+                    // Check file size for each format
+                    let allFormatsOk = true;
+                    for (const format of formats) {
+                        const blob = await canvasToBlob(canvas, format, format === 'jpg' || format === 'jpeg' ? 0.92 : 1);
+
+                        if (blob.size >= targetBytes * (1 - tolerance)) {
+                            finalCanvas = canvas;
+                            finalBlob = blob;
+                            finalWidth = canvasWidth;
+                            finalHeight = canvasHeight;
+                        } else {
+                            allFormatsOk = false;
+                        }
+                    }
+
+                    // If we've reached or exceeded target for all formats, stop
+                    if (finalBlob && finalBlob.size >= targetBytes * (1 - tolerance) && finalBlob.size <= targetBytes * (1 + tolerance)) {
+                        break;
+                    }
+
+                    // If file size is still too small, expand tiles
+                    if (!finalBlob || finalBlob.size < targetBytes * (1 - tolerance)) {
+                        // Alternate between adding width and height
+                        if (tilesX <= tilesY) {
+                            tilesX++;
+                        } else {
+                            tilesY++;
+                        }
+                        finalCanvas = canvas;
+                        finalWidth = canvasWidth;
+                        finalHeight = canvasHeight;
+                    } else {
+                        // Size reached or exceeded
+                        break;
+                    }
+                }
+
+                // If no suitable canvas found, use the last one created
+                if (!finalCanvas) {
+                    finalCanvas = document.createElement('canvas');
+                    finalCanvas.width = bgImgWidth;
+                    finalCanvas.height = bgImgHeight;
+                    const ctx = finalCanvas.getContext('2d');
+                    ctx.drawImage(loadedBgImage, 0, 0);
+                    finalWidth = bgImgWidth;
+                    finalHeight = bgImgHeight;
+                }
+
+                const previewItem = document.createElement('div');
+                previewItem.className = 'sample-preview-item';
+
+                const previewCanvas = document.createElement('canvas');
+                const maxPreviewSize = 200;
+                const scale = Math.min(maxPreviewSize / finalWidth, maxPreviewSize / finalHeight, 1);
+                previewCanvas.width = finalWidth * scale;
+                previewCanvas.height = finalHeight * scale;
+                previewCanvas.getContext('2d').drawImage(finalCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+
+                const info = document.createElement('div');
+                info.className = 'text-sm text-gray-600 mb-2';
+                info.textContent = `${finalWidth}×${finalHeight} (${tilesX}×${tilesY} ${currentLanguage === 'ko' ? '타일' : 'tiles'})`;
+
+                const downloadButtons = document.createElement('div');
+                downloadButtons.className = 'flex flex-wrap justify-center gap-2';
+
+                for (const format of formats) {
+                    const blob = await canvasToBlob(finalCanvas, format, format === 'jpg' || format === 'jpeg' ? 0.92 : 1);
+
+                    const sizeInfo = document.createElement('span');
+                    sizeInfo.className = 'text-xs bg-kakao-lightYellow text-kakao-brown px-2 py-1 rounded';
+                    sizeInfo.textContent = `${format.toUpperCase()}: ${formatFileSize(blob.size)}`;
+
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'px-3 py-1.5 bg-kakao-yellow text-kakao-brown rounded-lg text-sm font-medium hover:bg-kakao-darkYellow transition-colors';
+                    downloadBtn.textContent = format.toUpperCase();
+
+                    // Store finalCanvas for download
+                    const canvasToDownload = finalCanvas;
+                    downloadBtn.onclick = () => downloadTiledImage(canvasToDownload, `sample_${i + 1}.${format}`, format);
+
+                    downloadButtons.appendChild(sizeInfo);
+                    downloadButtons.appendChild(downloadBtn);
+
+                    generatedSampleImages.push({ canvas: finalCanvas, filename: `sample_${i + 1}.${format}`, format, targetBytes, isTiled: true });
+                }
+
+                previewItem.appendChild(previewCanvas);
+                previewItem.appendChild(info);
+                previewItem.appendChild(downloadButtons);
+                previewGrid.appendChild(previewItem);
+            }
+
+            document.getElementById('sampleDownloadAllBtn').disabled = false;
+            showToast(currentLanguage === 'ko' ? `${count}개의 이미지가 생성되었습니다` : `${count} images generated`);
+        }
+
+        async function downloadTiledImage(canvas, filename, format) {
+            try {
+                if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({
+                        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+                        unit: 'px',
+                        format: [canvas.width, canvas.height]
+                    });
+                    const blob = await canvasToBlob(canvas, 'jpg', 0.92);
+                    const imgData = await new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+                    pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+                    pdf.save(filename);
+                } else {
+                    const blob = await canvasToBlob(canvas, format, format === 'jpg' || format === 'jpeg' ? 0.92 : 1);
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                }
+            } catch (error) {
+                showToast(currentLanguage === 'ko' ? '다운로드 중 오류가 발생했습니다' : 'Download error occurred');
+            }
         }
 
         async function downloadSampleImage(canvas, filename, format, targetBytes) {
