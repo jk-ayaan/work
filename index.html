@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Assistant - 업무 도구 모음</title>
+
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        kakao: {
+                            yellow: '#FEE500',
+                            brown: '#3C1E1E',
+                            black: '#191919',
+                            lightYellow: '#FFF9C4',
+                            darkYellow: '#E6CF00',
+                        },
+                        primary: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- XLSX 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- jsPDF 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        :root {
+            --header-height: 64px;
+            --transition-speed: 0.3s;
+        }
+
+        .app-layout {
+            display: grid;
+            grid-template-rows: var(--header-height) 1fr;
+            height: 100vh;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+
+        .header {
+            background: linear-gradient(90deg, #FEE500 0%, #fbbf24 100%);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all var(--transition-speed) ease;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .tab-button {
+            position: relative;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all var(--transition-speed) ease;
+            color: rgba(60, 30, 30, 0.8);
+            white-space: nowrap;
+        }
+
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.4);
+            color: #3C1E1E;
+        }
+
+        .tab-button.active {
+            background: rgba(255, 255, 255, 0.6);
+            color: #3C1E1E;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 3px;
+            background: #3C1E1E;
+            border-radius: 2px;
+        }
+
+        .loading-spinner {
+            border: 3px solid #fde68a;
+            border-top: 3px solid #f59e0b;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #FEE500;
+            padding: 1rem 1.5rem;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* 프로필 생성기 스타일 */
+        .preview-canvas {
+            border: 3px solid #cbd5e0;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .chip-position {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .chip-position:hover {
+            border-color: #cbd5e0;
+        }
+
+        .chip-position.active {
+            border-color: #FEE500;
+            background: #fffbeb;
+            box-shadow: 0 0 0 3px rgba(254, 229, 0, 0.2);
+        }
+
+        /* 사업자번호 스타일 */
+        .business-number {
+            font-family: 'Courier New', monospace;
+            font-size: 1.25rem;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+        }
+
+        .copy-button {
+            transition: all 0.2s ease;
+        }
+
+        .copy-button:hover {
+            background: #f3f4f6;
+            transform: scale(1.05);
+        }
+
+        .copy-button.copied {
+            background: #10b981;
+            color: white;
+        }
+
+        /* 샘플 이미지 생성기 스타일 */
+        .format-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .format-checkbox:hover {
+            background: #fffbeb;
+        }
+
+        .format-checkbox.checked {
+            background: #FEE500;
+            border-color: #E6CF00;
+        }
+
+        .format-checkbox input[type="checkbox"] {
+            display: none;
+        }
+
+        .format-checkbox .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #9E9E9E;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .format-checkbox.checked .checkmark {
+            background: #3C1E1E;
+            border-color: #3C1E1E;
+        }
+
+        .format-checkbox.checked .checkmark::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .sample-preview-item {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .sample-preview-item canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .header nav {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tab-button {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Header -->
+        <header class="header px-4 md:px-6 flex items-center justify-between">
+            <div class="flex items-center space-x-4 md:space-x-8 overflow-hidden">
+                <h1 class="text-xl md:text-2xl font-bold text-kakao-brown whitespace-nowrap">Work Assistant</h1>
+                <nav class="flex space-x-1 md:space-x-2 overflow-x-auto">
+                    <button id="tab-profile" class="tab-button active" onclick="showTab('profile')">
+                        <span data-kr="프로필 생성" data-en="Profile">프로필 생성</span>
+                    </button>
+                    <button id="tab-business" class="tab-button" onclick="showTab('business')">
+                        <span data-kr="사업자번호" data-en="Business No.">사업자번호</span>
+                    </button>
+                    <button id="tab-sample" class="tab-button" onclick="showTab('sample')">
+                        <span data-kr="샘플 이미지" data-en="Sample Image">샘플 이미지</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Language Selector -->
+            <div class="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
+                <div class="flex bg-white/30 rounded-lg p-1">
+                    <button class="lang-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-kakao-brown bg-white/50" onclick="changeLanguage('ko')">KR</button>
+                    <button class="lang-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-kakao-brown/70 hover:text-kakao-brown" onclick="changeLanguage('en')">EN</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="overflow-y-auto p-4 md:p-6">
+            <!-- Profile Generator Tab -->
+            <div id="profile-content" class="tab-content">
+                <div class="max-w-6xl mx-auto">
+                    <div class="card p-6 md:p-8">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2" data-kr="메신저 프로필 이미지 생성기" data-en="Messenger Profile Image Generator">메신저 프로필 이미지 생성기</h2>
+                            <p class="text-gray-600" data-kr="QA 환경별 프로필을 쉽게 만들어보세요" data-en="Easily create profiles for different QA environments">QA 환경별 프로필을 쉽게 만들어보세요</p>
+                        </div>
+
+                        <!-- Main Text Settings -->
+                        <div class="bg-gray-50 rounded-xl p-4 md:p-6 mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4" data-kr="메인 텍스트 설정" data-en="Main Text Settings">메인 텍스트 설정</h3>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="mainText" class="block text-sm font-medium text-gray-700 mb-2" data-kr="메인 텍스트 (줄바꿈은 |로 구분)" data-en="Main Text (Use | for line breaks)">메인 텍스트 (줄바꿈은 |로 구분)</label>
+                                    <input type="text" id="mainText" class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none" placeholder="JK 또는 JK|운영자" value="JK">
+                                </div>
+
+                                <div>
+                                    <label for="mainTextSize" class="block text-sm font-medium text-gray-700 mb-2" data-kr="메인 텍스트 크기" data-en="Main Text Size">메인 텍스트 크기</label>
+                                    <div class="flex items-center space-x-4">
+                                        <input type="range" id="mainTextSize" min="50" max="200" value="120" class="flex-1 accent-kakao-yellow">
+                                        <input type="number" id="mainTextSizeValue" min="50" max="200" value="120" class="w-20 px-3 py-2 border border-gray-200 rounded-lg">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="배경색" data-en="Background Color">배경색</label>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="color" id="profileBgColor" value="#4a90e2" class="w-12 h-12 rounded-lg cursor-pointer">
+                                            <input type="text" id="profileBgColorHex" value="#4a90e2" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg font-mono text-sm">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="메인 텍스트색" data-en="Main Text Color">메인 텍스트색</label>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="color" id="mainTextColor" value="#ffffff" class="w-12 h-12 rounded-lg cursor-pointer">
+                                            <input type="text" id="mainTextColorHex" value="#ffffff" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg font-mono text-sm">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chip Settings -->
+                        <div class="bg-gray-50 rounded-xl p-4 md:p-6 mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4" data-kr="칩 위치 및 설정 (0-4개 선택 가능)" data-en="Chip Position & Settings (Select 0-4 chips)">칩 위치 및 설정 (0-4개 선택 가능)</h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Top Left -->
+                                <div class="chip-position active" data-position="topLeft">
+                                    <div class="flex items-center mb-3">
+                                        <input type="checkbox" id="topLeftEnabled" checked class="mr-3 w-5 h-5 accent-kakao-yellow">
+                                        <label for="topLeftEnabled" class="font-medium" data-kr="좌상단" data-en="Top Left">좌상단</label>
+                                    </div>
+                                    <input type="text" id="topLeftText" placeholder="운영" value="운영" class="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="color" id="topLeftChipBg" value="#ffffff" class="w-full h-10 rounded cursor-pointer">
+                                        <input type="color" id="topLeftChipText" value="#4a90e2" class="w-full h-10 rounded cursor-pointer">
+                                    </div>
+                                </div>
+
+                                <!-- Top Right -->
+                                <div class="chip-position" data-position="topRight">
+                                    <div class="flex items-center mb-3">
+                                        <input type="checkbox" id="topRightEnabled" class="mr-3 w-5 h-5 accent-kakao-yellow">
+                                        <label for="topRightEnabled" class="font-medium" data-kr="우상단" data-en="Top Right">우상단</label>
+                                    </div>
+                                    <input type="text" id="topRightText" placeholder="개발" value="개발" class="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="color" id="topRightChipBg" value="#ffffff" class="w-full h-10 rounded cursor-pointer">
+                                        <input type="color" id="topRightChipText" value="#e53e3e" class="w-full h-10 rounded cursor-pointer">
+                                    </div>
+                                </div>
+
+                                <!-- Bottom Left -->
+                                <div class="chip-position" data-position="bottomLeft">
+                                    <div class="flex items-center mb-3">
+                                        <input type="checkbox" id="bottomLeftEnabled" class="mr-3 w-5 h-5 accent-kakao-yellow">
+                                        <label for="bottomLeftEnabled" class="font-medium" data-kr="좌하단" data-en="Bottom Left">좌하단</label>
+                                    </div>
+                                    <input type="text" id="bottomLeftText" placeholder="테스트" value="테스트" class="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="color" id="bottomLeftChipBg" value="#ffffff" class="w-full h-10 rounded cursor-pointer">
+                                        <input type="color" id="bottomLeftChipText" value="#38a169" class="w-full h-10 rounded cursor-pointer">
+                                    </div>
+                                </div>
+
+                                <!-- Bottom Right -->
+                                <div class="chip-position active" data-position="bottomRight">
+                                    <div class="flex items-center mb-3">
+                                        <input type="checkbox" id="bottomRightEnabled" checked class="mr-3 w-5 h-5 accent-kakao-yellow">
+                                        <label for="bottomRightEnabled" class="font-medium" data-kr="우하단" data-en="Bottom Right">우하단</label>
+                                    </div>
+                                    <input type="text" id="bottomRightText" placeholder="실사용" value="실사용" class="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="color" id="bottomRightChipBg" value="#ffffff" class="w-full h-10 rounded cursor-pointer">
+                                        <input type="color" id="bottomRightChipText" value="#4a90e2" class="w-full h-10 rounded cursor-pointer">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="flex justify-center my-8">
+                            <canvas id="profileCanvas" class="preview-canvas" width="300" height="300"></canvas>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="flex flex-wrap justify-center gap-4">
+                            <button onclick="generateProfileImage()" class="px-6 py-3 bg-kakao-yellow text-kakao-brown font-semibold rounded-lg hover:bg-kakao-darkYellow transition-all transform hover:scale-105">
+                                <span data-kr="이미지 생성" data-en="Generate Image">이미지 생성</span>
+                            </button>
+                            <button id="profileDownloadBtn" onclick="downloadProfileImage()" disabled class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all transform hover:scale-105 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                                <span data-kr="다운로드" data-en="Download">다운로드</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Number Generator Tab -->
+            <div id="business-content" class="tab-content hidden">
+                <div class="max-w-6xl mx-auto">
+                    <div class="card p-6 md:p-8">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2" data-kr="사업자번호 생성기" data-en="Business Number Generator">사업자번호 생성기</h2>
+                            <p class="text-gray-600" data-kr="오늘 날짜 기반 유효한 사업자번호를 생성합니다" data-en="Generate valid business numbers based on today's date">오늘 날짜 기반 유효한 사업자번호를 생성합니다</p>
+                        </div>
+
+                        <!-- Today's Date Display -->
+                        <div class="bg-gradient-to-r from-kakao-lightYellow to-primary-100 rounded-xl p-6 mb-6">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-2" data-kr="오늘 날짜" data-en="Today's Date">오늘 날짜</h3>
+                                    <p id="todayDate" class="text-2xl font-bold text-primary-600"></p>
+                                </div>
+                                <div class="text-left md:text-right">
+                                    <p class="text-sm text-gray-600 mb-1" data-kr="생성 패턴" data-en="Generation Pattern">생성 패턴</p>
+                                    <p class="font-mono text-lg">000-<span class="text-primary-600">XX</span>-<span class="text-blue-600">MMDD</span>X</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Generation Options -->
+                        <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4" data-kr="생성 옵션" data-en="Generation Options">생성 옵션</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="생성 개수" data-en="Number to Generate">생성 개수</label>
+                                    <select id="generateCount" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
+                                        <option value="10">10개</option>
+                                        <option value="20">20개</option>
+                                        <option value="30">30개</option>
+                                        <option value="50">50개</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="사업자 유형" data-en="Business Type">사업자 유형</label>
+                                    <select id="businessType" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none">
+                                        <option value="individual" data-kr="개인사업자 (01-79)" data-en="Individual Business (01-79)">개인사업자 (01-79)</option>
+                                        <option value="individual2" data-kr="개인사업자 (90-99)" data-en="Individual Business (90-99)">개인사업자 (90-99)</option>
+                                        <option value="corporate" data-kr="법인 영리 국내 (81,85-88)" data-en="Domestic Corporation (81,85-88)">법인 영리 국내 (81,85-88)</option>
+                                        <option value="foreign" data-kr="법인 영리 해외 (84)" data-en="Foreign Corporation (84)">법인 영리 해외 (84)</option>
+                                        <option value="nonprofit" data-kr="비영리/국가 및 지자체 (82,83)" data-en="Non-profit/Government (82,83)">비영리/국가 및 지자체 (82,83)</option>
+                                        <option value="voluntary" data-kr="임의단체 (80,89)" data-en="Voluntary Organization (80,89)">임의단체 (80,89)</option>
+                                        <option value="all" data-kr="전체 랜덤" data-en="All Random">전체 랜덤</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Generate Button -->
+                        <div class="text-center mb-6">
+                            <button onclick="generateBusinessNumbers()" class="px-8 py-3 bg-kakao-yellow text-kakao-brown font-semibold rounded-lg hover:bg-kakao-darkYellow transition-all transform hover:scale-105">
+                                <span data-kr="사업자번호 생성" data-en="Generate Numbers">사업자번호 생성</span>
+                            </button>
+                        </div>
+
+                        <!-- Generated Numbers List -->
+                        <div id="numbersList" class="bg-gray-50 rounded-xl p-6">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800" data-kr="생성된 사업자번호" data-en="Generated Numbers">생성된 사업자번호</h3>
+                                <div class="flex space-x-2">
+                                    <button onclick="downloadExcel()" id="excelDownloadBtn" disabled class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm">
+                                        <span data-kr="Excel" data-en="Excel">Excel</span>
+                                    </button>
+                                    <button onclick="downloadPostmanCSV()" id="postmanDownloadBtn" disabled class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm">
+                                        <span data-kr="Postman CSV" data-en="Postman CSV">Postman CSV</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="numbersContainer" class="space-y-2 max-h-96 overflow-y-auto">
+                                <p class="text-center text-gray-500 py-8" data-kr="생성 버튼을 클릭하여 사업자번호를 생성하세요" data-en="Click generate button to create business numbers">생성 버튼을 클릭하여 사업자번호를 생성하세요</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sample Image Generator Tab -->
+            <div id="sample-content" class="tab-content hidden">
+                <div class="max-w-6xl mx-auto">
+                    <div class="card p-6 md:p-8">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2" data-kr="샘플 이미지 생성기" data-en="Sample Image Generator">샘플 이미지 생성기</h2>
+                            <p class="text-gray-600" data-kr="테스트용 샘플 이미지를 손쉽게 생성하세요" data-en="Easily generate sample images for testing">테스트용 샘플 이미지를 손쉽게 생성하세요</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Controls -->
+                            <div class="space-y-6">
+                                <!-- Text Settings -->
+                                <div class="bg-gray-50 rounded-xl p-4 md:p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4" data-kr="텍스트 설정" data-en="Text Settings">텍스트 설정</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="텍스트" data-en="Text">텍스트</label>
+                                            <input type="text" id="sampleImageText" class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-kakao-yellow focus:outline-none" value="Sample Image">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="텍스트색" data-en="Text Color">텍스트색</label>
+                                                <div class="flex items-center space-x-2">
+                                                    <input type="color" id="sampleTextColor" value="#3C1E1E" class="w-10 h-10 rounded cursor-pointer">
+                                                    <input type="text" id="sampleTextColorHex" value="#3C1E1E" class="flex-1 px-2 py-1 border border-gray-200 rounded text-sm font-mono">
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="배경색" data-en="Background">배경색</label>
+                                                <div class="flex items-center space-x-2">
+                                                    <input type="color" id="sampleBgColor" value="#FEE500" class="w-10 h-10 rounded cursor-pointer">
+                                                    <input type="text" id="sampleBgColorHex" value="#FEE500" class="flex-1 px-2 py-1 border border-gray-200 rounded text-sm font-mono">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Size Settings -->
+                                <div class="bg-gray-50 rounded-xl p-4 md:p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4" data-kr="크기 설정" data-en="Size Settings">크기 설정</h3>
+                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="너비 (px)" data-en="Width (px)">너비 (px)</label>
+                                            <input type="number" id="sampleWidth" value="800" min="50" max="4096" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="높이 (px)" data-en="Height (px)">높이 (px)</label>
+                                            <input type="number" id="sampleHeight" value="600" min="50" max="4096" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="100" data-height="100">100×100</button>
+                                        <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="640" data-height="480">640×480</button>
+                                        <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="800" data-height="600">800×600</button>
+                                        <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-kakao-yellow transition-colors" data-width="1920" data-height="1080">1920×1080</button>
+                                    </div>
+                                </div>
+
+                                <!-- File Settings -->
+                                <div class="bg-gray-50 rounded-xl p-4 md:p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4" data-kr="파일 설정" data-en="File Settings">파일 설정</h3>
+                                    <div class="space-y-4">
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="목표 파일 크기" data-en="Target Size">목표 파일 크기</label>
+                                                <div class="flex gap-2">
+                                                    <input type="number" id="sampleTargetSize" value="1" min="0.1" max="10" step="0.1" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg">
+                                                    <select id="sampleSizeUnit" class="px-3 py-2 border border-gray-200 rounded-lg">
+                                                        <option value="MB">MB</option>
+                                                        <option value="KB">KB</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="이미지 개수" data-en="Count">이미지 개수</label>
+                                                <input type="number" id="sampleCount" value="1" min="1" max="20" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2" data-kr="이미지 포맷 (복수 선택)" data-en="Formats (Multi-select)">이미지 포맷 (복수 선택)</label>
+                                            <div class="grid grid-cols-3 gap-2">
+                                                <label class="format-checkbox checked" data-format="png">
+                                                    <input type="checkbox" value="png" checked>
+                                                    <span class="checkmark"></span>
+                                                    <span>PNG</span>
+                                                </label>
+                                                <label class="format-checkbox" data-format="jpg">
+                                                    <input type="checkbox" value="jpg">
+                                                    <span class="checkmark"></span>
+                                                    <span>JPG</span>
+                                                </label>
+                                                <label class="format-checkbox" data-format="jpeg">
+                                                    <input type="checkbox" value="jpeg">
+                                                    <span class="checkmark"></span>
+                                                    <span>JPEG</span>
+                                                </label>
+                                                <label class="format-checkbox" data-format="pdf">
+                                                    <input type="checkbox" value="pdf">
+                                                    <span class="checkmark"></span>
+                                                    <span>PDF</span>
+                                                </label>
+                                                <label class="format-checkbox" data-format="tif">
+                                                    <input type="checkbox" value="tif">
+                                                    <span class="checkmark"></span>
+                                                    <span>TIF</span>
+                                                </label>
+                                                <label class="format-checkbox" data-format="tiff">
+                                                    <input type="checkbox" value="tiff">
+                                                    <span class="checkmark"></span>
+                                                    <span>TIFF</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Watermark Settings -->
+                                <div class="bg-gray-50 rounded-xl p-4 md:p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4" data-kr="워터마크 설정" data-en="Watermark Settings">워터마크 설정</h3>
+                                    <div class="space-y-4">
+                                        <div class="flex items-center gap-3">
+                                            <input type="checkbox" id="sampleWatermarkEnabled" class="w-5 h-5 accent-kakao-yellow">
+                                            <label for="sampleWatermarkEnabled" data-kr="워터마크 사용" data-en="Enable Watermark">워터마크 사용</label>
+                                        </div>
+                                        <div id="sampleWatermarkSettings" class="hidden space-y-3">
+                                            <input type="text" id="sampleWatermarkText" placeholder="@creator" value="@creator" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
+                                            <div class="flex items-center gap-3">
+                                                <span class="text-sm" data-kr="투명도:" data-en="Opacity:">투명도:</span>
+                                                <input type="range" id="sampleWatermarkOpacity" min="5" max="50" value="15" class="flex-1 accent-kakao-yellow">
+                                                <span id="sampleOpacityValue" class="text-sm">15%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Generate Button -->
+                                <button onclick="generateSampleImages()" class="w-full py-3 bg-kakao-yellow text-kakao-brown font-bold rounded-lg hover:bg-kakao-darkYellow transition-all transform hover:scale-[1.02]">
+                                    <span data-kr="이미지 생성하기" data-en="Generate Images">이미지 생성하기</span>
+                                </button>
+                            </div>
+
+                            <!-- Preview -->
+                            <div class="bg-gray-50 rounded-xl p-4 md:p-6">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800" data-kr="미리보기" data-en="Preview">미리보기</h3>
+                                    <button id="sampleDownloadAllBtn" onclick="downloadAllSampleImages()" disabled class="px-4 py-2 bg-kakao-brown text-white rounded-lg hover:bg-kakao-black transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm">
+                                        <span data-kr="전체 다운로드" data-en="Download All">전체 다운로드</span>
+                                    </button>
+                                </div>
+                                <div id="samplePreviewGrid" class="grid grid-cols-1 gap-4 max-h-[600px] overflow-y-auto">
+                                    <div class="text-center py-12 text-gray-500">
+                                        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        <p data-kr="설정 후 '이미지 생성하기' 버튼을 클릭하세요" data-en="Configure settings and click 'Generate Images'">설정 후 '이미지 생성하기' 버튼을 클릭하세요</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ========== Global Variables ==========
+        let currentLanguage = 'ko';
+        let currentTab = 'profile';
+        let generatedNumbers = [];
+        let generatedSampleImages = [];
+        const profileCanvas = document.getElementById('profileCanvas');
+        const profileCtx = profileCanvas.getContext('2d');
+
+        // ========== Initialize ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTodayDate();
+            initializeProfileGenerator();
+            initializeSampleGenerator();
+            setupEventListeners();
+        });
+
+        // ========== Tab Management ==========
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.getElementById(`${tabName}-content`).classList.remove('hidden');
+            currentTab = tabName;
+        }
+
+        // ========== Language ==========
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('bg-white/50');
+                btn.classList.add('text-kakao-brown/70', 'hover:text-kakao-brown');
+            });
+
+            event.target.classList.add('bg-white/50');
+            event.target.classList.remove('text-kakao-brown/70', 'hover:text-kakao-brown');
+
+            document.querySelectorAll('[data-kr][data-en]').forEach(element => {
+                const text = element.getAttribute(`data-${lang === 'ko' ? 'kr' : 'en'}`);
+                if (text) element.textContent = text;
+            });
+
+            updateTodayDate();
+        }
+
+        function updateTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+
+            const dateElement = document.getElementById('todayDate');
+            if (dateElement) {
+                dateElement.textContent = currentLanguage === 'ko'
+                    ? `${year}년 ${month}월 ${day}일`
+                    : `${year}-${month}-${day}`;
+            }
+        }
+
+        // ========== Toast ==========
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // ========== Event Listeners ==========
+        function setupEventListeners() {
+            // Profile color sync
+            setupColorSync('profileBgColor', 'profileBgColorHex', generateProfileImage);
+            setupColorSync('mainTextColor', 'mainTextColorHex', generateProfileImage);
+
+            // Profile text size sync
+            document.getElementById('mainTextSize').addEventListener('input', function() {
+                document.getElementById('mainTextSizeValue').value = this.value;
+                generateProfileImage();
+            });
+            document.getElementById('mainTextSizeValue').addEventListener('input', function() {
+                document.getElementById('mainTextSize').value = this.value;
+                generateProfileImage();
+            });
+
+            document.getElementById('mainText').addEventListener('input', generateProfileImage);
+
+            // Chip checkboxes
+            ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'].forEach(position => {
+                const checkbox = document.getElementById(`${position}Enabled`);
+                const chipDiv = checkbox.closest('.chip-position');
+
+                checkbox.addEventListener('change', function() {
+                    chipDiv.classList.toggle('active', this.checked);
+                    generateProfileImage();
+                });
+
+                document.getElementById(`${position}Text`).addEventListener('input', generateProfileImage);
+                document.getElementById(`${position}ChipBg`).addEventListener('input', generateProfileImage);
+                document.getElementById(`${position}ChipText`).addEventListener('input', generateProfileImage);
+            });
+
+            // Sample generator
+            setupColorSync('sampleTextColor', 'sampleTextColorHex');
+            setupColorSync('sampleBgColor', 'sampleBgColorHex');
+
+            document.querySelectorAll('.sample-preset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('sampleWidth').value = this.dataset.width;
+                    document.getElementById('sampleHeight').value = this.dataset.height;
+                });
+            });
+
+            document.querySelectorAll('.format-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('click', function() {
+                    const input = this.querySelector('input[type="checkbox"]');
+                    input.checked = !input.checked;
+                    this.classList.toggle('checked', input.checked);
+                });
+            });
+
+            document.getElementById('sampleWatermarkEnabled').addEventListener('change', function() {
+                document.getElementById('sampleWatermarkSettings').classList.toggle('hidden', !this.checked);
+            });
+
+            document.getElementById('sampleWatermarkOpacity').addEventListener('input', function() {
+                document.getElementById('sampleOpacityValue').textContent = this.value + '%';
+            });
+        }
+
+        function setupColorSync(colorId, hexId, callback) {
+            document.getElementById(colorId).addEventListener('input', function() {
+                document.getElementById(hexId).value = this.value;
+                if (callback) callback();
+            });
+            document.getElementById(hexId).addEventListener('input', function() {
+                if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+                    document.getElementById(colorId).value = this.value;
+                    if (callback) callback();
+                }
+            });
+        }
+
+        // ========== Profile Generator ==========
+        function initializeProfileGenerator() {
+            generateProfileImage();
+        }
+
+        function generateProfileImage() {
+            const mainText = document.getElementById('mainText').value || 'JK';
+            const mainTextSize = parseInt(document.getElementById('mainTextSize').value);
+            const bgColor = document.getElementById('profileBgColor').value;
+            const mainTextColor = document.getElementById('mainTextColor').value;
+
+            profileCtx.clearRect(0, 0, profileCanvas.width, profileCanvas.height);
+
+            profileCtx.fillStyle = bgColor;
+            profileCtx.fillRect(0, 0, profileCanvas.width, profileCanvas.height);
+
+            const textLines = mainText.split('|');
+            profileCtx.fillStyle = mainTextColor;
+            profileCtx.textAlign = 'center';
+            profileCtx.textBaseline = 'middle';
+            profileCtx.font = `bold ${mainTextSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+
+            if (textLines.length === 1) {
+                profileCtx.fillText(textLines[0], profileCanvas.width / 2, profileCanvas.height / 2);
+            } else {
+                const lineHeight = mainTextSize * 1.1;
+                const startY = profileCanvas.height / 2 - (lineHeight * (textLines.length - 1)) / 2;
+                textLines.forEach((line, index) => {
+                    profileCtx.fillText(line, profileCanvas.width / 2, startY + (lineHeight * index));
+                });
+            }
+
+            const chipPositions = {
+                topLeft: { x: 75, y: 50 },
+                topRight: { x: 225, y: 50 },
+                bottomLeft: { x: 75, y: 250 },
+                bottomRight: { x: 225, y: 250 }
+            };
+
+            ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'].forEach(position => {
+                if (document.getElementById(`${position}Enabled`).checked) {
+                    const text = document.getElementById(`${position}Text`).value;
+                    if (text.trim()) {
+                        const chipBg = document.getElementById(`${position}ChipBg`).value;
+                        const chipText = document.getElementById(`${position}ChipText`).value;
+                        const coords = chipPositions[position];
+                        drawChip(profileCtx, text, coords.x, coords.y, chipBg, chipText);
+                    }
+                }
+            });
+
+            document.getElementById('profileDownloadBtn').disabled = false;
+        }
+
+        function drawChip(ctx, text, x, y, bgColor, textColor) {
+            const textSize = 18;
+            ctx.font = `bold ${textSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+            const textWidth = ctx.measureText(text).width;
+            const chipWidth = textWidth + 30;
+            const chipHeight = 26;
+            const radius = chipHeight / 2;
+
+            ctx.save();
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetY = 2;
+
+            ctx.fillStyle = bgColor;
+            ctx.beginPath();
+            ctx.moveTo(x - chipWidth/2 + radius, y - chipHeight/2);
+            ctx.lineTo(x + chipWidth/2 - radius, y - chipHeight/2);
+            ctx.arc(x + chipWidth/2 - radius, y, radius, -Math.PI/2, Math.PI/2);
+            ctx.lineTo(x - chipWidth/2 + radius, y + chipHeight/2);
+            ctx.arc(x - chipWidth/2 + radius, y, radius, Math.PI/2, -Math.PI/2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            ctx.strokeStyle = textColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = textColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x, y);
+        }
+
+        function downloadProfileImage() {
+            const highResCanvas = document.createElement('canvas');
+            const highResCtx = highResCanvas.getContext('2d');
+            highResCanvas.width = 1080;
+            highResCanvas.height = 1080;
+            const scale = 3.6;
+
+            const mainText = document.getElementById('mainText').value || 'JK';
+            const mainTextSize = parseInt(document.getElementById('mainTextSize').value) * scale;
+            const bgColor = document.getElementById('profileBgColor').value;
+            const mainTextColor = document.getElementById('mainTextColor').value;
+
+            highResCtx.fillStyle = bgColor;
+            highResCtx.fillRect(0, 0, highResCanvas.width, highResCanvas.height);
+
+            const textLines = mainText.split('|');
+            highResCtx.fillStyle = mainTextColor;
+            highResCtx.textAlign = 'center';
+            highResCtx.textBaseline = 'middle';
+            highResCtx.font = `bold ${mainTextSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+
+            if (textLines.length === 1) {
+                highResCtx.fillText(textLines[0], highResCanvas.width / 2, highResCanvas.height / 2);
+            } else {
+                const lineHeight = mainTextSize * 1.1;
+                const startY = highResCanvas.height / 2 - (lineHeight * (textLines.length - 1)) / 2;
+                textLines.forEach((line, index) => {
+                    highResCtx.fillText(line, highResCanvas.width / 2, startY + (lineHeight * index));
+                });
+            }
+
+            const highResChipPositions = {
+                topLeft: { x: 270, y: 180 },
+                topRight: { x: 810, y: 180 },
+                bottomLeft: { x: 270, y: 900 },
+                bottomRight: { x: 810, y: 900 }
+            };
+
+            ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'].forEach(position => {
+                if (document.getElementById(`${position}Enabled`).checked) {
+                    const text = document.getElementById(`${position}Text`).value;
+                    if (text.trim()) {
+                        const chipBg = document.getElementById(`${position}ChipBg`).value;
+                        const chipText = document.getElementById(`${position}ChipText`).value;
+                        const coords = highResChipPositions[position];
+                        drawHighResChip(highResCtx, text, coords.x, coords.y, chipBg, chipText, scale);
+                    }
+                }
+            });
+
+            const link = document.createElement('a');
+            link.download = `messenger_profile_${mainText.replace('|', '_')}_${Date.now()}.png`;
+            link.href = highResCanvas.toDataURL();
+            link.click();
+
+            showToast(currentLanguage === 'ko' ? '이미지가 다운로드되었습니다!' : 'Image downloaded!');
+        }
+
+        function drawHighResChip(ctx, text, x, y, bgColor, textColor, scale) {
+            const textSize = 18 * scale;
+            ctx.font = `bold ${textSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+            const textWidth = ctx.measureText(text).width;
+            const chipWidth = textWidth + (30 * scale);
+            const chipHeight = 26 * scale;
+            const radius = chipHeight / 2;
+
+            ctx.save();
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+            ctx.shadowBlur = 8 * scale;
+            ctx.shadowOffsetY = 2 * scale;
+
+            ctx.fillStyle = bgColor;
+            ctx.beginPath();
+            ctx.moveTo(x - chipWidth/2 + radius, y - chipHeight/2);
+            ctx.lineTo(x + chipWidth/2 - radius, y - chipHeight/2);
+            ctx.arc(x + chipWidth/2 - radius, y, radius, -Math.PI/2, Math.PI/2);
+            ctx.lineTo(x - chipWidth/2 + radius, y + chipHeight/2);
+            ctx.arc(x - chipWidth/2 + radius, y, radius, Math.PI/2, -Math.PI/2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            ctx.strokeStyle = textColor;
+            ctx.lineWidth = 2 * scale;
+            ctx.stroke();
+
+            ctx.fillStyle = textColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x, y);
+        }
+
+        // ========== Business Number Generator ==========
+        function generateValidBusinessNumber(prefix, middle, suffix) {
+            const base9 = prefix + middle + suffix;
+            const weights = [1, 3, 7, 1, 3, 7, 1, 3, 5];
+            const nums = base9.split('').map(Number);
+
+            let sum = 0;
+            for (let i = 0; i < 9; i++) {
+                sum += nums[i] * weights[i];
+            }
+            sum += Math.floor((nums[8] * 5) / 10);
+            const checkDigit = (10 - (sum % 10)) % 10;
+
+            return base9 + checkDigit;
+        }
+
+        function getMiddleDigits(businessType) {
+            const ranges = {
+                'individual': Array.from({length: 79}, (_, i) => String(i + 1).padStart(2, '0')),
+                'individual2': Array.from({length: 10}, (_, i) => String(i + 90).padStart(2, '0')),
+                'corporate': ['81', '85', '86', '87', '88'],
+                'foreign': ['84'],
+                'nonprofit': ['82', '83'],
+                'voluntary': ['80', '89'],
+                'all': []
+            };
+
+            if (businessType === 'all') {
+                for (let key in ranges) {
+                    if (key !== 'all') ranges.all = ranges.all.concat(ranges[key]);
+                }
+            }
+
+            const validMiddles = ranges[businessType] || ranges['individual'];
+            return validMiddles[Math.floor(Math.random() * validMiddles.length)];
+        }
+
+        function getBusinessTypeName(businessType, middleDigits) {
+            const middle = parseInt(middleDigits);
+            if (middle >= 1 && middle <= 79) return currentLanguage === 'ko' ? '개인사업자' : 'Individual';
+            if (middle >= 90 && middle <= 99) return currentLanguage === 'ko' ? '개인사업자' : 'Individual';
+            if ([81, 85, 86, 87, 88].includes(middle)) return currentLanguage === 'ko' ? '법인(국내)' : 'Corp(Domestic)';
+            if (middle === 84) return currentLanguage === 'ko' ? '법인(해외)' : 'Corp(Foreign)';
+            if ([82, 83].includes(middle)) return currentLanguage === 'ko' ? '비영리/공공' : 'Non-profit/Gov';
+            if ([80, 89].includes(middle)) return currentLanguage === 'ko' ? '임의단체' : 'Voluntary';
+            return currentLanguage === 'ko' ? '기타' : 'Other';
+        }
+
+        function generateBusinessNumbers() {
+            const count = parseInt(document.getElementById('generateCount').value);
+            const businessType = document.getElementById('businessType').value;
+            const today = new Date();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+
+            generatedNumbers = [];
+            const usedNumbers = new Set();
+            let attempts = 0;
+            const maxAttempts = count * 1000;
+
+            while (generatedNumbers.length < count && attempts < maxAttempts) {
+                attempts++;
+                const middle = getMiddleDigits(businessType);
+                const suffix = month + day + String(Math.floor(Math.random() * 10));
+                const number = generateValidBusinessNumber('000', middle, suffix.substring(0, 4));
+
+                if (number && !usedNumbers.has(number)) {
+                    usedNumbers.add(number);
+                    generatedNumbers.push({
+                        raw: number,
+                        formatted: `${number.substring(0, 3)}-${number.substring(3, 5)}-${number.substring(5, 10)}`,
+                        type: getBusinessTypeName(businessType, middle)
+                    });
+                }
+            }
+
+            displayGeneratedNumbers();
+            document.getElementById('excelDownloadBtn').disabled = false;
+            document.getElementById('postmanDownloadBtn').disabled = false;
+            showToast(currentLanguage === 'ko' ? `사업자번호 ${generatedNumbers.length}개가 생성되었습니다!` : `${generatedNumbers.length} business numbers generated!`);
+        }
+
+        function displayGeneratedNumbers() {
+            const container = document.getElementById('numbersContainer');
+
+            if (generatedNumbers.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 py-8">${currentLanguage === 'ko' ? '생성된 번호가 없습니다' : 'No generated numbers'}</p>`;
+                return;
+            }
+
+            container.innerHTML = generatedNumbers.map((num, index) => `
+                <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-kakao-yellow transition-colors">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-500 font-medium">${String(index + 1).padStart(2, '0')}</span>
+                        <span class="business-number text-gray-800">${num.formatted}</span>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-kakao-lightYellow text-kakao-brown">${num.type}</span>
+                    </div>
+                    <button onclick="copyNumber('${num.formatted}')" class="copy-button p-2 rounded-lg hover:bg-gray-100">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function copyNumber(number) {
+            navigator.clipboard.writeText(number).then(() => {
+                showToast(currentLanguage === 'ko' ? '복사되었습니다!' : 'Copied!');
+            });
+        }
+
+        function downloadExcel() {
+            if (generatedNumbers.length === 0) return;
+
+            const ws_data = [[currentLanguage === 'ko' ? '번호' : 'No.', currentLanguage === 'ko' ? '사업자번호' : 'Business Number', currentLanguage === 'ko' ? '유형' : 'Type']];
+            generatedNumbers.forEach((num, index) => {
+                ws_data.push([index + 1, num.formatted, num.type]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Business Numbers');
+            XLSX.writeFile(wb, `business_numbers_${Date.now()}.xlsx`);
+
+            showToast(currentLanguage === 'ko' ? 'Excel 파일이 다운로드되었습니다!' : 'Excel file downloaded!');
+        }
+
+        function downloadPostmanCSV() {
+            if (generatedNumbers.length === 0) return;
+
+            let csvContent = "businessNumber\n";
+            generatedNumbers.forEach(num => csvContent += num.raw + "\n");
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `postman_business_numbers_${Date.now()}.csv`;
+            link.click();
+
+            showToast(currentLanguage === 'ko' ? 'Postman CSV 파일이 다운로드되었습니다!' : 'Postman CSV file downloaded!');
+        }
+
+        // ========== Sample Image Generator ==========
+        function initializeSampleGenerator() {
+            // Already initialized via event listeners
+        }
+
+        function getSelectedFormats() {
+            const formats = [];
+            document.querySelectorAll('.format-checkbox input[type="checkbox"]:checked').forEach(input => {
+                formats.push(input.value);
+            });
+            return formats.length > 0 ? formats : ['png'];
+        }
+
+        function drawWatermark(ctx, width, height, text, opacity) {
+            ctx.save();
+            const fontSize = Math.max(Math.min(width, height) / 15, 14);
+            ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+            ctx.fillStyle = `rgba(128, 128, 128, ${opacity / 100})`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            ctx.translate(width / 2, height / 2);
+            ctx.rotate(-30 * Math.PI / 180);
+
+            const textWidth = ctx.measureText(text).width;
+            const spacingX = textWidth + 80;
+            const spacingY = fontSize * 3;
+            const diagonal = Math.sqrt(width * width + height * height);
+
+            for (let y = -diagonal; y < diagonal; y += spacingY) {
+                for (let x = -diagonal; x < diagonal; x += spacingX) {
+                    ctx.fillText(text, x, y);
+                }
+            }
+            ctx.restore();
+        }
+
+        function createSampleCanvas(text, width, height, textColor, bgColor, watermarkText, watermarkOpacity) {
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, width, height);
+
+            if (watermarkText) {
+                drawWatermark(ctx, width, height, watermarkText, watermarkOpacity);
+            }
+
+            ctx.fillStyle = textColor;
+            const fontSize = Math.min(width, height) / 10;
+            ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, width / 2, height / 2 - fontSize / 2);
+
+            ctx.font = `${fontSize * 0.5}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+            ctx.fillText(`${width} × ${height}`, width / 2, height / 2 + fontSize / 2);
+
+            return canvas;
+        }
+
+        function getTargetSizeBytes() {
+            const size = parseFloat(document.getElementById('sampleTargetSize').value) || 1;
+            const unit = document.getElementById('sampleSizeUnit').value;
+            return unit === 'MB' ? size * 1024 * 1024 : size * 1024;
+        }
+
+        function formatFileSize(bytes) {
+            return bytes >= 1024 * 1024
+                ? (bytes / (1024 * 1024)).toFixed(2) + ' MB'
+                : (bytes / 1024).toFixed(2) + ' KB';
+        }
+
+        async function canvasToBlob(canvas, format, quality) {
+            return new Promise((resolve) => {
+                const mimeType = (format === 'jpg' || format === 'jpeg') ? 'image/jpeg' : 'image/png';
+                canvas.toBlob(resolve, mimeType, quality);
+            });
+        }
+
+        async function adjustQualityForSize(canvas, format, targetBytes) {
+            if (format === 'png' || format === 'pdf' || format === 'tif' || format === 'tiff') {
+                const blob = await canvasToBlob(canvas, format, 1);
+                return { blob, quality: 1 };
+            }
+
+            let minQuality = 0.1, maxQuality = 1.0, bestBlob = null;
+
+            for (let i = 0; i < 10; i++) {
+                const midQuality = (minQuality + maxQuality) / 2;
+                const blob = await canvasToBlob(canvas, format, midQuality);
+
+                if (blob.size <= targetBytes) {
+                    bestBlob = blob;
+                    minQuality = midQuality;
+                } else {
+                    maxQuality = midQuality;
+                }
+            }
+
+            if (!bestBlob) bestBlob = await canvasToBlob(canvas, format, 0.1);
+            return { blob: bestBlob };
+        }
+
+        async function generateSampleImages() {
+            const text = document.getElementById('sampleImageText').value || 'Sample';
+            const textColor = document.getElementById('sampleTextColor').value;
+            const bgColor = document.getElementById('sampleBgColor').value;
+            const width = parseInt(document.getElementById('sampleWidth').value) || 800;
+            const height = parseInt(document.getElementById('sampleHeight').value) || 600;
+            const count = Math.min(parseInt(document.getElementById('sampleCount').value) || 1, 20);
+            const formats = getSelectedFormats();
+            const targetBytes = getTargetSizeBytes();
+
+            const watermarkEnabled = document.getElementById('sampleWatermarkEnabled').checked;
+            const watermarkText = watermarkEnabled ? document.getElementById('sampleWatermarkText').value : null;
+            const watermarkOpacity = parseInt(document.getElementById('sampleWatermarkOpacity').value) || 15;
+
+            if (width < 50 || width > 4096 || height < 50 || height > 4096) {
+                showToast(currentLanguage === 'ko' ? '이미지 크기는 50-4096px 사이여야 합니다' : 'Image size must be between 50-4096px');
+                return;
+            }
+
+            const previewGrid = document.getElementById('samplePreviewGrid');
+            previewGrid.innerHTML = '<div class="text-center py-8"><div class="loading-spinner mx-auto"></div></div>';
+            generatedSampleImages = [];
+
+            await new Promise(resolve => setTimeout(resolve, 100));
+            previewGrid.innerHTML = '';
+
+            for (let i = 0; i < count; i++) {
+                const displayText = count > 1 ? `${text} #${i + 1}` : text;
+                const canvas = createSampleCanvas(displayText, width, height, textColor, bgColor, watermarkText, watermarkOpacity);
+
+                const previewItem = document.createElement('div');
+                previewItem.className = 'sample-preview-item';
+
+                const previewCanvas = document.createElement('canvas');
+                const maxPreviewSize = 200;
+                const scale = Math.min(maxPreviewSize / width, maxPreviewSize / height, 1);
+                previewCanvas.width = width * scale;
+                previewCanvas.height = height * scale;
+                previewCanvas.getContext('2d').drawImage(canvas, 0, 0, previewCanvas.width, previewCanvas.height);
+
+                const info = document.createElement('div');
+                info.className = 'text-sm text-gray-600 mb-2';
+                info.textContent = `${width}×${height} • ${formats.map(f => f.toUpperCase()).join(', ')}`;
+
+                const downloadButtons = document.createElement('div');
+                downloadButtons.className = 'flex flex-wrap justify-center gap-2';
+
+                for (const format of formats) {
+                    const { blob } = await adjustQualityForSize(canvas, format, targetBytes);
+
+                    const sizeInfo = document.createElement('span');
+                    sizeInfo.className = 'text-xs bg-kakao-lightYellow text-kakao-brown px-2 py-1 rounded';
+                    sizeInfo.textContent = `${format.toUpperCase()}: ${formatFileSize(blob.size)}`;
+
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'px-3 py-1.5 bg-kakao-yellow text-kakao-brown rounded-lg text-sm font-medium hover:bg-kakao-darkYellow transition-colors';
+                    downloadBtn.textContent = format.toUpperCase();
+                    downloadBtn.onclick = () => downloadSampleImage(canvas, `sample_${i + 1}.${format}`, format, targetBytes);
+
+                    downloadButtons.appendChild(sizeInfo);
+                    downloadButtons.appendChild(downloadBtn);
+
+                    generatedSampleImages.push({ canvas, filename: `sample_${i + 1}.${format}`, format, targetBytes });
+                }
+
+                previewItem.appendChild(previewCanvas);
+                previewItem.appendChild(info);
+                previewItem.appendChild(downloadButtons);
+                previewGrid.appendChild(previewItem);
+            }
+
+            document.getElementById('sampleDownloadAllBtn').disabled = false;
+            showToast(currentLanguage === 'ko' ? `${count}개의 이미지가 생성되었습니다` : `${count} images generated`);
+        }
+
+        async function downloadSampleImage(canvas, filename, format, targetBytes) {
+            try {
+                if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({
+                        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+                        unit: 'px',
+                        format: [canvas.width, canvas.height]
+                    });
+                    const { blob } = await adjustQualityForSize(canvas, 'jpg', targetBytes);
+                    const imgData = await new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+                    pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+                    pdf.save(filename);
+                } else {
+                    const { blob } = await adjustQualityForSize(canvas, format, targetBytes);
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                }
+            } catch (error) {
+                showToast(currentLanguage === 'ko' ? '다운로드 중 오류가 발생했습니다' : 'Download error occurred');
+            }
+        }
+
+        async function downloadAllSampleImages() {
+            if (generatedSampleImages.length === 0) return;
+
+            for (const { canvas, filename, format, targetBytes } of generatedSampleImages) {
+                await downloadSampleImage(canvas, filename, format, targetBytes);
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            showToast(currentLanguage === 'ko' ? '모든 이미지가 다운로드되었습니다' : 'All images downloaded');
+        }
+    </script>
+</body>
+</html>
