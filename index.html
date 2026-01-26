@@ -1221,11 +1221,11 @@
                                 </div>
 
                                 <!-- Column 2 -->
-                                <div class="bg-gray-50 rounded-xl p-4">
+                                <div class="rounded-xl p-4 transition-all duration-200" id="col2-container" style="background: #f3f4f6; opacity: 0.5;">
                                     <div class="flex items-center justify-between mb-3">
                                         <span class="font-medium" data-kr="2열" data-en="Column 2">2열</span>
-                                        <label class="flex items-center">
-                                            <input type="checkbox" id="col2-enable" checked
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" id="col2-enable"
                                                 class="mr-2 w-5 h-5 accent-kakao-yellow" onchange="toggleCsvColumn(2)">
                                             <span data-kr="사용" data-en="Enable">사용</span>
                                         </label>
@@ -1233,40 +1233,40 @@
                                     <div class="space-y-3" id="col2-options">
                                         <label class="flex items-center">
                                             <input type="radio" name="col2Type" value="text" checked
-                                                class="mr-2 accent-kakao-yellow">
+                                                class="mr-2 accent-kakao-yellow" disabled>
                                             <span data-kr="텍스트 입력" data-en="Text Input">텍스트 입력</span>
                                         </label>
                                         <input type="text" id="col2-text" placeholder="텍스트를 입력하세요"
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg">
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg" disabled>
                                         <label class="flex items-center">
                                             <input type="radio" name="col2Type" value="random"
-                                                class="mr-2 accent-kakao-yellow">
+                                                class="mr-2 accent-kakao-yellow" disabled>
                                             <span data-kr="난수발생" data-en="Random String">난수발생</span>
                                         </label>
                                     </div>
                                 </div>
 
                                 <!-- Column 3 -->
-                                <div class="bg-gray-50 rounded-xl p-4">
+                                <div class="rounded-xl p-4 transition-all duration-200" id="col3-container" style="background: #f3f4f6; opacity: 0.5;">
                                     <div class="flex items-center justify-between mb-3">
                                         <span class="font-medium" data-kr="3열" data-en="Column 3">3열</span>
-                                        <label class="flex items-center">
+                                        <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" id="col3-enable"
                                                 class="mr-2 w-5 h-5 accent-kakao-yellow" onchange="toggleCsvColumn(3)">
                                             <span data-kr="사용" data-en="Enable">사용</span>
                                         </label>
                                     </div>
-                                    <div class="space-y-3 hidden" id="col3-options">
+                                    <div class="space-y-3" id="col3-options">
                                         <label class="flex items-center">
                                             <input type="radio" name="col3Type" value="text" checked
-                                                class="mr-2 accent-kakao-yellow">
+                                                class="mr-2 accent-kakao-yellow" disabled>
                                             <span data-kr="텍스트 입력" data-en="Text Input">텍스트 입력</span>
                                         </label>
                                         <input type="text" id="col3-text" placeholder="텍스트를 입력하세요"
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg">
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg" disabled>
                                         <label class="flex items-center">
                                             <input type="radio" name="col3Type" value="random"
-                                                class="mr-2 accent-kakao-yellow">
+                                                class="mr-2 accent-kakao-yellow" disabled>
                                             <span data-kr="난수발생" data-en="Random String">난수발생</span>
                                         </label>
                                     </div>
@@ -3730,14 +3730,20 @@
         let csvData = [];
 
         function toggleCsvColumn(columnNumber) {
+            const container = document.getElementById(`col${columnNumber}-container`);
             const options = document.getElementById(`col${columnNumber}-options`);
             const checkbox = document.getElementById(`col${columnNumber}-enable`);
 
-            if (checkbox && options) {
+            if (checkbox && container && options) {
+                const inputs = options.querySelectorAll('input');
                 if (checkbox.checked) {
-                    options.classList.remove('hidden');
+                    container.style.opacity = '1';
+                    container.style.background = '#f9fafb';
+                    inputs.forEach(input => input.disabled = false);
                 } else {
-                    options.classList.add('hidden');
+                    container.style.opacity = '0.5';
+                    container.style.background = '#f3f4f6';
+                    inputs.forEach(input => input.disabled = true);
                 }
             }
         }

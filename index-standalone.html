@@ -1322,22 +1322,45 @@
                                     </div>
                                 </div>
 
-                                <div class="bg-gray-50 rounded-xl p-4">
+                                <!-- Column 2 -->
+                                <div class="rounded-xl p-4 csv-column-container" id="col2-container" style="background:#f3f4f6;opacity:0.5;transition:all 0.2s">
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="font-semibold">2열</span>
-                                        <label class="flex items-center gap-2">
-                                            <input type="checkbox" id="col2-enable" checked style="width:20px;height:20px" onchange="toggleCsvColumn(2)">
+                                        <label class="flex items-center gap-2" style="cursor:pointer">
+                                            <input type="checkbox" id="col2-enable" style="width:20px;height:20px" onchange="toggleCsvColumn(2)">
                                             <span>사용</span>
                                         </label>
                                     </div>
                                     <div id="col2-options" class="space-y-4">
                                         <label class="flex items-center gap-2">
-                                            <input type="radio" name="col2Type" value="text" checked>
+                                            <input type="radio" name="col2Type" value="text" checked disabled>
                                             <span>텍스트 입력</span>
                                         </label>
-                                        <input type="text" id="col2-text" placeholder="텍스트를 입력하세요" class="input">
+                                        <input type="text" id="col2-text" placeholder="텍스트를 입력하세요" class="input" disabled>
                                         <label class="flex items-center gap-2">
-                                            <input type="radio" name="col2Type" value="random">
+                                            <input type="radio" name="col2Type" value="random" disabled>
+                                            <span>난수발생</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Column 3 -->
+                                <div class="rounded-xl p-4 csv-column-container" id="col3-container" style="background:#f3f4f6;opacity:0.5;transition:all 0.2s">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-semibold">3열</span>
+                                        <label class="flex items-center gap-2" style="cursor:pointer">
+                                            <input type="checkbox" id="col3-enable" style="width:20px;height:20px" onchange="toggleCsvColumn(3)">
+                                            <span>사용</span>
+                                        </label>
+                                    </div>
+                                    <div id="col3-options" class="space-y-4">
+                                        <label class="flex items-center gap-2">
+                                            <input type="radio" name="col3Type" value="text" checked disabled>
+                                            <span>텍스트 입력</span>
+                                        </label>
+                                        <input type="text" id="col3-text" placeholder="텍스트를 입력하세요" class="input" disabled>
+                                        <label class="flex items-center gap-2">
+                                            <input type="radio" name="col3Type" value="random" disabled>
                                             <span>난수발생</span>
                                         </label>
                                     </div>
@@ -1351,9 +1374,10 @@
                                 <div class="overflow-auto max-h-64 border rounded-lg">
                                     <table style="width:100%;border-collapse:collapse">
                                         <thead class="bg-gray-100">
-                                            <tr>
+                                            <tr id="csv-header-row">
                                                 <th class="border px-4 py-2">1열</th>
-                                                <th class="border px-4 py-2">2열</th>
+                                                <th class="border px-4 py-2" id="csv-header-col2" style="display:none">2열</th>
+                                                <th class="border px-4 py-2" id="csv-header-col3" style="display:none">3열</th>
                                             </tr>
                                         </thead>
                                         <tbody id="csv-preview-body"></tbody>
@@ -2767,9 +2791,22 @@
 
         // ========== CSV Generator ==========
         function toggleCsvColumn(columnNumber) {
+            const container = document.getElementById(`col${columnNumber}-container`);
             const options = document.getElementById(`col${columnNumber}-options`);
             const checkbox = document.getElementById(`col${columnNumber}-enable`);
-            if (checkbox && options) options.classList.toggle('hidden', !checkbox.checked);
+
+            if (checkbox && container && options) {
+                const inputs = options.querySelectorAll('input');
+                if (checkbox.checked) {
+                    container.style.opacity = '1';
+                    container.style.background = '#f9fafb';
+                    inputs.forEach(input => input.disabled = false);
+                } else {
+                    container.style.opacity = '0.5';
+                    container.style.background = '#f3f4f6';
+                    inputs.forEach(input => input.disabled = true);
+                }
+            }
         }
 
         function generateRandomString() {
@@ -2787,28 +2824,46 @@
             }
 
             const col2Enabled = document.getElementById('col2-enable').checked;
+            const col3Enabled = document.getElementById('col3-enable').checked;
             csvData = [];
 
             for (let i = 0; i < rowCount; i++) {
                 const row = [];
+
+                // 1열
                 const col1Type = document.querySelector('input[name="col1Type"]:checked').value;
                 row.push(col1Type === 'text' ? (document.getElementById('col1-text').value || 'Data') : generateRandomString());
 
+                // 2열
                 if (col2Enabled) {
                     const col2Type = document.querySelector('input[name="col2Type"]:checked').value;
                     row.push(col2Type === 'text' ? (document.getElementById('col2-text').value || 'Data') : generateRandomString());
                 }
+
+                // 3열
+                if (col3Enabled) {
+                    const col3Type = document.querySelector('input[name="col3Type"]:checked').value;
+                    row.push(col3Type === 'text' ? (document.getElementById('col3-text').value || 'Data') : generateRandomString());
+                }
+
                 csvData.push(row);
             }
 
-            displayCsvPreview();
+            displayCsvPreview(col2Enabled, col3Enabled);
             showToast('CSV 미리보기가 생성되었습니다');
         }
 
-        function displayCsvPreview() {
+        function displayCsvPreview(col2Enabled, col3Enabled) {
             const previewDiv = document.getElementById('csv-preview');
             const tbody = document.getElementById('csv-preview-body');
+            const headerCol2 = document.getElementById('csv-header-col2');
+            const headerCol3 = document.getElementById('csv-header-col3');
+
             tbody.innerHTML = '';
+
+            // 헤더 표시/숨김
+            if (headerCol2) headerCol2.style.display = col2Enabled ? '' : 'none';
+            if (headerCol3) headerCol3.style.display = col3Enabled ? '' : 'none';
 
             const previewRows = Math.min(10, csvData.length);
             for (let i = 0; i < previewRows; i++) {
