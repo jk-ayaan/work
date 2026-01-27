@@ -865,6 +865,10 @@
                                 <h3 class="text-lg font-semibold text-gray-800" data-kr="생성된 사업자번호"
                                     data-en="Generated Numbers">생성된 사업자번호</h3>
                                 <div class="flex space-x-2">
+                                    <button onclick="copyAllBizNumbers()" id="copyAllBtn" disabled
+                                        class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm">
+                                        <span data-kr="전체 복사" data-en="Copy All">전체 복사</span>
+                                    </button>
                                     <button onclick="downloadExcel()" id="excelDownloadBtn" disabled
                                         class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm">
                                         <span data-kr="Excel" data-en="Excel">Excel</span>
@@ -2350,6 +2354,7 @@
             }
 
             displayGeneratedNumbers();
+            document.getElementById('copyAllBtn').disabled = false;
             document.getElementById('excelDownloadBtn').disabled = false;
             document.getElementById('postmanDownloadBtn').disabled = false;
             showToast(currentLanguage === 'ko' ? `사업자번호 ${generatedNumbers.length}개가 생성되었습니다!` : `${generatedNumbers.length} business numbers generated!`);
@@ -2382,6 +2387,14 @@
         function copyNumber(number) {
             navigator.clipboard.writeText(number).then(() => {
                 showToast(currentLanguage === 'ko' ? '복사되었습니다!' : 'Copied!');
+            });
+        }
+
+        function copyAllBizNumbers() {
+            if (generatedNumbers.length === 0) return;
+            const allNumbers = generatedNumbers.map(num => num.formatted).join('\n');
+            navigator.clipboard.writeText(allNumbers).then(() => {
+                showToast(currentLanguage === 'ko' ? `${generatedNumbers.length}개 사업자번호가 복사되었습니다!` : `${generatedNumbers.length} numbers copied!`);
             });
         }
 
