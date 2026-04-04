@@ -68,6 +68,89 @@
 
         <!-- 사업자번호 생성기 -->
         <div id="business-content" class="max-w-6xl mx-auto">
+            <!-- Admin 로그인 설정 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <details id="admin-login-section">
+                    <summary class="cursor-pointer flex items-center justify-between text-lg font-semibold text-gray-800 hover:text-gray-900">
+                        <span>🔐 Admin 로그인 설정</span>
+                        <span id="login-status-badge" class="text-sm font-normal px-3 py-1 rounded-full bg-gray-200 text-gray-600">미연결</span>
+                    </summary>
+                    <div class="mt-4 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">프록시 서버 URL</label>
+                                <input type="text" id="proxy-url" class="form-input" value="http://localhost:8099" placeholder="http://localhost:8099">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">로그인 API URL</label>
+                                <input type="text" id="login-api-url" class="form-input" placeholder="https://admin.internal.com/api/login">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">로그인 ID</label>
+                                <input type="text" id="login-id" class="form-input" placeholder="admin">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">로그인 Password</label>
+                                <input type="password" id="login-password" class="form-input" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">로그인 요청 Body 템플릿 (JSON)</label>
+                            <textarea id="login-body-template" class="form-input font-mono text-sm" rows="3" placeholder='{"username": "{{id}}", "password": "{{password}}"}'></textarea>
+                            <p class="text-xs text-gray-500 mt-1">{{id}}, {{password}} 플레이스홀더 사용</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">토큰 응답 경로</label>
+                            <input type="text" id="token-response-path" class="form-input" placeholder="data.accessToken">
+                            <p class="text-xs text-gray-500 mt-1">응답 JSON에서 토큰을 추출할 경로 (예: data.accessToken, token)</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="adminLogin()" class="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                                🔑 로그인
+                            </button>
+                            <button onclick="adminLogout()" class="px-6 py-2 bg-gray-200 text-gray-800 font-medium rounded-lg hover:bg-gray-300 transition-colors">
+                                로그아웃
+                            </button>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- API 호출 설정 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <details id="api-call-section">
+                    <summary class="cursor-pointer flex items-center justify-between text-lg font-semibold text-gray-800 hover:text-gray-900">
+                        <span>🚀 사업자번호 API 호출 설정</span>
+                    </summary>
+                    <div class="mt-4 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">API URL</label>
+                                <input type="text" id="api-call-url" class="form-input" placeholder="https://admin.internal.com/api/business">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">HTTP Method</label>
+                                <select id="api-call-method" class="form-input">
+                                    <option value="GET">GET</option>
+                                    <option value="POST" selected>POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="PATCH">PATCH</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Request Body 템플릿 (JSON)</label>
+                            <textarea id="api-call-body-template" class="form-input font-mono text-sm" rows="3" placeholder='{"businessNumber": "{{businessNumber}}", "type": "individual"}'></textarea>
+                            <p class="text-xs text-gray-500 mt-1">{{businessNumber}} 플레이스홀더가 각 사업자번호(하이픈 제거)로 치환됩니다</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">추가 헤더 (JSON, 선택사항)</label>
+                            <textarea id="api-call-extra-headers" class="form-input font-mono text-sm" rows="2" placeholder='{"X-Custom-Header": "value"}'></textarea>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">사업자등록번호 생성기</h2>
                 
@@ -168,6 +251,16 @@
                                 💾 CSV 다운로드
                             </button>
                         </div>
+
+                        <div class="border-t pt-4 mt-2">
+                            <div class="flex items-center gap-2 mb-2">
+                                <label class="text-sm font-medium text-gray-700">호출 딜레이 (ms)</label>
+                                <input type="number" id="bulk-api-delay" class="form-input w-24 text-sm py-1" value="500" min="0" step="100">
+                            </div>
+                            <button onclick="bulkApiCall()" id="bulk-api-btn" class="w-full px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors text-sm">
+                                🚀 전체 API 호출
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="lg:col-span-2">
@@ -182,6 +275,22 @@
                             <span><span id="business-count-display">0</span> 개 생성됨</span>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- API 호출 로그 뷰어 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mt-6" id="api-log-section">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">📋 API 호출 로그</h3>
+                    <div class="flex gap-2">
+                        <span id="api-log-count" class="text-sm text-gray-500">0건</span>
+                        <button onclick="clearApiLogs()" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm">
+                            🗑️ 초기화
+                        </button>
+                    </div>
+                </div>
+                <div id="api-log-list" class="space-y-2 max-h-[400px] overflow-y-auto">
+                    <p class="text-center text-gray-400 text-sm py-4">API 호출 로그가 여기에 표시됩니다</p>
                 </div>
             </div>
         </div>
@@ -343,6 +452,8 @@
         let fixedPrefixData = null;
         let combinationParameters = [];
         let combinationResults = [];
+        let cachedToken = null;
+        let apiLogs = [];
 
         // 탭 전환
         function switchTab(tab) {
@@ -559,9 +670,14 @@
                         <span class="text-gray-500 text-sm">${idx + 1}.</span>
                         <span class="font-mono text-lg">${num}</span>
                     </div>
-                    <button onclick="copyToClipboard('${num}')" class="text-gray-400 hover:text-gray-600">
-                        📋
-                    </button>
+                    <div class="flex gap-1">
+                        <button onclick="copyToClipboard('${num}')" class="text-gray-400 hover:text-gray-600 px-1" title="복사">
+                            📋
+                        </button>
+                        <button onclick="callApiForNumber('${num}', this)" id="api-btn-${idx}" class="text-gray-400 hover:text-gray-600 px-1" title="API 호출">
+                            🚀
+                        </button>
+                    </div>
                 </div>
             `).join('');
             
@@ -1190,6 +1306,284 @@
 
             return result;
         }
+
+        // ========== Admin 로그인 & API 호출 ==========
+
+        function loadAdminSettings() {
+            const settings = JSON.parse(localStorage.getItem('adminSettings') || '{}');
+            if (settings.proxyUrl) document.getElementById('proxy-url').value = settings.proxyUrl;
+            if (settings.loginApiUrl) document.getElementById('login-api-url').value = settings.loginApiUrl;
+            if (settings.loginId) document.getElementById('login-id').value = settings.loginId;
+            if (settings.loginBodyTemplate) document.getElementById('login-body-template').value = settings.loginBodyTemplate;
+            if (settings.tokenResponsePath) document.getElementById('token-response-path').value = settings.tokenResponsePath;
+
+            const apiSettings = JSON.parse(localStorage.getItem('apiCallSettings') || '{}');
+            if (apiSettings.apiUrl) document.getElementById('api-call-url').value = apiSettings.apiUrl;
+            if (apiSettings.method) document.getElementById('api-call-method').value = apiSettings.method;
+            if (apiSettings.bodyTemplate) document.getElementById('api-call-body-template').value = apiSettings.bodyTemplate;
+            if (apiSettings.extraHeaders) document.getElementById('api-call-extra-headers').value = apiSettings.extraHeaders;
+        }
+
+        function saveAdminSettings() {
+            const settings = {
+                proxyUrl: document.getElementById('proxy-url').value,
+                loginApiUrl: document.getElementById('login-api-url').value,
+                loginId: document.getElementById('login-id').value,
+                loginBodyTemplate: document.getElementById('login-body-template').value,
+                tokenResponsePath: document.getElementById('token-response-path').value,
+            };
+            localStorage.setItem('adminSettings', JSON.stringify(settings));
+        }
+
+        function saveApiCallSettings() {
+            const settings = {
+                apiUrl: document.getElementById('api-call-url').value,
+                method: document.getElementById('api-call-method').value,
+                bodyTemplate: document.getElementById('api-call-body-template').value,
+                extraHeaders: document.getElementById('api-call-extra-headers').value,
+            };
+            localStorage.setItem('apiCallSettings', JSON.stringify(settings));
+        }
+
+        function getNestedValue(obj, path) {
+            return path.split('.').reduce((current, key) => current && current[key], obj);
+        }
+
+        async function adminLogin() {
+            saveAdminSettings();
+
+            const proxyUrl = document.getElementById('proxy-url').value.replace(/\/+$/, '');
+            const loginApiUrl = document.getElementById('login-api-url').value;
+            const loginId = document.getElementById('login-id').value;
+            const loginPassword = document.getElementById('login-password').value;
+            let bodyTemplate = document.getElementById('login-body-template').value || '{"username": "{{id}}", "password": "{{password}}"}';
+            const tokenPath = document.getElementById('token-response-path').value || 'token';
+
+            if (!loginApiUrl || !loginId || !loginPassword) {
+                showToast('로그인 URL, ID, Password를 모두 입력하세요', 'error');
+                return;
+            }
+
+            const body = bodyTemplate.replace(/\{\{id\}\}/g, loginId).replace(/\{\{password\}\}/g, loginPassword);
+
+            const badge = document.getElementById('login-status-badge');
+            badge.textContent = '로그인 중...';
+            badge.className = 'text-sm font-normal px-3 py-1 rounded-full bg-yellow-200 text-yellow-800';
+
+            try {
+                const resp = await fetch(`${proxyUrl}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ loginUrl: loginApiUrl, body: JSON.parse(body) }),
+                });
+
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    throw new Error(data.error || `HTTP ${resp.status}`);
+                }
+
+                const token = getNestedValue(data, tokenPath);
+                if (!token) {
+                    throw new Error(`토큰 경로 '${tokenPath}'에서 토큰을 찾을 수 없습니다. 응답: ${JSON.stringify(data).substring(0, 200)}`);
+                }
+
+                cachedToken = token;
+                badge.textContent = '로그인 성공';
+                badge.className = 'text-sm font-normal px-3 py-1 rounded-full bg-green-200 text-green-800';
+                showToast('로그인 성공', 'success');
+            } catch (err) {
+                cachedToken = null;
+                badge.textContent = '로그인 실패';
+                badge.className = 'text-sm font-normal px-3 py-1 rounded-full bg-red-200 text-red-800';
+                showToast(`로그인 실패: ${err.message}`, 'error');
+            }
+        }
+
+        function adminLogout() {
+            cachedToken = null;
+            const badge = document.getElementById('login-status-badge');
+            badge.textContent = '미연결';
+            badge.className = 'text-sm font-normal px-3 py-1 rounded-full bg-gray-200 text-gray-600';
+            showToast('로그아웃되었습니다', 'success');
+        }
+
+        async function callApiForNumber(businessNumber, btnEl) {
+            saveApiCallSettings();
+
+            if (!cachedToken) {
+                showToast('먼저 로그인하세요', 'error');
+                return;
+            }
+
+            const proxyUrl = document.getElementById('proxy-url').value.replace(/\/+$/, '');
+            const apiUrl = document.getElementById('api-call-url').value;
+            const method = document.getElementById('api-call-method').value;
+            const bodyTemplate = document.getElementById('api-call-body-template').value;
+            const extraHeadersStr = document.getElementById('api-call-extra-headers').value;
+
+            if (!apiUrl) {
+                showToast('API URL을 설정하세요', 'error');
+                return;
+            }
+
+            const rawNumber = businessNumber.replace(/-/g, '');
+            let requestBody = null;
+            if (bodyTemplate && method !== 'GET') {
+                requestBody = JSON.parse(bodyTemplate.replace(/\{\{businessNumber\}\}/g, rawNumber));
+            }
+
+            let extraHeaders = {};
+            if (extraHeadersStr) {
+                try { extraHeaders = JSON.parse(extraHeadersStr); } catch(e) {}
+            }
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${cachedToken}`,
+                ...extraHeaders,
+            };
+
+            if (btnEl) {
+                btnEl.textContent = '⏳';
+                btnEl.disabled = true;
+            }
+
+            const startTime = Date.now();
+
+            try {
+                const resp = await fetch(`${proxyUrl}/api/call`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiUrl, method, headers, body: requestBody }),
+                });
+
+                const data = await resp.json();
+                const elapsed = Date.now() - startTime;
+                const status = data.status || resp.status;
+
+                addApiLog(businessNumber, apiUrl, status, data, elapsed);
+
+                if (btnEl) {
+                    if (status >= 200 && status < 300) {
+                        btnEl.textContent = '✅';
+                        setTimeout(() => { btnEl.textContent = '🚀'; btnEl.disabled = false; }, 1500);
+                    } else {
+                        btnEl.textContent = '❌';
+                        setTimeout(() => { btnEl.textContent = '🚀'; btnEl.disabled = false; }, 1500);
+                    }
+                }
+
+                return { success: status >= 200 && status < 300, status };
+            } catch (err) {
+                const elapsed = Date.now() - startTime;
+                addApiLog(businessNumber, apiUrl, 0, { error: err.message }, elapsed);
+
+                if (btnEl) {
+                    btnEl.textContent = '❌';
+                    setTimeout(() => { btnEl.textContent = '🚀'; btnEl.disabled = false; }, 1500);
+                }
+
+                return { success: false, status: 0 };
+            }
+        }
+
+        async function bulkApiCall() {
+            if (!cachedToken) {
+                showToast('먼저 로그인하세요', 'error');
+                return;
+            }
+            if (generatedBusinessNumbers.length === 0) {
+                showToast('생성된 사업자번호가 없습니다', 'error');
+                return;
+            }
+
+            const delay = parseInt(document.getElementById('bulk-api-delay').value) || 500;
+            const btn = document.getElementById('bulk-api-btn');
+            btn.disabled = true;
+            btn.textContent = '⏳ 호출 중...';
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (let i = 0; i < generatedBusinessNumbers.length; i++) {
+                const num = generatedBusinessNumbers[i];
+                const apiBtn = document.getElementById(`api-btn-${i}`);
+                btn.textContent = `⏳ ${i + 1}/${generatedBusinessNumbers.length} 호출 중...`;
+
+                const result = await callApiForNumber(num, apiBtn);
+                if (result.success) successCount++;
+                else failCount++;
+
+                if (i < generatedBusinessNumbers.length - 1 && delay > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+
+            btn.disabled = false;
+            btn.textContent = '🚀 전체 API 호출';
+            showToast(`전체 호출 완료: 성공 ${successCount}건, 실패 ${failCount}건`, successCount > 0 ? 'success' : 'error');
+        }
+
+        function addApiLog(businessNumber, apiUrl, status, responseBody, elapsed) {
+            const log = {
+                timestamp: new Date().toLocaleString('ko-KR'),
+                businessNumber,
+                apiUrl,
+                status,
+                responseBody,
+                elapsed,
+            };
+
+            apiLogs.unshift(log);
+            if (apiLogs.length > 100) apiLogs.pop();
+
+            renderApiLogs();
+        }
+
+        function renderApiLogs() {
+            const listEl = document.getElementById('api-log-list');
+            const countEl = document.getElementById('api-log-count');
+            countEl.textContent = `${apiLogs.length}건`;
+
+            if (apiLogs.length === 0) {
+                listEl.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">API 호출 로그가 여기에 표시됩니다</p>';
+                return;
+            }
+
+            listEl.innerHTML = apiLogs.map((log, idx) => {
+                const isSuccess = log.status >= 200 && log.status < 300;
+                const bgClass = isSuccess ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+                const statusClass = isSuccess ? 'text-green-700' : 'text-red-700';
+                const bodyStr = typeof log.responseBody === 'string' ? log.responseBody : JSON.stringify(log.responseBody, null, 2);
+
+                return `
+                    <div class="border rounded-lg p-3 ${bgClass}">
+                        <div class="flex items-center justify-between text-sm">
+                            <div class="flex items-center gap-3">
+                                <span class="text-gray-500">${log.timestamp}</span>
+                                <span class="font-mono font-medium">${log.businessNumber}</span>
+                                <span class="${statusClass} font-medium">HTTP ${log.status}</span>
+                                <span class="text-gray-500">${log.elapsed}ms</span>
+                            </div>
+                        </div>
+                        <details class="mt-1">
+                            <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-700">응답 보기</summary>
+                            <pre class="mt-1 text-xs bg-white rounded p-2 overflow-x-auto max-h-32 overflow-y-auto">${bodyStr}</pre>
+                        </details>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function clearApiLogs() {
+            apiLogs = [];
+            renderApiLogs();
+            showToast('API 로그가 초기화되었습니다', 'success');
+        }
+
+        // localStorage 설정 로드
+        document.addEventListener('DOMContentLoaded', loadAdminSettings);
 
         // 전체 조합 생성
         function generateFullCombinations(parameters) {
