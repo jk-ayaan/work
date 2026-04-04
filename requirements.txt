@@ -9,6 +9,7 @@ numpy==1.26.3
 # Web framework (optional)
 fastapi==0.109.0
 uvicorn==0.27.0
+httpx==0.27.0
 
 # Database (optional)
 sqlalchemy==2.0.25
