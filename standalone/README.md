@@ -21,13 +21,12 @@ python proxy.py
 
 ### 3. HTML 파일 열기
 
-`business-qr-tools.html`을 브라우저에서 열고, Admin 로그인 설정에서 프록시 URL과 로그인 정보를 입력합니다.
+`main.html`을 브라우저에서 열고, Admin 로그인 설정에서 프록시 URL과 로그인 정보를 입력합니다.
 
 ## 파일 구성
 
 | 파일 | 설명 |
 |------|------|
-| `business-qr-tools.html` | Admin API 연동 포함 버전 |
+| `main.html` | 통합 도구 (사업자번호/QR/조합 생성기 + 어드민 대시보드, API 연동 포함) |
 | `proxy.py` | FastAPI 기반 CORS 프록시 서버 |
 | `requirements.txt` | Python 의존성 |
-| `ControlAdmin_backup.html` | 어드민 대시보드 백업본 |

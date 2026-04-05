@@ -6,7 +6,7 @@
 
 ### GitHub Pages로 접속
 별도 설치 없이 바로 사용 가능합니다:
-👉 **[https://jk-ayaan.github.io/work-assistant/src/ControlAdmin.html](https://jk-ayaan.github.io/work-assistant/src/ControlAdmin.html)**
+👉 **[https://jk-ayaan.github.io/work-assistant/main.html](https://jk-ayaan.github.io/work-assistant/main.html)**
 
 ### 로컬 실행
 ```bash
@@ -17,7 +17,7 @@ git clone https://github.com/jk-ayaan/work-assistant.git
 cd work-assistant
 
 # HTML 파일 직접 열기
-open src/ControlAdmin.html
+open main.html
 ```
 
 ## 📋 주요 기능
@@ -141,7 +141,7 @@ python -m http.server 8000
 npx serve .
 
 # 브라우저에서 접속
-http://localhost:8000/src/ControlAdmin.html
+http://localhost:8000/main.html
 ```
 
 ## 📝 업데이트 로그
