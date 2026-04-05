@@ -797,7 +797,7 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-neutral-700 mb-2">사업자 유형</label>
-                                    <select id="bn-business-type" class="form-input" onchange="bnUpdateBusinessTypeSettings()">
+                                    <select id="bn-business-type" class="form-input" onchange="bnToggleCustomTypeCount()">
                                         <option value="individual-01-79">개인사업자 (01-79)</option>
                                         <option value="individual-90-99">개인사업자 (90-99)</option>
                                         <option value="corporate-domestic">법인 영리 국내 (81,85-88)</option>
@@ -805,6 +805,7 @@
                                         <option value="nonprofit">비영리/국가 및 지자체 (82,83)</option>
                                         <option value="association">임의단체 (80,89)</option>
                                         <option value="random">전체 랜덤</option>
+                                        <option value="custom">전체 유형 수량 선택</option>
                                     </select>
                                 </div>
 
@@ -817,6 +818,43 @@
                                         <option value="50">50개</option>
                                         <option value="100">100개</option>
                                     </select>
+                                </div>
+
+                                <!-- 전체 유형 수량 선택 UI -->
+                                <div id="bn-custom-type-count-section" class="hidden p-4 bg-blue-50 rounded-xl border border-blue-200">
+                                    <h4 class="text-sm font-semibold text-blue-800 mb-3">유형별 생성 수량</h4>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        <div class="flex items-center gap-2">
+                                            <label class="text-xs text-neutral-700 whitespace-nowrap" style="min-width:100px">개인 (01-79)</label>
+                                            <input type="number" id="bn-countIndividual" value="0" min="0" max="500" class="w-full px-2 py-1 text-sm border border-neutral-200 rounded focus:border-primary-400 focus:outline-none">
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <label class="text-xs text-neutral-700 whitespace-nowrap" style="min-width:100px">개인 (90-99)</label>
+                                            <input type="number" id="bn-countIndividual2" value="0" min="0" max="500" class="w-full px-2 py-1 text-sm border border-neutral-200 rounded focus:border-primary-400 focus:outline-none">
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <label class="text-xs text-neutral-700 whitespace-nowrap" style="min-width:100px">법인 국내</label>
+                                            <input type="number" id="bn-countCorporate" value="0" min="0" max="500" class="w-full px-2 py-1 text-sm border border-neutral-200 rounded focus:border-primary-400 focus:outline-none">
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <label class="text-xs text-neutral-700 whitespace-nowrap" style="min-width:100px">법인 해외</label>
+                                            <input type="number" id="bn-countForeign" value="0" min="0" max="500" class="w-full px-2 py-1 text-sm border border-neutral-200 rounded focus:border-primary-400 focus:outline-none">
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <label class="text-xs text-neutral-700 whitespace-nowrap" style="min-width:100px">비영리/국가</label>
+                                            <input type="number" id="bn-countNonprofit" value="0" min="0" max="500" class="w-full px-2 py-1 text-sm border border-neutral-200 rounded focus:border-primary-400 focus:outline-none">
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <label class="text-xs text-neutral-700 whitespace-nowrap" style="min-width:100px">임의단체</label>
+                                            <input type="number" id="bn-countVoluntary" value="0" min="0" max="500" class="w-full px-2 py-1 text-sm border border-neutral-200 rounded focus:border-primary-400 focus:outline-none">
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-blue-600 mt-2">※ 위 '생성 개수' 설정은 무시되고, 여기서 지정한 수량만큼 생성됩니다.</p>
+                                </div>
+
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="bn-remove-hyphen" class="w-5 h-5 accent-primary-500">
+                                    <label for="bn-remove-hyphen" class="text-sm text-neutral-700">하이픈(-) 제거</label>
                                 </div>
 
                                 <div class="border-t pt-4">
@@ -863,7 +901,8 @@
 
                                 <div class="flex gap-2">
                                     <button onclick="bnCopyBusinessNumbers()" class="px-4 py-2 bg-neutral-200 rounded-lg hover:bg-neutral-300 transition-colors text-sm flex-1">전체 복사</button>
-                                    <button onclick="bnDownloadBusinessNumbers()" class="px-4 py-2 bg-neutral-200 rounded-lg hover:bg-neutral-300 transition-colors text-sm flex-1">CSV 다운로드</button>
+                                    <button onclick="bnDownloadExcel()" class="px-4 py-2 bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors text-sm flex-1">Excel 다운로드</button>
+                                    <button onclick="bnDownloadPostmanCSV()" class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors text-sm flex-1">Postman CSV</button>
                                 </div>
                             </div>
 
@@ -1175,6 +1214,25 @@
                                 </div>
                                 <div class="bg-neutral-50 rounded-xl p-4 md:p-6">
                                     <h3 class="text-lg font-semibold text-neutral-800 mb-4" data-ko="크기 설정" data-en="Size Settings">크기 설정</h3>
+
+                                    <!-- Size Mode Selection -->
+                                    <div class="space-y-3 mb-4">
+                                        <label class="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-primary-400 bg-primary-50 cursor-pointer transition-colors" id="sizeMode-fixed-label">
+                                            <input type="radio" name="sizeMode" value="fixed" checked class="w-5 h-5 accent-primary-500" onchange="toggleSizeMode()">
+                                            <div>
+                                                <span class="font-medium text-neutral-800" data-ko="고정 사이즈" data-en="Fixed Size">고정 사이즈</span>
+                                                <p class="text-xs text-neutral-500" data-ko="지정한 너비x높이로 이미지 생성" data-en="Generate image with specified width x height">지정한 너비x높이로 이미지 생성</p>
+                                            </div>
+                                        </label>
+                                        <label class="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-neutral-200 cursor-pointer transition-colors" id="sizeMode-tiled-label">
+                                            <input type="radio" name="sizeMode" value="tiled" class="w-5 h-5 accent-primary-500" onchange="toggleSizeMode()">
+                                            <div>
+                                                <span class="font-medium text-neutral-800" data-ko="목표 파일크기에 맞춰 바둑판 배열" data-en="Tiled to Target File Size">목표 파일크기에 맞춰 바둑판 배열</span>
+                                                <p class="text-xs text-neutral-500" data-ko="배경이미지를 반복 배열하여 목표 파일 크기 달성" data-en="Tile background image to reach target file size">배경이미지를 반복 배열하여 목표 파일 크기 달성</p>
+                                            </div>
+                                        </label>
+                                    </div>
+
                                     <div id="fixedSizeSettings">
                                         <div class="grid grid-cols-2 gap-4 mb-4">
                                             <div>
@@ -1191,6 +1249,31 @@
                                             <button class="sample-preset-btn px-3 py-1.5 bg-neutral-200 rounded-lg text-sm hover:bg-primary-200 transition-colors" data-width="640" data-height="480">640x480</button>
                                             <button class="sample-preset-btn px-3 py-1.5 bg-neutral-200 rounded-lg text-sm hover:bg-primary-200 transition-colors" data-width="800" data-height="600">800x600</button>
                                             <button class="sample-preset-btn px-3 py-1.5 bg-neutral-200 rounded-lg text-sm hover:bg-primary-200 transition-colors" data-width="1920" data-height="1080">1920x1080</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tiled Size Settings (Background Image) -->
+                                    <div id="tiledSizeSettings" class="hidden space-y-4">
+                                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                            <p class="text-sm text-blue-800">배경이미지를 선택하면 목표 파일 크기에 도달할 때까지 이미지 크기를 자동으로 늘려갑니다.</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-neutral-700 mb-2" data-ko="배경 이미지 선택" data-en="Select Background Image">배경 이미지 선택</label>
+                                            <label class="flex items-center justify-center px-4 py-3 bg-white border-2 border-dashed border-neutral-300 rounded-lg cursor-pointer hover:border-primary-400 transition-colors">
+                                                <input type="file" id="bgImageInput" accept="image/*" class="hidden">
+                                                <span class="text-neutral-600" id="bgImageInputLabel" data-ko="이미지 파일 선택" data-en="Select image file">이미지 파일 선택</span>
+                                            </label>
+                                        </div>
+                                        <div id="bgImagePreview" class="hidden">
+                                            <p class="text-sm text-neutral-600 mb-2">선택된 이미지:</p>
+                                            <div class="flex items-center gap-3">
+                                                <img id="bgImageThumb" class="w-16 h-16 object-cover rounded-lg border border-neutral-200" src="" alt="">
+                                                <div class="text-sm text-neutral-600">
+                                                    <p id="bgImageName"></p>
+                                                    <p id="bgImageSize"></p>
+                                                </div>
+                                                <button onclick="clearBgImage()" class="ml-auto px-3 py-1 bg-red-100 text-red-600 rounded-lg text-sm hover:bg-red-200 transition-colors">제거</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1861,7 +1944,57 @@
     let bnGeneratedNumbers = [];
     let bnFixedPrefixData = null;
 
-    function bnUpdateBusinessTypeSettings() { /* placeholder */ }
+    function bnValidateBusinessNumber(number) {
+        const cleanNumber = number.replace(/-/g, '');
+        if (cleanNumber.length !== 10 || !/^\d{10}$/.test(cleanNumber)) return false;
+        const weights = [1, 3, 7, 1, 3, 7, 1, 3, 5];
+        const nums = cleanNumber.split('').map(Number);
+        let sum = 0;
+        for (let i = 0; i < 9; i++) sum += nums[i] * weights[i];
+        sum += Math.floor((nums[8] * 5) / 10);
+        const checkDigit = (10 - (sum % 10)) % 10;
+        return checkDigit === nums[9];
+    }
+
+    function bnGetMiddleDigits(businessType) {
+        const ranges = {
+            'individual-01-79': Array.from({ length: 79 }, (_, i) => String(i + 1).padStart(2, '0')),
+            'individual-90-99': Array.from({ length: 10 }, (_, i) => String(i + 90).padStart(2, '0')),
+            'corporate-domestic': ['81', '85', '86', '87', '88'],
+            'corporate-foreign': ['84'],
+            'nonprofit': ['82', '83'],
+            'association': ['80', '89'],
+            'random': []
+        };
+        if (businessType === 'random') {
+            for (let key in ranges) {
+                if (key !== 'random') ranges.random = ranges.random.concat(ranges[key]);
+            }
+        }
+        const validMiddles = ranges[businessType] || ranges['random'];
+        return validMiddles[Math.floor(Math.random() * validMiddles.length)];
+    }
+
+    function bnGetBusinessTypeName(middleDigits) {
+        const middle = parseInt(middleDigits);
+        if (middle >= 1 && middle <= 79) return '개인사업자';
+        if (middle >= 90 && middle <= 99) return '개인사업자';
+        if ([81, 85, 86, 87, 88].includes(middle)) return '법인(국내)';
+        if (middle === 84) return '법인(해외)';
+        if ([82, 83].includes(middle)) return '비영리/공공';
+        if ([80, 89].includes(middle)) return '임의단체';
+        return '기타';
+    }
+
+    function bnToggleCustomTypeCount() {
+        const businessType = document.getElementById('bn-business-type').value;
+        const customSection = document.getElementById('bn-custom-type-count-section');
+        if (businessType === 'custom') {
+            customSection.classList.remove('hidden');
+        } else {
+            customSection.classList.add('hidden');
+        }
+    }
 
     function bnValidateFixedPrefix(input) {
         const value = input.value.replace(/[^\d-]/g, '');
@@ -1908,41 +2041,105 @@
         return (10 - (sum % 10)) % 10;
     }
 
+    function bnGenerateValidNumber(prefix, middle, suffix) {
+        const base9 = prefix + middle + suffix;
+        if (base9.length !== 9) return null;
+        const checkDigit = bnCalculateCheckDigit(base9);
+        const fullNumber = base9 + checkDigit;
+        if (!bnValidateBusinessNumber(fullNumber)) return null;
+        return fullNumber;
+    }
+
     function bnFormatNumber(number) {
         return number.substr(0, 3) + '-' + number.substr(3, 2) + '-' + number.substr(5, 5);
     }
 
     function bnGenerateBusinessNumbers() {
         const type = document.getElementById('bn-business-type').value;
-        const count = parseInt(document.getElementById('bn-business-count').value);
+        const removeHyphen = document.getElementById('bn-remove-hyphen').checked;
+        const today = new Date();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+
         bnGeneratedNumbers = [];
-        for (let i = 0; i < count; i++) {
-            let number;
-            if (bnFixedPrefixData) {
-                const fixedDigits = bnFixedPrefixData.digits;
-                const remainingDigits = 9 - fixedDigits.length;
-                let randomPart = '';
-                for (let j = 0; j < remainingDigits; j++) randomPart += Math.floor(Math.random() * 10);
-                const fullNumber = fixedDigits + randomPart;
-                const checkDigit = bnCalculateCheckDigit(fullNumber);
-                number = fullNumber + checkDigit;
-            } else {
-                let prefix = '';
-                prefix += Math.floor(Math.random() * 900 + 100);
-                if (type === 'individual-01-79') prefix += String(Math.floor(Math.random() * 79) + 1).padStart(2, '0');
-                else if (type === 'individual-90-99') prefix += String(Math.floor(Math.random() * 10) + 90);
-                else if (type === 'corporate-domestic') { const codes = [81, 85, 86, 87, 88]; prefix += codes[Math.floor(Math.random() * codes.length)]; }
-                else if (type === 'corporate-foreign') prefix += '84';
-                else if (type === 'nonprofit') prefix += Math.random() < 0.5 ? '82' : '83';
-                else if (type === 'association') prefix += Math.random() < 0.5 ? '80' : '89';
-                else prefix += String(Math.floor(Math.random() * 99) + 1).padStart(2, '0');
-                prefix += String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-                const checkDigit = bnCalculateCheckDigit(prefix);
-                number = prefix + checkDigit;
+        const usedNumbers = new Set();
+
+        if (type === 'custom') {
+            // Custom type count mode
+            const typeCounts = [
+                { type: 'individual-01-79', count: parseInt(document.getElementById('bn-countIndividual').value) || 0 },
+                { type: 'individual-90-99', count: parseInt(document.getElementById('bn-countIndividual2').value) || 0 },
+                { type: 'corporate-domestic', count: parseInt(document.getElementById('bn-countCorporate').value) || 0 },
+                { type: 'corporate-foreign', count: parseInt(document.getElementById('bn-countForeign').value) || 0 },
+                { type: 'nonprofit', count: parseInt(document.getElementById('bn-countNonprofit').value) || 0 },
+                { type: 'association', count: parseInt(document.getElementById('bn-countVoluntary').value) || 0 }
+            ];
+            const totalCount = typeCounts.reduce((sum, t) => sum + t.count, 0);
+            if (totalCount === 0) {
+                showToast('최소 1개 이상의 유형 수량을 입력해주세요', 'error');
+                return;
             }
-            bnGeneratedNumbers.push(bnFormatNumber(number));
+            for (const typeConfig of typeCounts) {
+                if (typeConfig.count <= 0) continue;
+                let typeAttempts = 0;
+                const maxTypeAttempts = typeConfig.count * 1000;
+                let typeGenerated = 0;
+                while (typeGenerated < typeConfig.count && typeAttempts < maxTypeAttempts) {
+                    typeAttempts++;
+                    const middle = bnGetMiddleDigits(typeConfig.type);
+                    let prefix;
+                    if (bnFixedPrefixData) {
+                        const fixedDigits = bnFixedPrefixData.digits;
+                        const remaining = 3 - fixedDigits.length;
+                        prefix = remaining > 0 ? fixedDigits + String(Math.floor(Math.random() * Math.pow(10, remaining))).padStart(remaining, '0') : fixedDigits.substring(0, 3);
+                    } else {
+                        prefix = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+                    }
+                    const suffix = month + day + String(Math.floor(Math.random() * 10));
+                    const number = bnGenerateValidNumber(prefix, middle, suffix.substring(0, 4));
+                    if (number && !usedNumbers.has(number)) {
+                        usedNumbers.add(number);
+                        const formatted = removeHyphen ? number : bnFormatNumber(number);
+                        bnGeneratedNumbers.push({
+                            raw: number,
+                            formatted: formatted,
+                            type: bnGetBusinessTypeName(middle)
+                        });
+                        typeGenerated++;
+                    }
+                }
+            }
+        } else {
+            // Single type mode
+            const count = parseInt(document.getElementById('bn-business-count').value);
+            let attempts = 0;
+            const maxAttempts = count * 1000;
+            while (bnGeneratedNumbers.length < count && attempts < maxAttempts) {
+                attempts++;
+                const middle = bnGetMiddleDigits(type);
+                let prefix;
+                if (bnFixedPrefixData) {
+                    const fixedDigits = bnFixedPrefixData.digits;
+                    const remaining = 3 - fixedDigits.length;
+                    prefix = remaining > 0 ? fixedDigits + String(Math.floor(Math.random() * Math.pow(10, remaining))).padStart(remaining, '0') : fixedDigits.substring(0, 3);
+                } else {
+                    prefix = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+                }
+                const suffix = month + day + String(Math.floor(Math.random() * 10));
+                const number = bnGenerateValidNumber(prefix, middle, suffix.substring(0, 4));
+                if (number && !usedNumbers.has(number)) {
+                    usedNumbers.add(number);
+                    const formatted = removeHyphen ? number : bnFormatNumber(number);
+                    bnGeneratedNumbers.push({
+                        raw: number,
+                        formatted: formatted,
+                        type: bnGetBusinessTypeName(middle)
+                    });
+                }
+            }
         }
         bnDisplayNumbers();
+        showToast(`사업자번호 ${bnGeneratedNumbers.length}개가 생성되었습니다!`, 'success');
     }
 
     function bnDisplayNumbers() {
@@ -1956,10 +2153,11 @@
         listEl.innerHTML = bnGeneratedNumbers.map((num, idx) => `
             <div class="flex items-center justify-between p-3 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50">
                 <div class="flex items-center gap-3">
-                    <span class="text-neutral-500 text-sm">${idx + 1}.</span>
-                    <span class="font-mono text-lg">${num}</span>
+                    <span class="text-neutral-500 text-sm">${String(idx + 1).padStart(2, '0')}</span>
+                    <span class="font-mono text-lg">${num.formatted}</span>
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-primary-100 text-primary-800">${num.type}</span>
                 </div>
-                <button onclick="copyToClipboard('${num}')" class="text-neutral-400 hover:text-neutral-600 px-1" title="복사">📋</button>
+                <button onclick="copyToClipboard('${num.formatted}')" class="text-neutral-400 hover:text-neutral-600 px-1" title="복사">📋</button>
             </div>
         `).join('');
         countEl.textContent = bnGeneratedNumbers.length;
@@ -1967,21 +2165,32 @@
 
     function bnCopyBusinessNumbers() {
         if (bnGeneratedNumbers.length === 0) { showToast('생성된 번호가 없습니다', 'error'); return; }
-        copyToClipboard(bnGeneratedNumbers.join('\n'));
+        copyToClipboard(bnGeneratedNumbers.map(num => num.formatted).join('\n'));
     }
 
-    function bnDownloadBusinessNumbers() {
+    function bnDownloadExcel() {
         if (bnGeneratedNumbers.length === 0) { showToast('생성된 번호가 없습니다', 'error'); return; }
-        const csv = '사업자등록번호\n' + bnGeneratedNumbers.join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const ws_data = [['번호', '사업자번호', '유형']];
+        bnGeneratedNumbers.forEach((num, index) => {
+            ws_data.push([index + 1, num.formatted, num.type]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Business Numbers');
+        XLSX.writeFile(wb, `business_numbers_${Date.now()}.xlsx`);
+        showToast('Excel 파일이 다운로드되었습니다!', 'success');
+    }
+
+    function bnDownloadPostmanCSV() {
+        if (bnGeneratedNumbers.length === 0) { showToast('생성된 번호가 없습니다', 'error'); return; }
+        let csvContent = "businessNumber\n";
+        bnGeneratedNumbers.forEach(num => csvContent += num.raw + "\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
-        link.setAttribute('href', URL.createObjectURL(blob));
-        link.setAttribute('download', `business_numbers_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
+        link.href = URL.createObjectURL(blob);
+        link.download = `postman_business_numbers_${Date.now()}.csv`;
         link.click();
-        document.body.removeChild(link);
-        showToast('CSV 파일이 다운로드되었습니다', 'success');
+        showToast('Postman CSV 파일이 다운로드되었습니다!', 'success');
     }
 
     // ============================================================
@@ -2782,6 +2991,54 @@
         document.getElementById('sampleWatermarkOpacity').addEventListener('input', function() {
             document.getElementById('sampleOpacityValue').textContent = this.value + '%';
         });
+        // Background image settings
+        document.getElementById('bgImageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                loadedBgImage = new Image();
+                loadedBgImage.onload = function() {
+                    document.getElementById('bgImagePreview').classList.remove('hidden');
+                    document.getElementById('bgImageThumb').src = loadedBgImage.src;
+                    document.getElementById('bgImageName').textContent = file.name;
+                    document.getElementById('bgImageSize').textContent = `${loadedBgImage.width} x ${loadedBgImage.height}px`;
+                    document.getElementById('bgImageInputLabel').textContent = file.name;
+                };
+                loadedBgImage.src = URL.createObjectURL(file);
+            }
+        });
+        // Initialize size mode
+        toggleSizeMode();
+    }
+
+    function toggleSizeMode() {
+        const sizeMode = document.querySelector('input[name="sizeMode"]:checked').value;
+        const fixedSettings = document.getElementById('fixedSizeSettings');
+        const tiledSettings = document.getElementById('tiledSizeSettings');
+        const fixedLabel = document.getElementById('sizeMode-fixed-label');
+        const tiledLabel = document.getElementById('sizeMode-tiled-label');
+
+        if (sizeMode === 'fixed') {
+            fixedSettings.classList.remove('hidden');
+            tiledSettings.classList.add('hidden');
+            fixedLabel.classList.add('border-primary-400', 'bg-primary-50');
+            fixedLabel.classList.remove('border-neutral-200');
+            tiledLabel.classList.remove('border-primary-400', 'bg-primary-50');
+            tiledLabel.classList.add('border-neutral-200');
+        } else {
+            fixedSettings.classList.add('hidden');
+            tiledSettings.classList.remove('hidden');
+            tiledLabel.classList.add('border-primary-400', 'bg-primary-50');
+            tiledLabel.classList.remove('border-neutral-200');
+            fixedLabel.classList.remove('border-primary-400', 'bg-primary-50');
+            fixedLabel.classList.add('border-neutral-200');
+        }
+    }
+
+    function clearBgImage() {
+        loadedBgImage = null;
+        document.getElementById('bgImageInput').value = '';
+        document.getElementById('bgImagePreview').classList.add('hidden');
+        document.getElementById('bgImageInputLabel').textContent = '이미지 파일 선택';
     }
 
     function getSelectedFormats() {
@@ -2895,17 +3152,33 @@
         const text = document.getElementById('sampleImageText').value || 'Sample';
         const textColor = document.getElementById('sampleTextColor').value;
         const bgColor = document.getElementById('sampleBgColor').value;
-        const width = parseInt(document.getElementById('sampleWidth').value) || 800;
-        const height = parseInt(document.getElementById('sampleHeight').value) || 600;
         const count = Math.min(parseInt(document.getElementById('sampleCount').value) || 1, 20);
         const formats = getSelectedFormats();
         const targetBytes = getTargetSizeBytes();
         const watermarkEnabled = document.getElementById('sampleWatermarkEnabled').checked;
         const watermarkText = watermarkEnabled ? document.getElementById('sampleWatermarkText').value : null;
         const watermarkOpacity = parseInt(document.getElementById('sampleWatermarkOpacity').value) || 15;
-        if (width < 50 || width > 4096 || height < 50 || height > 4096) {
-            showToast('이미지 크기는 50-4096px 사이여야 합니다', 'error'); return;
+
+        // Check size mode
+        const sizeMode = document.querySelector('input[name="sizeMode"]:checked').value;
+
+        if (sizeMode === 'tiled') {
+            if (!loadedBgImage) {
+                showToast('배경 이미지를 선택해주세요', 'error');
+                return;
+            }
+            await generateTiledImages(text, textColor, bgColor, count, formats, targetBytes, watermarkText, watermarkOpacity);
+        } else {
+            const width = parseInt(document.getElementById('sampleWidth').value) || 800;
+            const height = parseInt(document.getElementById('sampleHeight').value) || 600;
+            if (width < 50 || width > 4096 || height < 50 || height > 4096) {
+                showToast('이미지 크기는 50-4096px 사이여야 합니다', 'error'); return;
+            }
+            await generateFixedSizeImages(text, textColor, bgColor, width, height, count, formats, targetBytes, watermarkText, watermarkOpacity);
         }
+    }
+
+    async function generateFixedSizeImages(text, textColor, bgColor, width, height, count, formats, targetBytes, watermarkText, watermarkOpacity) {
         const previewGrid = document.getElementById('samplePreviewGrid');
         previewGrid.innerHTML = '<div class="text-center py-8"><div class="loading-spinner mx-auto"></div></div>';
         generatedSampleImages = [];
@@ -2957,6 +3230,357 @@
         }
         document.getElementById('sampleDownloadAllBtn').disabled = false;
         showToast(`${count}개의 이미지가 생성되었습니다`, 'success');
+    }
+
+    async function generateTiledImages(text, textColor, bgColor, count, formats, targetBytes, watermarkText, watermarkOpacity) {
+        const previewGrid = document.getElementById('samplePreviewGrid');
+        previewGrid.innerHTML = '<div class="text-center py-8"><div class="loading-spinner mx-auto"></div><p class="mt-2 text-neutral-600">목표 파일 크기에 맞게 이미지 생성 중...</p></div>';
+        generatedSampleImages = [];
+        await new Promise(resolve => setTimeout(resolve, 100));
+        previewGrid.innerHTML = '';
+
+        const bgImgWidth = loadedBgImage.width;
+        const bgImgHeight = loadedBgImage.height;
+
+        for (let i = 0; i < count; i++) {
+            const displayText = count > 1 ? `${text} #${i+1}` : text;
+
+            let tilesX = 1, tilesY = 1;
+            let baseCanvas = null, baseBlob = null;
+            const maxTiles = 30;
+
+            for (let attempt = 0; attempt < maxTiles * maxTiles; attempt++) {
+                const canvasWidth = bgImgWidth * tilesX;
+                const canvasHeight = bgImgHeight * tilesY;
+                if (canvasWidth > 10000 || canvasHeight > 10000) break;
+
+                const canvas = createTiledCanvas(bgImgWidth, bgImgHeight, tilesX, tilesY, displayText, textColor, watermarkText, watermarkOpacity, null);
+                const testBlob = await canvasToBlob(canvas, 'png', 1);
+                baseCanvas = canvas;
+                baseBlob = testBlob;
+
+                if (testBlob.size >= targetBytes * 1.1) break;
+                if (tilesX <= tilesY) tilesX++;
+                else tilesY++;
+            }
+
+            if (!baseCanvas) {
+                baseCanvas = createTiledCanvas(bgImgWidth, bgImgHeight, 1, 1, displayText, textColor, watermarkText, watermarkOpacity, null);
+            }
+
+            const finalWidth = baseCanvas.width;
+            const finalHeight = baseCanvas.height;
+
+            const previewItem = document.createElement('div');
+            previewItem.className = 'sample-preview-item';
+            const thumbnailContainer = document.createElement('div');
+            thumbnailContainer.className = 'flex flex-wrap justify-center gap-2 mb-2';
+            const info = document.createElement('div');
+            info.className = 'text-sm text-neutral-600 mb-2';
+            info.textContent = `${finalWidth}x${finalHeight} (${tilesX}x${tilesY} 타일)`;
+            const downloadButtons = document.createElement('div');
+            downloadButtons.className = 'flex flex-wrap justify-center gap-2';
+
+            for (const format of formats) {
+                const formatCanvas = createTiledCanvas(bgImgWidth, bgImgHeight, tilesX, tilesY, displayText, textColor, watermarkText, watermarkOpacity, format);
+                const finalBlob = await adjustToExactSize(formatCanvas, format, targetBytes);
+                const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
+                const padLength = String(count).length;
+                const paddedIndex = String(i+1).padStart(padLength, '0');
+                const filename = `${safeText}_${paddedIndex}.${format}`;
+
+                const thumbnailWrapper = document.createElement('div');
+                thumbnailWrapper.className = 'text-center';
+                const previewCanvas = document.createElement('canvas');
+                const maxPreviewSize = formats.length > 1 ? 120 : 200;
+                const scale = Math.min(maxPreviewSize / finalWidth, maxPreviewSize / finalHeight, 1);
+                previewCanvas.width = finalWidth * scale;
+                previewCanvas.height = finalHeight * scale;
+                previewCanvas.getContext('2d').drawImage(formatCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+                previewCanvas.style.borderRadius = '8px';
+                previewCanvas.style.border = '1px solid #e5e7eb';
+                thumbnailWrapper.appendChild(previewCanvas);
+                thumbnailContainer.appendChild(thumbnailWrapper);
+
+                const sizeInfo = document.createElement('span');
+                sizeInfo.className = 'text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded';
+                const accuracy = Math.abs(finalBlob.size - targetBytes) / targetBytes * 100;
+                const accuracyText = accuracy < 1 ? '✓' : `±${accuracy.toFixed(1)}%`;
+                sizeInfo.textContent = `${format.toUpperCase()}: ${formatFileSize(finalBlob.size)} ${accuracyText}`;
+
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'px-3 py-1.5 btn-primary text-sm';
+                downloadBtn.textContent = format.toUpperCase();
+                const blobToDownload = finalBlob;
+                downloadBtn.onclick = () => {
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = URL.createObjectURL(blobToDownload);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                };
+                downloadButtons.appendChild(sizeInfo);
+                downloadButtons.appendChild(downloadBtn);
+                generatedSampleImages.push({ blob: finalBlob, filename, format, targetBytes, isTiled: true, index: i+1, text: safeText });
+            }
+            previewItem.appendChild(thumbnailContainer);
+            previewItem.appendChild(info);
+            previewItem.appendChild(downloadButtons);
+            previewGrid.appendChild(previewItem);
+        }
+        document.getElementById('sampleDownloadAllBtn').disabled = false;
+        showToast(`${count}개의 이미지가 생성되었습니다`, 'success');
+    }
+
+    function createTiledCanvas(bgImgWidth, bgImgHeight, tilesX, tilesY, displayText, textColor, watermarkText, watermarkOpacity, format) {
+        const canvasWidth = bgImgWidth * tilesX;
+        const canvasHeight = bgImgHeight * tilesY;
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        const ctx = canvas.getContext('2d');
+
+        for (let tx = 0; tx < tilesX; tx++) {
+            for (let ty = 0; ty < tilesY; ty++) {
+                ctx.drawImage(loadedBgImage, tx * bgImgWidth, ty * bgImgHeight, bgImgWidth, bgImgHeight);
+            }
+        }
+
+        ctx.fillStyle = textColor;
+        const fontSize = Math.min(canvasWidth, canvasHeight) * 0.1;
+        ctx.font = `bold ${fontSize}px 'Segoe UI', Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(displayText, canvasWidth / 2, canvasHeight / 2);
+
+        if (watermarkText) {
+            ctx.save();
+            ctx.globalAlpha = watermarkOpacity / 100;
+            ctx.fillStyle = textColor;
+            ctx.font = `${Math.max(14, fontSize * 0.3)}px Arial`;
+            ctx.translate(canvasWidth / 2, canvasHeight / 2);
+            ctx.rotate(-Math.PI / 6);
+            const watermarkSpacingX = fontSize * 3;
+            const watermarkSpacingY = fontSize * 2;
+            for (let wx = -canvasWidth; wx < canvasWidth * 2; wx += watermarkSpacingX) {
+                for (let wy = -canvasHeight; wy < canvasHeight * 2; wy += watermarkSpacingY) {
+                    ctx.fillText(watermarkText, wx, wy);
+                }
+            }
+            ctx.restore();
+        }
+
+        if (format) drawFormatBadge(ctx, canvasWidth, canvasHeight, format);
+        return canvas;
+    }
+
+    // Exact size adjustment functions for tiled mode
+    async function adjustToExactSize(canvas, format, targetBytes) {
+        const isJpeg = format === 'jpg' || format === 'jpeg';
+        const isPng = format === 'png';
+        const isTiff = format === 'tif' || format === 'tiff';
+        const isPdf = format === 'pdf';
+        if (isJpeg) return await adjustJpegToExactSize(canvas, targetBytes);
+        if (isPng) return await adjustPngToExactSize(canvas, targetBytes);
+        if (isTiff) return await adjustTiffToExactSize(canvas, targetBytes);
+        if (isPdf) return await adjustPdfToExactSize(canvas, targetBytes);
+        return await canvasToBlob(canvas, format, 1);
+    }
+
+    async function adjustJpegToExactSize(canvas, targetBytes) {
+        let low = 0.01, high = 1.0, bestBlob = null;
+        let testBlob = await canvasToBlob(canvas, 'jpeg', 1.0);
+        if (testBlob.size < targetBytes) return await inflateImageToTarget(canvas, 'jpeg', targetBytes);
+        for (let i = 0; i < 20; i++) {
+            const mid = (low + high) / 2;
+            const blob = await canvasToBlob(canvas, 'jpeg', mid);
+            if (blob.size <= targetBytes) { bestBlob = blob; low = mid; }
+            else high = mid;
+            if (bestBlob && bestBlob.size >= targetBytes * 0.99 && bestBlob.size <= targetBytes) break;
+        }
+        if (!bestBlob) {
+            bestBlob = await canvasToBlob(canvas, 'jpeg', 0.01);
+            if (bestBlob.size > targetBytes) bestBlob = await scaleDownToTarget(canvas, 'jpeg', targetBytes);
+        }
+        if (bestBlob.size < targetBytes * 0.95) bestBlob = await inflateImageToTarget(canvas, 'jpeg', targetBytes);
+        return bestBlob;
+    }
+
+    async function adjustPngToExactSize(canvas, targetBytes) {
+        let blob = await canvasToBlob(canvas, 'png', 1);
+        let workingCanvas = canvas;
+        while (blob.size > targetBytes) {
+            const scaleFactor = Math.sqrt(targetBytes / blob.size) * 0.9;
+            const newWidth = Math.max(10, Math.floor(workingCanvas.width * scaleFactor));
+            const newHeight = Math.max(10, Math.floor(workingCanvas.height * scaleFactor));
+            const scaledCanvas = document.createElement('canvas');
+            scaledCanvas.width = newWidth; scaledCanvas.height = newHeight;
+            scaledCanvas.getContext('2d').drawImage(workingCanvas, 0, 0, newWidth, newHeight);
+            workingCanvas = scaledCanvas;
+            blob = await canvasToBlob(workingCanvas, 'png', 1);
+            if (newWidth <= 10 || newHeight <= 10) break;
+        }
+        if (blob.size < targetBytes) {
+            const paddingNeeded = targetBytes - blob.size;
+            blob = await addPngTextChunkExact(blob, paddingNeeded);
+        }
+        return blob;
+    }
+
+    async function adjustTiffToExactSize(canvas, targetBytes) {
+        let workingCanvas = canvas;
+        let blob = await canvasToBlob(workingCanvas, 'png', 1);
+        const estimatedUncompressedSize = workingCanvas.width * workingCanvas.height * 4;
+        const targetScale = Math.sqrt(targetBytes / Math.max(estimatedUncompressedSize, blob.size));
+        if (targetScale < 1) {
+            const newWidth = Math.max(10, Math.floor(workingCanvas.width * targetScale * 0.9));
+            const newHeight = Math.max(10, Math.floor(workingCanvas.height * targetScale * 0.9));
+            const scaledCanvas = document.createElement('canvas');
+            scaledCanvas.width = newWidth; scaledCanvas.height = newHeight;
+            scaledCanvas.getContext('2d').drawImage(workingCanvas, 0, 0, newWidth, newHeight);
+            workingCanvas = scaledCanvas;
+        }
+        blob = await canvasToBlob(workingCanvas, 'png', 1);
+        while (blob.size > targetBytes) {
+            const newWidth = Math.max(10, Math.floor(workingCanvas.width * 0.9));
+            const newHeight = Math.max(10, Math.floor(workingCanvas.height * 0.9));
+            const scaledCanvas = document.createElement('canvas');
+            scaledCanvas.width = newWidth; scaledCanvas.height = newHeight;
+            scaledCanvas.getContext('2d').drawImage(workingCanvas, 0, 0, newWidth, newHeight);
+            workingCanvas = scaledCanvas;
+            blob = await canvasToBlob(workingCanvas, 'png', 1);
+            if (newWidth <= 10 || newHeight <= 10) break;
+        }
+        if (blob.size < targetBytes) {
+            const paddingNeeded = targetBytes - blob.size;
+            blob = await addPngTextChunkExact(blob, paddingNeeded);
+        }
+        return new Blob([await blob.arrayBuffer()], { type: 'image/tiff' });
+    }
+
+    async function adjustPdfToExactSize(canvas, targetBytes) {
+        const { jsPDF } = window.jspdf;
+        const pdfOverhead = 800;
+        const imageTargetBytes = targetBytes - pdfOverhead;
+        if (imageTargetBytes <= 0) {
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [10, 10] });
+            return pdf.output('blob');
+        }
+        const jpegBlob = await adjustJpegToExactSize(canvas, imageTargetBytes);
+        const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+        const imgData = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(jpegBlob); });
+        pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+        let pdfBlob = pdf.output('blob');
+        let workingCanvas = canvas;
+        while (pdfBlob.size > targetBytes && workingCanvas.width > 10) {
+            const newWidth = Math.floor(workingCanvas.width * 0.9);
+            const newHeight = Math.floor(workingCanvas.height * 0.9);
+            const scaledCanvas = document.createElement('canvas');
+            scaledCanvas.width = newWidth; scaledCanvas.height = newHeight;
+            scaledCanvas.getContext('2d').drawImage(workingCanvas, 0, 0, newWidth, newHeight);
+            workingCanvas = scaledCanvas;
+            const newJpegBlob = await adjustJpegToExactSize(workingCanvas, imageTargetBytes * 0.8);
+            const newPdf = new jsPDF({ orientation: newWidth > newHeight ? 'landscape' : 'portrait', unit: 'px', format: [newWidth, newHeight] });
+            const newImgData = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(newJpegBlob); });
+            newPdf.addImage(newImgData, 'JPEG', 0, 0, newWidth, newHeight);
+            pdfBlob = newPdf.output('blob');
+        }
+        return pdfBlob;
+    }
+
+    async function scaleDownToTarget(canvas, format, targetBytes) {
+        let workingCanvas = canvas;
+        let blob = await canvasToBlob(workingCanvas, format, format === 'jpeg' ? 0.5 : 1);
+        while (blob.size > targetBytes && workingCanvas.width > 10) {
+            const scaleFactor = Math.sqrt(targetBytes / blob.size) * 0.9;
+            const newWidth = Math.max(10, Math.floor(workingCanvas.width * scaleFactor));
+            const newHeight = Math.max(10, Math.floor(workingCanvas.height * scaleFactor));
+            const scaledCanvas = document.createElement('canvas');
+            scaledCanvas.width = newWidth; scaledCanvas.height = newHeight;
+            scaledCanvas.getContext('2d').drawImage(workingCanvas, 0, 0, newWidth, newHeight);
+            workingCanvas = scaledCanvas;
+            blob = await canvasToBlob(workingCanvas, format, format === 'jpeg' ? 0.5 : 1);
+        }
+        return blob;
+    }
+
+    async function inflateImageToTarget(canvas, format, targetBytes) {
+        const width = canvas.width, height = canvas.height;
+        const ctx = canvas.getContext('2d');
+        const originalImageData = ctx.getImageData(0, 0, width, height);
+        let bestBlob = await canvasToBlob(canvas, format, format === 'jpeg' ? 0.99 : 1);
+        let noiseLevel = 1;
+        for (let iteration = 0; iteration < 50; iteration++) {
+            const noiseCanvas = document.createElement('canvas');
+            noiseCanvas.width = width; noiseCanvas.height = height;
+            const noiseCtx = noiseCanvas.getContext('2d');
+            noiseCtx.putImageData(originalImageData, 0, 0);
+            const imageData = noiseCtx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i + 3] > 0) {
+                    data[i] = Math.max(0, Math.min(255, data[i] + (Math.random() * noiseLevel * 2 - noiseLevel)));
+                    data[i+1] = Math.max(0, Math.min(255, data[i+1] + (Math.random() * noiseLevel * 2 - noiseLevel)));
+                    data[i+2] = Math.max(0, Math.min(255, data[i+2] + (Math.random() * noiseLevel * 2 - noiseLevel)));
+                }
+            }
+            noiseCtx.putImageData(imageData, 0, 0);
+            const blob = await canvasToBlob(noiseCanvas, format, format === 'jpeg' ? 0.99 : 1);
+            if (blob.size <= targetBytes && blob.size > bestBlob.size) bestBlob = blob;
+            if (bestBlob.size >= targetBytes * 0.99 && bestBlob.size <= targetBytes) break;
+            if (blob.size > targetBytes) noiseLevel = Math.max(0.5, noiseLevel - 0.5);
+            else noiseLevel = Math.min(noiseLevel + 1, 40);
+        }
+        ctx.putImageData(originalImageData, 0, 0);
+        return bestBlob;
+    }
+
+    function crc32(data) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < data.length; i++) {
+            crc ^= data[i];
+            for (let j = 0; j < 8; j++) {
+                crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+            }
+        }
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+    }
+
+    async function addPngTextChunkExact(pngBlob, paddingBytes) {
+        if (paddingBytes <= 0) return pngBlob;
+        const arrayBuffer = await pngBlob.arrayBuffer();
+        const data = new Uint8Array(arrayBuffer);
+        if (data[0] !== 0x89 || data[1] !== 0x50 || data[2] !== 0x4E || data[3] !== 0x47) return pngBlob;
+        const keyword = 'X';
+        const keywordBytes = new TextEncoder().encode(keyword);
+        const chunkOverhead = 12 + keywordBytes.length + 1;
+        const textDataSize = Math.max(0, paddingBytes - chunkOverhead);
+        const paddingText = 'P'.repeat(textDataSize);
+        const textBytes = new TextEncoder().encode(paddingText);
+        const chunkData = new Uint8Array(keywordBytes.length + 1 + textBytes.length);
+        chunkData.set(keywordBytes, 0);
+        chunkData[keywordBytes.length] = 0;
+        chunkData.set(textBytes, keywordBytes.length + 1);
+        const chunkType = new Uint8Array([0x74, 0x45, 0x58, 0x74]);
+        const crcData = new Uint8Array(chunkType.length + chunkData.length);
+        crcData.set(chunkType, 0);
+        crcData.set(chunkData, chunkType.length);
+        const crcVal = crc32(crcData);
+        const lengthBytes = new Uint8Array(4);
+        new DataView(lengthBytes.buffer).setUint32(0, chunkData.length, false);
+        const crcBytes = new Uint8Array(4);
+        new DataView(crcBytes.buffer).setUint32(0, crcVal, false);
+        const newChunk = new Uint8Array(12 + chunkData.length);
+        newChunk.set(lengthBytes, 0);
+        newChunk.set(chunkType, 4);
+        newChunk.set(chunkData, 8);
+        newChunk.set(crcBytes, 8 + chunkData.length);
+        const iendStart = data.length - 12;
+        const newPng = new Uint8Array(data.length + newChunk.length);
+        newPng.set(data.subarray(0, iendStart), 0);
+        newPng.set(newChunk, iendStart);
+        newPng.set(data.subarray(iendStart), iendStart + newChunk.length);
+        return new Blob([newPng], { type: 'image/png' });
     }
 
     async function downloadSingleSampleImage(canvas, filename, format, targetBytes) {

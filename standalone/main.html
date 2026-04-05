@@ -6,6 +6,8 @@
     <title>사장님 플러스 도구 모음 (Standalone)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         .form-input {
             @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent;
@@ -77,6 +79,98 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
+        /* 프로필 생성기 스타일 */
+        .preview-canvas {
+            border: 3px solid #cbd5e0;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .chip-position {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .chip-position:hover {
+            border-color: #cbd5e0;
+        }
+
+        .chip-position.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        /* 샘플 이미지 생성기 스타일 */
+        .format-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .format-checkbox:hover {
+            background: #eff6ff;
+        }
+
+        .format-checkbox.checked {
+            background: #3b82f6;
+            border-color: #2563eb;
+        }
+
+        .format-checkbox input[type="checkbox"] {
+            display: none;
+        }
+
+        .format-checkbox .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #9E9E9E;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .format-checkbox.checked .checkmark {
+            background: #1e3a5f;
+            border-color: #1e3a5f;
+        }
+
+        .format-checkbox.checked .checkmark::after {
+            content: '\2713';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .sample-preview-item {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .sample-preview-item canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
         /* Main tab navigation */
         .main-tab {
             padding: 12px 24px;
@@ -137,6 +231,21 @@
             </button>
             <button onclick="switchMainTab('combination')" id="main-tab-combination" class="main-tab">
                 조합 생성기
+            </button>
+            <button onclick="switchMainTab('profile')" id="main-tab-profile" class="main-tab">
+                프로필
+            </button>
+            <button onclick="switchMainTab('sample')" id="main-tab-sample" class="main-tab">
+                이미지
+            </button>
+            <button onclick="switchMainTab('csv')" id="main-tab-csv" class="main-tab">
+                CSV
+            </button>
+            <button onclick="switchMainTab('stopwatch')" id="main-tab-stopwatch" class="main-tab">
+                타이머
+            </button>
+            <button onclick="switchMainTab('clock')" id="main-tab-clock" class="main-tab">
+                시계
             </button>
             <button onclick="switchMainTab('admin')" id="main-tab-admin" class="main-tab">
                 어드민 대시보드
@@ -481,6 +590,423 @@
         </div>
     </div>
 
+    <!-- ========== 프로필 이미지 생성기 ========== -->
+    <div id="content-profile" class="container mx-auto px-4 py-8 hidden" style="display:none">
+        <div class="max-w-6xl mx-auto">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">메신저 프로필 이미지 생성기</h2>
+                    <p class="text-gray-600">QA 환경별 프로필을 쉽게 만들어보세요</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-4 md:p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">메인 텍스트 설정</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="mainText" class="block text-sm font-medium text-gray-700 mb-2">메인 텍스트 (줄바꿈은 |로 구분)</label>
+                            <input type="text" id="mainText" class="form-input" placeholder="JK 또는 JK|운영자" value="JK">
+                        </div>
+                        <div>
+                            <label for="mainTextSize" class="block text-sm font-medium text-gray-700 mb-2">메인 텍스트 크기</label>
+                            <div class="flex items-center space-x-4">
+                                <input type="range" id="mainTextSize" min="50" max="200" value="120" class="flex-1">
+                                <input type="number" id="mainTextSizeValue" min="50" max="200" value="120" class="w-20 px-3 py-2 border border-gray-200 rounded-lg">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">배경색</label>
+                                <div class="flex items-center space-x-3">
+                                    <input type="color" id="profileBgColor" value="#4a90e2" class="w-12 h-12 rounded-lg cursor-pointer">
+                                    <input type="text" id="profileBgColorHex" value="#4a90e2" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg font-mono text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">메인 텍스트색</label>
+                                <div class="flex items-center space-x-3">
+                                    <input type="color" id="mainTextColor" value="#ffffff" class="w-12 h-12 rounded-lg cursor-pointer">
+                                    <input type="text" id="mainTextColorHex" value="#ffffff" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg font-mono text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-4 md:p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">칩 위치 및 설정 (0-4개 선택 가능)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="chip-position active" data-position="topLeft">
+                            <div class="flex items-center mb-3">
+                                <input type="checkbox" id="topLeftEnabled" checked class="mr-3 w-5 h-5">
+                                <label for="topLeftEnabled" class="font-medium">좌상단</label>
+                            </div>
+                            <input type="text" id="topLeftText" placeholder="운영" value="운영" class="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="color" id="topLeftChipBg" value="#ffffff" class="w-full h-10 rounded cursor-pointer">
+                                <input type="color" id="topLeftChipText" value="#4a90e2" class="w-full h-10 rounded cursor-pointer">
+                            </div>
+                        </div>
+                        <div class="chip-position" data-position="topRight">
+                            <div class="flex items-center mb-3">
+                                <input type="checkbox" id="topRightEnabled" class="mr-3 w-5 h-5">
+                                <label for="topRightEnabled" class="font-medium">우상단</label>
+                            </div>
+                            <input type="text" id="topRightText" placeholder="개발" value="개발" class="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="color" id="topRightChipBg" value="#ffffff" class="w-full h-10 rounded cursor-pointer">
+                                <input type="color" id="topRightChipText" value="#e53e3e" class="w-full h-10 rounded cursor-pointer">
+                            </div>
+                        </div>
+                        <div class="chip-position" data-position="bottomLeft">
+                            <div class="flex items-center mb-3">
+                                <input type="checkbox" id="bottomLeftEnabled" class="mr-3 w-5 h-5">
+                                <label for="bottomLeftEnabled" class="font-medium">좌하단</label>
+                            </div>
+                            <input type="text" id="bottomLeftText" placeholder="테스트" value="테스트" class="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="color" id="bottomLeftChipBg" value="#ffffff" class="w-full h-10 rounded cursor-pointer">
+                                <input type="color" id="bottomLeftChipText" value="#38a169" class="w-full h-10 rounded cursor-pointer">
+                            </div>
+                        </div>
+                        <div class="chip-position active" data-position="bottomRight">
+                            <div class="flex items-center mb-3">
+                                <input type="checkbox" id="bottomRightEnabled" checked class="mr-3 w-5 h-5">
+                                <label for="bottomRightEnabled" class="font-medium">우하단</label>
+                            </div>
+                            <input type="text" id="bottomRightText" placeholder="실사용" value="실사용" class="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="color" id="bottomRightChipBg" value="#ffffff" class="w-full h-10 rounded cursor-pointer">
+                                <input type="color" id="bottomRightChipText" value="#4a90e2" class="w-full h-10 rounded cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center my-8">
+                    <canvas id="profileCanvas" class="preview-canvas" width="300" height="300"></canvas>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button onclick="generateProfileImage()" class="btn-primary">이미지 생성</button>
+                    <button id="profileDownloadBtn" onclick="downloadProfileImage()" disabled class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed">다운로드</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 샘플 이미지 생성기 ========== -->
+    <div id="content-sample" class="container mx-auto px-4 py-8 hidden" style="display:none">
+        <div class="max-w-6xl mx-auto">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">샘플 이미지 생성기</h2>
+                    <p class="text-gray-600">테스트용 샘플 이미지를 손쉽게 생성하세요</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-6">
+                        <div class="bg-gray-50 rounded-xl p-4 md:p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">텍스트 설정</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">텍스트</label>
+                                    <input type="text" id="sampleImageText" class="form-input" value="Sample Image">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">텍스트색</label>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="color" id="sampleTextColor" value="#3C1E1E" class="w-10 h-10 rounded cursor-pointer">
+                                            <input type="text" id="sampleTextColorHex" value="#3C1E1E" class="flex-1 px-2 py-1 border border-gray-200 rounded text-sm font-mono">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">배경색</label>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="color" id="sampleBgColor" value="#FEE500" class="w-10 h-10 rounded cursor-pointer">
+                                            <input type="text" id="sampleBgColorHex" value="#FEE500" class="flex-1 px-2 py-1 border border-gray-200 rounded text-sm font-mono">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-4 md:p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">크기 설정</h3>
+                            <div class="space-y-3 mb-4">
+                                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-blue-400 bg-blue-50 cursor-pointer transition-colors" id="sizeMode-fixed-label">
+                                    <input type="radio" name="sizeMode" value="fixed" checked class="w-5 h-5 accent-blue-500" onchange="toggleSizeMode()">
+                                    <div>
+                                        <span class="font-medium text-gray-800">고정 사이즈</span>
+                                        <p class="text-xs text-gray-500">지정한 너비x높이로 이미지 생성</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-gray-200 cursor-pointer transition-colors" id="sizeMode-tiled-label">
+                                    <input type="radio" name="sizeMode" value="tiled" class="w-5 h-5 accent-blue-500" onchange="toggleSizeMode()">
+                                    <div>
+                                        <span class="font-medium text-gray-800">목표 파일크기에 맞춰 바둑판 배열</span>
+                                        <p class="text-xs text-gray-500">배경이미지를 반복 배열하여 목표 파일 크기 달성</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div id="fixedSizeSettings">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">너비 (px)</label>
+                                        <input type="number" id="sampleWidth" value="800" min="50" max="4096" class="form-input">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">높이 (px)</label>
+                                        <input type="number" id="sampleHeight" value="600" min="50" max="4096" class="form-input">
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-blue-200 transition-colors" data-width="100" data-height="100">100x100</button>
+                                    <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-blue-200 transition-colors" data-width="640" data-height="480">640x480</button>
+                                    <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-blue-200 transition-colors" data-width="800" data-height="600">800x600</button>
+                                    <button class="sample-preset-btn px-3 py-1.5 bg-gray-200 rounded-lg text-sm hover:bg-blue-200 transition-colors" data-width="1920" data-height="1080">1920x1080</button>
+                                </div>
+                            </div>
+                            <div id="tiledSizeSettings" class="hidden space-y-4">
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                    <p class="text-sm text-blue-800">배경이미지를 선택하면 목표 파일 크기에 도달할 때까지 이미지 크기를 자동으로 늘려갑니다.</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">배경 이미지 선택</label>
+                                    <label class="flex items-center justify-center px-4 py-3 bg-white border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
+                                        <input type="file" id="bgImageInput" accept="image/*" class="hidden">
+                                        <span class="text-gray-600" id="bgImageInputLabel">이미지 파일 선택</span>
+                                    </label>
+                                </div>
+                                <div id="bgImagePreview" class="hidden">
+                                    <p class="text-sm text-gray-600 mb-2">선택된 이미지:</p>
+                                    <div class="flex items-center gap-3">
+                                        <img id="bgImageThumb" class="w-16 h-16 object-cover rounded-lg border border-gray-200" src="" alt="">
+                                        <div class="text-sm text-gray-600">
+                                            <p id="bgImageName"></p>
+                                            <p id="bgImageSize"></p>
+                                        </div>
+                                        <button onclick="clearBgImage()" class="ml-auto px-3 py-1 bg-red-100 text-red-600 rounded-lg text-sm hover:bg-red-200 transition-colors">제거</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-4 md:p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">파일 설정</h3>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">목표 파일 크기</label>
+                                        <div class="flex gap-2">
+                                            <input type="number" id="sampleTargetSize" value="1" min="0.1" max="10" step="0.1" class="flex-1 form-input">
+                                            <select id="sampleSizeUnit" class="form-input" style="width:auto">
+                                                <option value="MB">MB</option>
+                                                <option value="KB">KB</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">이미지 개수</label>
+                                        <input type="number" id="sampleCount" value="1" min="1" max="20" class="form-input">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">이미지 포맷 (복수 선택)</label>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <label class="format-checkbox checked" data-format="png"><input type="checkbox" value="png" checked><span class="checkmark"></span><span>PNG</span></label>
+                                        <label class="format-checkbox checked" data-format="jpg"><input type="checkbox" value="jpg" checked><span class="checkmark"></span><span>JPG</span></label>
+                                        <label class="format-checkbox checked" data-format="jpeg"><input type="checkbox" value="jpeg" checked><span class="checkmark"></span><span>JPEG</span></label>
+                                        <label class="format-checkbox checked" data-format="pdf"><input type="checkbox" value="pdf" checked><span class="checkmark"></span><span>PDF</span></label>
+                                        <label class="format-checkbox checked" data-format="tif"><input type="checkbox" value="tif" checked><span class="checkmark"></span><span>TIF</span></label>
+                                        <label class="format-checkbox checked" data-format="tiff"><input type="checkbox" value="tiff" checked><span class="checkmark"></span><span>TIFF</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-4 md:p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">워터마크 설정</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="sampleWatermarkEnabled" class="w-5 h-5">
+                                    <label for="sampleWatermarkEnabled">워터마크 사용</label>
+                                </div>
+                                <div id="sampleWatermarkSettings" class="hidden space-y-3">
+                                    <input type="text" id="sampleWatermarkText" placeholder="@creator" value="@creator" class="form-input">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-sm">투명도:</span>
+                                        <input type="range" id="sampleWatermarkOpacity" min="5" max="50" value="15" class="flex-1">
+                                        <span id="sampleOpacityValue" class="text-sm">15%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="generateSampleImages()" class="btn-primary w-full">이미지 생성하기</button>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-4 md:p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">미리보기</h3>
+                            <div class="flex items-center gap-4">
+                                <label class="flex items-center gap-2 text-sm" style="cursor:pointer;white-space:nowrap">
+                                    <input type="checkbox" id="zipDownloadCheck" style="width:18px;height:18px">
+                                    <span>ZIP 압축</span>
+                                </label>
+                                <button id="sampleDownloadAllBtn" onclick="downloadAllSampleImages()" disabled class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm" style="white-space:nowrap">전체 다운로드</button>
+                            </div>
+                        </div>
+                        <div id="samplePreviewGrid" class="grid grid-cols-1 gap-4 max-h-[600px] overflow-y-auto">
+                            <div class="text-center py-12 text-gray-500">
+                                <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <p>설정 후 '이미지 생성하기' 버튼을 클릭하세요</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== CSV 생성기 ========== -->
+    <div id="content-csv" class="container mx-auto px-4 py-8 hidden" style="display:none">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">CSV 생성기</h2>
+                    <p class="text-gray-600">커스텀 CSV 파일을 생성하고 다운로드합니다</p>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">생성할 행 수</label>
+                        <input type="number" id="csv-rowCount" value="10" min="1" max="1000" class="form-input max-w-xs">
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="text-lg font-medium text-gray-800">열 설정</h4>
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="flex items-center justify-between mb-3"><span class="font-medium">1열 (필수)</span></div>
+                            <div class="space-y-3">
+                                <label class="flex items-center"><input type="radio" name="col1Type" value="text" checked class="mr-2"><span>텍스트 입력</span></label>
+                                <input type="text" id="col1-text" placeholder="텍스트를 입력하세요" class="form-input">
+                                <label class="flex items-center"><input type="radio" name="col1Type" value="random" class="mr-2"><span>난수발생</span></label>
+                            </div>
+                        </div>
+                        <div class="rounded-xl p-4 transition-all duration-200" id="col2-container" style="background: #f3f4f6; opacity: 0.5;">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="font-medium">2열</span>
+                                <label class="flex items-center cursor-pointer"><input type="checkbox" id="col2-enable" class="mr-2 w-5 h-5" onchange="toggleCsvColumn(2)"><span>사용</span></label>
+                            </div>
+                            <div class="space-y-3" id="col2-options">
+                                <label class="flex items-center"><input type="radio" name="col2Type" value="text" checked class="mr-2" disabled><span>텍스트 입력</span></label>
+                                <input type="text" id="col2-text" placeholder="텍스트를 입력하세요" class="form-input" disabled>
+                                <label class="flex items-center"><input type="radio" name="col2Type" value="random" class="mr-2" disabled><span>난수발생</span></label>
+                            </div>
+                        </div>
+                        <div class="rounded-xl p-4 transition-all duration-200" id="col3-container" style="background: #f3f4f6; opacity: 0.5;">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="font-medium">3열</span>
+                                <label class="flex items-center cursor-pointer"><input type="checkbox" id="col3-enable" class="mr-2 w-5 h-5" onchange="toggleCsvColumn(3)"><span>사용</span></label>
+                            </div>
+                            <div class="space-y-3" id="col3-options">
+                                <label class="flex items-center"><input type="radio" name="col3Type" value="text" checked class="mr-2" disabled><span>텍스트 입력</span></label>
+                                <input type="text" id="col3-text" placeholder="텍스트를 입력하세요" class="form-input" disabled>
+                                <label class="flex items-center"><input type="radio" name="col3Type" value="random" class="mr-2" disabled><span>난수발생</span></label>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="generateCsvFile()" class="btn-primary">CSV 미리보기</button>
+                    <div id="csv-preview" class="hidden">
+                        <h4 class="text-lg font-medium text-gray-800 mb-4">CSV 미리보기</h4>
+                        <div class="overflow-auto max-h-64 border border-gray-200 rounded-lg">
+                            <table class="min-w-full"><thead class="bg-gray-100"><tr><th class="border border-gray-300 px-4 py-2">1열</th><th class="border border-gray-300 px-4 py-2">2열</th><th class="border border-gray-300 px-4 py-2">3열</th></tr></thead><tbody id="csv-preview-body"></tbody></table>
+                        </div>
+                        <button onclick="downloadCsvFile()" class="btn-primary mt-4">CSV 다운로드</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 스톱워치 ========== -->
+    <div id="content-stopwatch" class="container mx-auto px-4 py-8 hidden" style="display:none">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">스톱워치</h2>
+                    <p class="text-gray-600">시간을 측정하고 랩 타임을 기록하세요</p>
+                </div>
+                <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 mb-6 text-center">
+                    <div id="stopwatchDisplay" class="font-mono text-6xl md:text-7xl font-bold text-gray-800 tracking-wider">
+                        00:00:00<span class="text-4xl md:text-5xl">.000</span>
+                    </div>
+                </div>
+                <div class="flex justify-center gap-4 mb-6">
+                    <button id="stopwatchStartBtn" onclick="startStopwatch()" class="px-8 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all">시작</button>
+                    <button id="stopwatchStopBtn" onclick="stopStopwatch()" disabled class="px-8 py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed">정지</button>
+                    <button id="stopwatchLapBtn" onclick="recordLap()" disabled class="px-8 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed">랩</button>
+                    <button id="stopwatchResetBtn" onclick="resetStopwatch()" class="px-8 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-all">리셋</button>
+                </div>
+                <div id="lapTimesContainer" class="bg-gray-50 rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">랩 타임</h3>
+                        <button onclick="clearLaps()" class="text-sm text-gray-500 hover:text-red-500 transition-colors">전체 삭제</button>
+                    </div>
+                    <div id="lapTimesList" class="space-y-2 max-h-64 overflow-y-auto">
+                        <p class="text-center text-gray-500 py-4">랩 버튼을 눌러 기록하세요</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 현재 시각 ========== -->
+    <div id="content-clock" class="container mx-auto px-4 py-8 hidden" style="display:none">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">현재 시각</h2>
+                    <p class="text-gray-600">정확한 현재 시간을 확인하세요</p>
+                </div>
+                <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 mb-6 text-center">
+                    <div id="currentTimeDisplay" class="font-mono text-6xl md:text-7xl font-bold text-gray-800 tracking-wider mb-4">--:--:--</div>
+                    <div id="currentDateDisplay" class="text-2xl text-gray-600">----년 --월 --일</div>
+                    <div id="currentDayDisplay" class="text-lg text-gray-500 mt-2">--요일</div>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">시간대 정보</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600 mb-1">타임존</p>
+                            <p id="timezoneDisplay" class="font-semibold text-gray-800">--</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600 mb-1">UTC 오프셋</p>
+                            <p id="utcOffsetDisplay" class="font-semibold text-gray-800">--</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">세계 시각</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="bg-white rounded-lg p-4 flex justify-between items-center">
+                            <div><p class="text-sm text-gray-600">New York</p><p class="text-xs text-gray-400">UTC-5</p></div>
+                            <p id="timeNewYork" class="font-mono font-semibold text-gray-800">--:--:--</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 flex justify-between items-center">
+                            <div><p class="text-sm text-gray-600">London</p><p class="text-xs text-gray-400">UTC+0</p></div>
+                            <p id="timeLondon" class="font-mono font-semibold text-gray-800">--:--:--</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 flex justify-between items-center">
+                            <div><p class="text-sm text-gray-600">Tokyo</p><p class="text-xs text-gray-400">UTC+9</p></div>
+                            <p id="timeTokyo" class="font-mono font-semibold text-gray-800">--:--:--</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 flex justify-between items-center">
+                            <div><p class="text-sm text-gray-600">Sydney</p><p class="text-xs text-gray-400">UTC+11</p></div>
+                            <p id="timeSydney" class="font-mono font-semibold text-gray-800">--:--:--</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== 어드민 대시보드 ========== -->
     <div id="content-admin" class="hidden" style="height: calc(100vh - 70px);">
         <div class="admin-dashboard-container">
@@ -601,6 +1127,26 @@
     let cachedToken = null;
     let apiLogs = [];
 
+    // Profile generator
+    let profileCanvas, profileCtx;
+
+    // Sample image generator
+    let generatedSampleImages = [];
+    let loadedBgImage = null;
+
+    // CSV generator
+    let csvData = [];
+
+    // Stopwatch
+    let stopwatchInterval = null;
+    let stopwatchStartTime = 0;
+    let stopwatchElapsed = 0;
+    let stopwatchRunning = false;
+    let lapTimes = [];
+
+    // Clock
+    let clockInterval = null;
+
     // Admin dashboard state
     const dashboardFunctionData = {
         'qr-create': {
@@ -640,13 +1186,13 @@
     // Main Tab Navigation
     // ============================================================
     function switchMainTab(tab) {
-        const tabs = ['business', 'qr', 'combination', 'admin'];
-        tabs.forEach(t => {
-            document.getElementById('main-tab-' + t).classList.remove('active');
-            document.getElementById('content-' + t).classList.add('hidden');
+        const allTabs = ['business', 'qr', 'combination', 'profile', 'sample', 'csv', 'stopwatch', 'clock', 'admin'];
+        allTabs.forEach(t => {
+            const content = document.getElementById('content-' + t);
+            const button = document.getElementById('main-tab-' + t);
+            if (content) { content.classList.toggle('hidden', t !== tab); content.style.display = t === tab ? '' : 'none'; }
+            if (button) button.classList.toggle('active', t === tab);
         });
-        document.getElementById('main-tab-' + tab).classList.add('active');
-        document.getElementById('content-' + tab).classList.remove('hidden');
     }
 
     // ============================================================
@@ -1885,11 +2431,1100 @@
     }
 
     // ============================================================
+    // PROFILE IMAGE GENERATOR
+    // ============================================================
+    function initializeProfileGenerator() {
+        profileCanvas = document.getElementById('profileCanvas');
+        if (profileCanvas) {
+            profileCtx = profileCanvas.getContext('2d');
+            generateProfileImage();
+            setupProfileEventListeners();
+        }
+    }
+
+    function setupProfileEventListeners() {
+        setupColorSync('profileBgColor', 'profileBgColorHex', generateProfileImage);
+        setupColorSync('mainTextColor', 'mainTextColorHex', generateProfileImage);
+        document.getElementById('mainTextSize').addEventListener('input', function() {
+            document.getElementById('mainTextSizeValue').value = this.value;
+            generateProfileImage();
+        });
+        document.getElementById('mainTextSizeValue').addEventListener('input', function() {
+            document.getElementById('mainTextSize').value = this.value;
+            generateProfileImage();
+        });
+        document.getElementById('mainText').addEventListener('input', generateProfileImage);
+        ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'].forEach(position => {
+            const checkbox = document.getElementById(`${position}Enabled`);
+            const chipDiv = checkbox.closest('.chip-position');
+            checkbox.addEventListener('change', function() {
+                chipDiv.classList.toggle('active', this.checked);
+                generateProfileImage();
+            });
+            document.getElementById(`${position}Text`).addEventListener('input', generateProfileImage);
+            document.getElementById(`${position}ChipBg`).addEventListener('input', generateProfileImage);
+            document.getElementById(`${position}ChipText`).addEventListener('input', generateProfileImage);
+        });
+    }
+
+    function setupColorSync(colorId, hexId, callback) {
+        document.getElementById(colorId).addEventListener('input', function() {
+            document.getElementById(hexId).value = this.value;
+            if (callback) callback();
+        });
+        document.getElementById(hexId).addEventListener('input', function() {
+            if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+                document.getElementById(colorId).value = this.value;
+                if (callback) callback();
+            }
+        });
+    }
+
+    function generateProfileImage() {
+        if (!profileCtx) return;
+        const mainText = document.getElementById('mainText').value || 'JK';
+        const mainTextSize = parseInt(document.getElementById('mainTextSize').value);
+        const bgColor = document.getElementById('profileBgColor').value;
+        const mainTextColor = document.getElementById('mainTextColor').value;
+        profileCtx.clearRect(0, 0, profileCanvas.width, profileCanvas.height);
+        profileCtx.fillStyle = bgColor;
+        profileCtx.fillRect(0, 0, profileCanvas.width, profileCanvas.height);
+        const textLines = mainText.split('|');
+        profileCtx.fillStyle = mainTextColor;
+        profileCtx.textAlign = 'center';
+        profileCtx.textBaseline = 'middle';
+        profileCtx.font = `bold ${mainTextSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+        if (textLines.length === 1) {
+            profileCtx.fillText(textLines[0], profileCanvas.width / 2, profileCanvas.height / 2);
+        } else {
+            const lineHeight = mainTextSize * 1.1;
+            const startY = profileCanvas.height / 2 - (lineHeight * (textLines.length - 1)) / 2;
+            textLines.forEach((line, index) => {
+                profileCtx.fillText(line, profileCanvas.width / 2, startY + (lineHeight * index));
+            });
+        }
+        const chipPositions = { topLeft: {x:75,y:50}, topRight: {x:225,y:50}, bottomLeft: {x:75,y:250}, bottomRight: {x:225,y:250} };
+        ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'].forEach(position => {
+            if (document.getElementById(`${position}Enabled`).checked) {
+                const text = document.getElementById(`${position}Text`).value;
+                if (text.trim()) {
+                    const chipBg = document.getElementById(`${position}ChipBg`).value;
+                    const chipText = document.getElementById(`${position}ChipText`).value;
+                    const coords = chipPositions[position];
+                    drawChip(profileCtx, text, coords.x, coords.y, chipBg, chipText);
+                }
+            }
+        });
+        document.getElementById('profileDownloadBtn').disabled = false;
+    }
+
+    function drawChip(ctx, text, x, y, bgColor, textColor) {
+        const textSize = 18;
+        ctx.font = `bold ${textSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+        const textWidth = ctx.measureText(text).width;
+        const chipWidth = textWidth + 30;
+        const chipHeight = 26;
+        const radius = chipHeight / 2;
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 2;
+        ctx.fillStyle = bgColor;
+        ctx.beginPath();
+        ctx.moveTo(x - chipWidth/2 + radius, y - chipHeight/2);
+        ctx.lineTo(x + chipWidth/2 - radius, y - chipHeight/2);
+        ctx.arc(x + chipWidth/2 - radius, y, radius, -Math.PI/2, Math.PI/2);
+        ctx.lineTo(x - chipWidth/2 + radius, y + chipHeight/2);
+        ctx.arc(x - chipWidth/2 + radius, y, radius, Math.PI/2, -Math.PI/2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        ctx.strokeStyle = textColor;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, x, y);
+    }
+
+    function downloadProfileImage() {
+        const highResCanvas = document.createElement('canvas');
+        const highResCtx = highResCanvas.getContext('2d');
+        highResCanvas.width = 1080; highResCanvas.height = 1080;
+        const scale = 3.6;
+        const mainText = document.getElementById('mainText').value || 'JK';
+        const mainTextSize = parseInt(document.getElementById('mainTextSize').value) * scale;
+        const bgColor = document.getElementById('profileBgColor').value;
+        const mainTextColor = document.getElementById('mainTextColor').value;
+        highResCtx.fillStyle = bgColor;
+        highResCtx.fillRect(0, 0, highResCanvas.width, highResCanvas.height);
+        const textLines = mainText.split('|');
+        highResCtx.fillStyle = mainTextColor;
+        highResCtx.textAlign = 'center';
+        highResCtx.textBaseline = 'middle';
+        highResCtx.font = `bold ${mainTextSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+        if (textLines.length === 1) {
+            highResCtx.fillText(textLines[0], highResCanvas.width/2, highResCanvas.height/2);
+        } else {
+            const lineHeight = mainTextSize * 1.1;
+            const startY = highResCanvas.height/2 - (lineHeight * (textLines.length-1))/2;
+            textLines.forEach((line, index) => {
+                highResCtx.fillText(line, highResCanvas.width/2, startY + (lineHeight * index));
+            });
+        }
+        const highResChipPositions = { topLeft:{x:270,y:180}, topRight:{x:810,y:180}, bottomLeft:{x:270,y:900}, bottomRight:{x:810,y:900} };
+        ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'].forEach(position => {
+            if (document.getElementById(`${position}Enabled`).checked) {
+                const text = document.getElementById(`${position}Text`).value;
+                if (text.trim()) {
+                    const chipBg = document.getElementById(`${position}ChipBg`).value;
+                    const chipText = document.getElementById(`${position}ChipText`).value;
+                    const coords = highResChipPositions[position];
+                    const textSize = 18 * scale;
+                    highResCtx.font = `bold ${textSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+                    const tw = highResCtx.measureText(text).width;
+                    const cw = tw + (30 * scale), ch = 26 * scale, r = ch / 2;
+                    highResCtx.save();
+                    highResCtx.shadowColor = 'rgba(0,0,0,0.15)'; highResCtx.shadowBlur = 8 * scale; highResCtx.shadowOffsetY = 2 * scale;
+                    highResCtx.fillStyle = chipBg;
+                    highResCtx.beginPath();
+                    highResCtx.moveTo(coords.x - cw/2 + r, coords.y - ch/2);
+                    highResCtx.lineTo(coords.x + cw/2 - r, coords.y - ch/2);
+                    highResCtx.arc(coords.x + cw/2 - r, coords.y, r, -Math.PI/2, Math.PI/2);
+                    highResCtx.lineTo(coords.x - cw/2 + r, coords.y + ch/2);
+                    highResCtx.arc(coords.x - cw/2 + r, coords.y, r, Math.PI/2, -Math.PI/2);
+                    highResCtx.closePath();
+                    highResCtx.fill();
+                    highResCtx.restore();
+                    highResCtx.strokeStyle = chipText; highResCtx.lineWidth = 2 * scale; highResCtx.stroke();
+                    highResCtx.fillStyle = chipText; highResCtx.textAlign = 'center'; highResCtx.textBaseline = 'middle';
+                    highResCtx.fillText(text, coords.x, coords.y);
+                }
+            }
+        });
+        const link = document.createElement('a');
+        link.download = `messenger_profile_${mainText.replace('|','_')}_${Date.now()}.png`;
+        link.href = highResCanvas.toDataURL();
+        link.click();
+        showToast('이미지가 다운로드되었습니다', 'success');
+    }
+
+    // ============================================================
+    // SAMPLE IMAGE GENERATOR
+    // ============================================================
+    function initializeSampleGenerator() {
+        setupColorSync('sampleTextColor', 'sampleTextColorHex');
+        setupColorSync('sampleBgColor', 'sampleBgColorHex');
+        document.querySelectorAll('.sample-preset-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('sampleWidth').value = this.dataset.width;
+                document.getElementById('sampleHeight').value = this.dataset.height;
+            });
+        });
+        document.querySelectorAll('.format-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('click', function() {
+                const input = this.querySelector('input[type="checkbox"]');
+                input.checked = !input.checked;
+                this.classList.toggle('checked', input.checked);
+            });
+        });
+        document.getElementById('sampleWatermarkEnabled').addEventListener('change', function() {
+            document.getElementById('sampleWatermarkSettings').classList.toggle('hidden', !this.checked);
+        });
+        document.getElementById('sampleWatermarkOpacity').addEventListener('input', function() {
+            document.getElementById('sampleOpacityValue').textContent = this.value + '%';
+        });
+        document.getElementById('bgImageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                loadedBgImage = new Image();
+                loadedBgImage.onload = function() {
+                    document.getElementById('bgImagePreview').classList.remove('hidden');
+                    document.getElementById('bgImageThumb').src = loadedBgImage.src;
+                    document.getElementById('bgImageName').textContent = file.name;
+                    document.getElementById('bgImageSize').textContent = `${loadedBgImage.width} x ${loadedBgImage.height}px`;
+                    document.getElementById('bgImageInputLabel').textContent = file.name;
+                };
+                loadedBgImage.src = URL.createObjectURL(file);
+            }
+        });
+        toggleSizeMode();
+    }
+
+    function toggleSizeMode() {
+        const sizeMode = document.querySelector('input[name="sizeMode"]:checked').value;
+        const fixedSettings = document.getElementById('fixedSizeSettings');
+        const tiledSettings = document.getElementById('tiledSizeSettings');
+        const fixedLabel = document.getElementById('sizeMode-fixed-label');
+        const tiledLabel = document.getElementById('sizeMode-tiled-label');
+        if (sizeMode === 'fixed') {
+            fixedSettings.classList.remove('hidden');
+            tiledSettings.classList.add('hidden');
+            fixedLabel.classList.add('border-blue-400', 'bg-blue-50');
+            fixedLabel.classList.remove('border-gray-200');
+            tiledLabel.classList.remove('border-blue-400', 'bg-blue-50');
+            tiledLabel.classList.add('border-gray-200');
+        } else {
+            fixedSettings.classList.add('hidden');
+            tiledSettings.classList.remove('hidden');
+            tiledLabel.classList.add('border-blue-400', 'bg-blue-50');
+            tiledLabel.classList.remove('border-gray-200');
+            fixedLabel.classList.remove('border-blue-400', 'bg-blue-50');
+            fixedLabel.classList.add('border-gray-200');
+        }
+    }
+
+    function clearBgImage() {
+        loadedBgImage = null;
+        document.getElementById('bgImageInput').value = '';
+        document.getElementById('bgImagePreview').classList.add('hidden');
+        document.getElementById('bgImageInputLabel').textContent = '이미지 파일 선택';
+    }
+
+    function getSelectedFormats() {
+        const formats = [];
+        document.querySelectorAll('.format-checkbox input[type="checkbox"]:checked').forEach(input => formats.push(input.value));
+        return formats.length > 0 ? formats : ['png'];
+    }
+
+    function getTargetSizeBytes() {
+        const size = parseFloat(document.getElementById('sampleTargetSize').value) || 1;
+        const unit = document.getElementById('sampleSizeUnit').value;
+        return unit === 'MB' ? size * 1024 * 1024 : size * 1024;
+    }
+
+    function formatFileSize(bytes) {
+        return bytes >= 1024 * 1024 ? (bytes / (1024*1024)).toFixed(2) + ' MB' : (bytes / 1024).toFixed(2) + ' KB';
+    }
+
+    async function canvasToBlob(canvas, format, quality) {
+        return new Promise(resolve => {
+            const mimeType = (format === 'jpg' || format === 'jpeg') ? 'image/jpeg' : 'image/png';
+            canvas.toBlob(resolve, mimeType, quality);
+        });
+    }
+
+    function drawWatermark(ctx, width, height, text, opacity) {
+        ctx.save();
+        const fontSize = Math.max(Math.min(width, height) / 15, 14);
+        ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+        ctx.fillStyle = `rgba(128, 128, 128, ${opacity / 100})`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.translate(width/2, height/2); ctx.rotate(-30 * Math.PI / 180);
+        const textWidth = ctx.measureText(text).width;
+        const spacingX = textWidth + 80, spacingY = fontSize * 3;
+        const diagonal = Math.sqrt(width*width + height*height);
+        for (let y = -diagonal; y < diagonal; y += spacingY)
+            for (let x = -diagonal; x < diagonal; x += spacingX)
+                ctx.fillText(text, x, y);
+        ctx.restore();
+    }
+
+    function drawFormatBadge(ctx, width, height, format) {
+        ctx.save();
+        const badgeText = format.toUpperCase();
+        const badgeFontSize = Math.max(Math.min(width, height) / 12, 12);
+        ctx.font = `bold ${badgeFontSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+        const textMetrics = ctx.measureText(badgeText);
+        const paddingX = badgeFontSize * 0.5, paddingY = badgeFontSize * 0.3;
+        const badgeWidth = textMetrics.width + paddingX*2, badgeHeight = badgeFontSize + paddingY*2;
+        const margin = Math.max(width, height) * 0.02;
+        const badgeX = width - badgeWidth - margin, badgeY = margin;
+        let bgColorBadge, textColorBadge;
+        switch(format.toLowerCase()) {
+            case 'png': bgColorBadge = 'rgba(59,130,246,0.9)'; textColorBadge='#FFF'; break;
+            case 'jpg': case 'jpeg': bgColorBadge = 'rgba(34,197,94,0.9)'; textColorBadge='#FFF'; break;
+            case 'pdf': bgColorBadge = 'rgba(239,68,68,0.9)'; textColorBadge='#FFF'; break;
+            case 'tif': case 'tiff': bgColorBadge = 'rgba(168,85,247,0.9)'; textColorBadge='#FFF'; break;
+            default: bgColorBadge = 'rgba(107,114,128,0.9)'; textColorBadge='#FFF';
+        }
+        ctx.fillStyle = bgColorBadge;
+        ctx.beginPath(); const radius = badgeFontSize * 0.3;
+        ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, radius); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = textColorBadge; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(badgeText, badgeX + badgeWidth/2, badgeY + badgeHeight/2);
+        ctx.restore();
+    }
+
+    function createSampleCanvas(text, width, height, textColor, bgColor, watermarkText, watermarkOpacity, bgImage, format) {
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (bgImage) {
+            for (let y = 0; y < height; y += bgImage.height)
+                for (let x = 0; x < width; x += bgImage.width)
+                    ctx.drawImage(bgImage, x, y, bgImage.width, bgImage.height);
+        } else {
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, width, height);
+        }
+        if (watermarkText) drawWatermark(ctx, width, height, watermarkText, watermarkOpacity);
+        ctx.fillStyle = textColor;
+        const fontSize = Math.min(width, height) / 10;
+        ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        if (bgImage) { ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 4; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2; }
+        ctx.fillText(text, width/2, height/2 - fontSize/2);
+        ctx.font = `${fontSize*0.5}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+        ctx.fillText(`${width} x ${height}`, width/2, height/2 + fontSize/2);
+        ctx.shadowColor = 'transparent';
+        if (format) drawFormatBadge(ctx, width, height, format);
+        return canvas;
+    }
+
+    async function adjustQualityForSize(canvas, format, targetBytes) {
+        let blob = await canvasToBlob(canvas, format, 1);
+        if (blob.size > targetBytes && (format === 'jpg' || format === 'jpeg')) {
+            let minQuality = 0.1, maxQuality = 1.0, bestBlob = blob;
+            for (let i = 0; i < 15; i++) {
+                const midQuality = (minQuality + maxQuality) / 2;
+                blob = await canvasToBlob(canvas, format, midQuality);
+                if (blob.size <= targetBytes) { bestBlob = blob; minQuality = midQuality; }
+                else maxQuality = midQuality;
+            }
+            blob = bestBlob;
+        }
+        return { blob, quality: 1 };
+    }
+
+    async function generateSampleImages() {
+        const text = document.getElementById('sampleImageText').value || 'Sample';
+        const textColor = document.getElementById('sampleTextColor').value;
+        const bgColor = document.getElementById('sampleBgColor').value;
+        const count = Math.min(parseInt(document.getElementById('sampleCount').value) || 1, 20);
+        const formats = getSelectedFormats();
+        const targetBytes = getTargetSizeBytes();
+        const watermarkEnabled = document.getElementById('sampleWatermarkEnabled').checked;
+        const watermarkText = watermarkEnabled ? document.getElementById('sampleWatermarkText').value : null;
+        const watermarkOpacity = parseInt(document.getElementById('sampleWatermarkOpacity').value) || 15;
+        const sizeMode = document.querySelector('input[name="sizeMode"]:checked').value;
+        if (sizeMode === 'tiled') {
+            if (!loadedBgImage) { showToast('배경 이미지를 선택해주세요', 'error'); return; }
+            await generateTiledImages(text, textColor, bgColor, count, formats, targetBytes, watermarkText, watermarkOpacity);
+        } else {
+            const width = parseInt(document.getElementById('sampleWidth').value) || 800;
+            const height = parseInt(document.getElementById('sampleHeight').value) || 600;
+            if (width < 50 || width > 4096 || height < 50 || height > 4096) {
+                showToast('이미지 크기는 50-4096px 사이여야 합니다', 'error'); return;
+            }
+            await generateFixedSizeImages(text, textColor, bgColor, width, height, count, formats, targetBytes, watermarkText, watermarkOpacity);
+        }
+    }
+
+    async function generateFixedSizeImages(text, textColor, bgColor, width, height, count, formats, targetBytes, watermarkText, watermarkOpacity) {
+        const previewGrid = document.getElementById('samplePreviewGrid');
+        previewGrid.innerHTML = '<div class="text-center py-8"><div class="loading-spinner mx-auto"></div></div>';
+        generatedSampleImages = [];
+        await new Promise(resolve => setTimeout(resolve, 100));
+        previewGrid.innerHTML = '';
+        for (let i = 0; i < count; i++) {
+            const displayText = count > 1 ? `${text} #${i+1}` : text;
+            const previewItem = document.createElement('div');
+            previewItem.className = 'sample-preview-item';
+            const thumbnailContainer = document.createElement('div');
+            thumbnailContainer.className = 'flex flex-wrap justify-center gap-2 mb-2';
+            const info = document.createElement('div');
+            info.className = 'text-sm text-gray-600 mb-2';
+            info.textContent = `${width}x${height} - ${formats.map(f => f.toUpperCase()).join(', ')}`;
+            const downloadButtons = document.createElement('div');
+            downloadButtons.className = 'flex flex-wrap justify-center gap-2';
+            for (const format of formats) {
+                const canvas = createSampleCanvas(displayText, width, height, textColor, bgColor, watermarkText, watermarkOpacity, null, format);
+                const { blob } = await adjustQualityForSize(canvas, format, targetBytes);
+                const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
+                const padLength = String(count).length;
+                const paddedIndex = String(i+1).padStart(padLength, '0');
+                const filename = `${safeText}_${paddedIndex}.${format}`;
+                const thumbnailWrapper = document.createElement('div');
+                thumbnailWrapper.className = 'text-center';
+                const previewCanvas = document.createElement('canvas');
+                const maxPreviewSize = formats.length > 1 ? 120 : 200;
+                const scl = Math.min(maxPreviewSize / width, maxPreviewSize / height, 1);
+                previewCanvas.width = width * scl; previewCanvas.height = height * scl;
+                previewCanvas.getContext('2d').drawImage(canvas, 0, 0, previewCanvas.width, previewCanvas.height);
+                previewCanvas.style.borderRadius = '8px'; previewCanvas.style.border = '1px solid #e5e7eb';
+                thumbnailWrapper.appendChild(previewCanvas);
+                thumbnailContainer.appendChild(thumbnailWrapper);
+                const sizeInfo = document.createElement('span');
+                sizeInfo.className = 'text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded';
+                sizeInfo.textContent = `${format.toUpperCase()}: ${formatFileSize(blob.size)}`;
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'px-3 py-1.5 btn-primary text-sm';
+                downloadBtn.textContent = format.toUpperCase();
+                downloadBtn.onclick = () => downloadSingleSampleImage(canvas, filename, format, targetBytes);
+                downloadButtons.appendChild(sizeInfo);
+                downloadButtons.appendChild(downloadBtn);
+                generatedSampleImages.push({ canvas, filename, format, targetBytes, index: i+1, text: safeText });
+            }
+            previewItem.appendChild(thumbnailContainer);
+            previewItem.appendChild(info);
+            previewItem.appendChild(downloadButtons);
+            previewGrid.appendChild(previewItem);
+        }
+        document.getElementById('sampleDownloadAllBtn').disabled = false;
+        showToast(`${count}개의 이미지가 생성되었습니다`, 'success');
+    }
+
+    async function generateTiledImages(text, textColor, bgColor, count, formats, targetBytes, watermarkText, watermarkOpacity) {
+        const previewGrid = document.getElementById('samplePreviewGrid');
+        previewGrid.innerHTML = '<div class="text-center py-8"><div class="loading-spinner mx-auto"></div><p class="mt-2 text-gray-600">목표 파일 크기에 맞게 이미지 생성 중...</p></div>';
+        generatedSampleImages = [];
+        await new Promise(resolve => setTimeout(resolve, 100));
+        previewGrid.innerHTML = '';
+        const bgImgWidth = loadedBgImage.width;
+        const bgImgHeight = loadedBgImage.height;
+        for (let i = 0; i < count; i++) {
+            const displayText = count > 1 ? `${text} #${i+1}` : text;
+            let tilesX = 1, tilesY = 1;
+            let baseCanvas = null, baseBlob = null;
+            const maxTiles = 30;
+            for (let attempt = 0; attempt < maxTiles * maxTiles; attempt++) {
+                const canvasWidth = bgImgWidth * tilesX;
+                const canvasHeight = bgImgHeight * tilesY;
+                if (canvasWidth > 10000 || canvasHeight > 10000) break;
+                const canvas = createTiledCanvas(bgImgWidth, bgImgHeight, tilesX, tilesY, displayText, textColor, watermarkText, watermarkOpacity, null);
+                const testBlob = await canvasToBlob(canvas, 'png', 1);
+                baseCanvas = canvas;
+                baseBlob = testBlob;
+                if (testBlob.size >= targetBytes * 1.1) break;
+                if (tilesX <= tilesY) tilesX++;
+                else tilesY++;
+            }
+            if (!baseCanvas) {
+                baseCanvas = createTiledCanvas(bgImgWidth, bgImgHeight, 1, 1, displayText, textColor, watermarkText, watermarkOpacity, null);
+            }
+            const finalWidth = baseCanvas.width;
+            const finalHeight = baseCanvas.height;
+            const previewItem = document.createElement('div');
+            previewItem.className = 'sample-preview-item';
+            const thumbnailContainer = document.createElement('div');
+            thumbnailContainer.className = 'flex flex-wrap justify-center gap-2 mb-2';
+            const info = document.createElement('div');
+            info.className = 'text-sm text-gray-600 mb-2';
+            info.textContent = `${finalWidth}x${finalHeight} (${tilesX}x${tilesY} 타일)`;
+            const downloadButtons = document.createElement('div');
+            downloadButtons.className = 'flex flex-wrap justify-center gap-2';
+            for (const format of formats) {
+                const formatCanvas = createTiledCanvas(bgImgWidth, bgImgHeight, tilesX, tilesY, displayText, textColor, watermarkText, watermarkOpacity, format);
+                const finalBlob = await adjustToExactSize(formatCanvas, format, targetBytes);
+                const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
+                const padLength = String(count).length;
+                const paddedIndex = String(i+1).padStart(padLength, '0');
+                const filename = `${safeText}_${paddedIndex}.${format}`;
+                const thumbnailWrapper = document.createElement('div');
+                thumbnailWrapper.className = 'text-center';
+                const previewCanvas = document.createElement('canvas');
+                const maxPreviewSize = formats.length > 1 ? 120 : 200;
+                const scl = Math.min(maxPreviewSize / finalWidth, maxPreviewSize / finalHeight, 1);
+                previewCanvas.width = finalWidth * scl;
+                previewCanvas.height = finalHeight * scl;
+                previewCanvas.getContext('2d').drawImage(formatCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+                previewCanvas.style.borderRadius = '8px';
+                previewCanvas.style.border = '1px solid #e5e7eb';
+                thumbnailWrapper.appendChild(previewCanvas);
+                thumbnailContainer.appendChild(thumbnailWrapper);
+                const sizeInfo = document.createElement('span');
+                sizeInfo.className = 'text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded';
+                const accuracy = Math.abs(finalBlob.size - targetBytes) / targetBytes * 100;
+                const accuracyText = accuracy < 1 ? 'OK' : `+/-${accuracy.toFixed(1)}%`;
+                sizeInfo.textContent = `${format.toUpperCase()}: ${formatFileSize(finalBlob.size)} ${accuracyText}`;
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'px-3 py-1.5 btn-primary text-sm';
+                downloadBtn.textContent = format.toUpperCase();
+                const blobToDownload = finalBlob;
+                downloadBtn.onclick = () => {
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = URL.createObjectURL(blobToDownload);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                };
+                downloadButtons.appendChild(sizeInfo);
+                downloadButtons.appendChild(downloadBtn);
+                generatedSampleImages.push({ blob: finalBlob, filename, format, targetBytes, isTiled: true, index: i+1, text: safeText });
+            }
+            previewItem.appendChild(thumbnailContainer);
+            previewItem.appendChild(info);
+            previewItem.appendChild(downloadButtons);
+            previewGrid.appendChild(previewItem);
+        }
+        document.getElementById('sampleDownloadAllBtn').disabled = false;
+        showToast(`${count}개의 이미지가 생성되었습니다`, 'success');
+    }
+
+    function createTiledCanvas(bgImgWidth, bgImgHeight, tilesX, tilesY, displayText, textColor, watermarkText, watermarkOpacity, format) {
+        const canvasWidth = bgImgWidth * tilesX;
+        const canvasHeight = bgImgHeight * tilesY;
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        const ctx = canvas.getContext('2d');
+        for (let tx = 0; tx < tilesX; tx++) {
+            for (let ty = 0; ty < tilesY; ty++) {
+                ctx.drawImage(loadedBgImage, tx * bgImgWidth, ty * bgImgHeight, bgImgWidth, bgImgHeight);
+            }
+        }
+        ctx.fillStyle = textColor;
+        const fontSize = Math.min(canvasWidth, canvasHeight) * 0.1;
+        ctx.font = `bold ${fontSize}px 'Segoe UI', Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(displayText, canvasWidth / 2, canvasHeight / 2);
+        if (watermarkText) {
+            ctx.save();
+            ctx.globalAlpha = watermarkOpacity / 100;
+            ctx.fillStyle = textColor;
+            ctx.font = `${Math.max(14, fontSize * 0.3)}px Arial`;
+            ctx.translate(canvasWidth / 2, canvasHeight / 2);
+            ctx.rotate(-Math.PI / 6);
+            const watermarkSpacingX = fontSize * 3;
+            const watermarkSpacingY = fontSize * 2;
+            for (let wx = -canvasWidth; wx < canvasWidth * 2; wx += watermarkSpacingX) {
+                for (let wy = -canvasHeight; wy < canvasHeight * 2; wy += watermarkSpacingY) {
+                    ctx.fillText(watermarkText, wx, wy);
+                }
+            }
+            ctx.restore();
+        }
+        if (format) drawFormatBadge(ctx, canvasWidth, canvasHeight, format);
+        return canvas;
+    }
+
+    async function adjustToExactSize(canvas, format, targetBytes) {
+        const isJpeg = format === 'jpg' || format === 'jpeg';
+        const isPng = format === 'png';
+        const isTiff = format === 'tif' || format === 'tiff';
+        const isPdf = format === 'pdf';
+        if (isJpeg) return await adjustJpegToExactSize(canvas, targetBytes);
+        if (isPng) return await adjustPngToExactSize(canvas, targetBytes);
+        if (isTiff) return await adjustTiffToExactSize(canvas, targetBytes);
+        if (isPdf) return await adjustPdfToExactSize(canvas, targetBytes);
+        return await canvasToBlob(canvas, format, 1);
+    }
+
+    async function adjustJpegToExactSize(canvas, targetBytes) {
+        let low = 0.01, high = 1.0, bestBlob = null;
+        let testBlob = await canvasToBlob(canvas, 'jpeg', 1.0);
+        if (testBlob.size < targetBytes) return await inflateImageToTarget(canvas, 'jpeg', targetBytes);
+        for (let i = 0; i < 20; i++) {
+            const mid = (low + high) / 2;
+            const blob = await canvasToBlob(canvas, 'jpeg', mid);
+            if (blob.size <= targetBytes) { bestBlob = blob; low = mid; }
+            else high = mid;
+            if (bestBlob && bestBlob.size >= targetBytes * 0.99 && bestBlob.size <= targetBytes) break;
+        }
+        if (!bestBlob) {
+            bestBlob = await canvasToBlob(canvas, 'jpeg', 0.01);
+            if (bestBlob.size > targetBytes) bestBlob = await scaleDownToTarget(canvas, 'jpeg', targetBytes);
+        }
+        if (bestBlob.size < targetBytes * 0.95) bestBlob = await inflateImageToTarget(canvas, 'jpeg', targetBytes);
+        return bestBlob;
+    }
+
+    async function adjustPngToExactSize(canvas, targetBytes) {
+        let blob = await canvasToBlob(canvas, 'png', 1);
+        let workingCanvas = canvas;
+        while (blob.size > targetBytes) {
+            const scaleFactor = Math.sqrt(targetBytes / blob.size) * 0.9;
+            const newWidth = Math.max(10, Math.floor(workingCanvas.width * scaleFactor));
+            const newHeight = Math.max(10, Math.floor(workingCanvas.height * scaleFactor));
+            const scaledCanvas = document.createElement('canvas');
+            scaledCanvas.width = newWidth; scaledCanvas.height = newHeight;
+            scaledCanvas.getContext('2d').drawImage(workingCanvas, 0, 0, newWidth, newHeight);
+            workingCanvas = scaledCanvas;
+            blob = await canvasToBlob(workingCanvas, 'png', 1);
+            if (newWidth <= 10 || newHeight <= 10) break;
+        }
+        if (blob.size < targetBytes) {
+            const paddingNeeded = targetBytes - blob.size;
+            blob = await addPngTextChunkExact(blob, paddingNeeded);
+        }
+        return blob;
+    }
+
+    async function adjustTiffToExactSize(canvas, targetBytes) {
+        let workingCanvas = canvas;
+        let blob = await canvasToBlob(workingCanvas, 'png', 1);
+        const estimatedUncompressedSize = workingCanvas.width * workingCanvas.height * 4;
+        const targetScale = Math.sqrt(targetBytes / Math.max(estimatedUncompressedSize, blob.size));
+        if (targetScale < 1) {
+            const newWidth = Math.max(10, Math.floor(workingCanvas.width * targetScale * 0.9));
+            const newHeight = Math.max(10, Math.floor(workingCanvas.height * targetScale * 0.9));
+            const scaledCanvas = document.createElement('canvas');
+            scaledCanvas.width = newWidth; scaledCanvas.height = newHeight;
+            scaledCanvas.getContext('2d').drawImage(workingCanvas, 0, 0, newWidth, newHeight);
+            workingCanvas = scaledCanvas;
+        }
+        blob = await canvasToBlob(workingCanvas, 'png', 1);
+        while (blob.size > targetBytes) {
+            const newWidth = Math.max(10, Math.floor(workingCanvas.width * 0.9));
+            const newHeight = Math.max(10, Math.floor(workingCanvas.height * 0.9));
+            const scaledCanvas = document.createElement('canvas');
+            scaledCanvas.width = newWidth; scaledCanvas.height = newHeight;
+            scaledCanvas.getContext('2d').drawImage(workingCanvas, 0, 0, newWidth, newHeight);
+            workingCanvas = scaledCanvas;
+            blob = await canvasToBlob(workingCanvas, 'png', 1);
+            if (newWidth <= 10 || newHeight <= 10) break;
+        }
+        if (blob.size < targetBytes) {
+            const paddingNeeded = targetBytes - blob.size;
+            blob = await addPngTextChunkExact(blob, paddingNeeded);
+        }
+        return new Blob([await blob.arrayBuffer()], { type: 'image/tiff' });
+    }
+
+    async function adjustPdfToExactSize(canvas, targetBytes) {
+        const { jsPDF } = window.jspdf;
+        const pdfOverhead = 800;
+        const imageTargetBytes = targetBytes - pdfOverhead;
+        if (imageTargetBytes <= 0) {
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [10, 10] });
+            return pdf.output('blob');
+        }
+        const jpegBlob = await adjustJpegToExactSize(canvas, imageTargetBytes);
+        const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+        const imgData = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(jpegBlob); });
+        pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+        let pdfBlob = pdf.output('blob');
+        let workingCanvas = canvas;
+        while (pdfBlob.size > targetBytes && workingCanvas.width > 10) {
+            const newWidth = Math.floor(workingCanvas.width * 0.9);
+            const newHeight = Math.floor(workingCanvas.height * 0.9);
+            const scaledCanvas = document.createElement('canvas');
+            scaledCanvas.width = newWidth; scaledCanvas.height = newHeight;
+            scaledCanvas.getContext('2d').drawImage(workingCanvas, 0, 0, newWidth, newHeight);
+            workingCanvas = scaledCanvas;
+            const newJpegBlob = await adjustJpegToExactSize(workingCanvas, imageTargetBytes * 0.8);
+            const newPdf = new jsPDF({ orientation: newWidth > newHeight ? 'landscape' : 'portrait', unit: 'px', format: [newWidth, newHeight] });
+            const newImgData = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(newJpegBlob); });
+            newPdf.addImage(newImgData, 'JPEG', 0, 0, newWidth, newHeight);
+            pdfBlob = newPdf.output('blob');
+        }
+        return pdfBlob;
+    }
+
+    async function scaleDownToTarget(canvas, format, targetBytes) {
+        let workingCanvas = canvas;
+        let blob = await canvasToBlob(workingCanvas, format, format === 'jpeg' ? 0.5 : 1);
+        while (blob.size > targetBytes && workingCanvas.width > 10) {
+            const scaleFactor = Math.sqrt(targetBytes / blob.size) * 0.9;
+            const newWidth = Math.max(10, Math.floor(workingCanvas.width * scaleFactor));
+            const newHeight = Math.max(10, Math.floor(workingCanvas.height * scaleFactor));
+            const scaledCanvas = document.createElement('canvas');
+            scaledCanvas.width = newWidth; scaledCanvas.height = newHeight;
+            scaledCanvas.getContext('2d').drawImage(workingCanvas, 0, 0, newWidth, newHeight);
+            workingCanvas = scaledCanvas;
+            blob = await canvasToBlob(workingCanvas, format, format === 'jpeg' ? 0.5 : 1);
+        }
+        return blob;
+    }
+
+    async function inflateImageToTarget(canvas, format, targetBytes) {
+        const width = canvas.width, height = canvas.height;
+        const ctx = canvas.getContext('2d');
+        const originalImageData = ctx.getImageData(0, 0, width, height);
+        let bestBlob = await canvasToBlob(canvas, format, format === 'jpeg' ? 0.99 : 1);
+        let noiseLevel = 1;
+        for (let iteration = 0; iteration < 50; iteration++) {
+            const noiseCanvas = document.createElement('canvas');
+            noiseCanvas.width = width; noiseCanvas.height = height;
+            const noiseCtx = noiseCanvas.getContext('2d');
+            noiseCtx.putImageData(originalImageData, 0, 0);
+            const imageData = noiseCtx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i + 3] > 0) {
+                    data[i] = Math.max(0, Math.min(255, data[i] + (Math.random() * noiseLevel * 2 - noiseLevel)));
+                    data[i+1] = Math.max(0, Math.min(255, data[i+1] + (Math.random() * noiseLevel * 2 - noiseLevel)));
+                    data[i+2] = Math.max(0, Math.min(255, data[i+2] + (Math.random() * noiseLevel * 2 - noiseLevel)));
+                }
+            }
+            noiseCtx.putImageData(imageData, 0, 0);
+            const blob = await canvasToBlob(noiseCanvas, format, format === 'jpeg' ? 0.99 : 1);
+            if (blob.size <= targetBytes && blob.size > bestBlob.size) bestBlob = blob;
+            if (bestBlob.size >= targetBytes * 0.99 && bestBlob.size <= targetBytes) break;
+            if (blob.size > targetBytes) noiseLevel = Math.max(0.5, noiseLevel - 0.5);
+            else noiseLevel = Math.min(noiseLevel + 1, 40);
+        }
+        ctx.putImageData(originalImageData, 0, 0);
+        return bestBlob;
+    }
+
+    function crc32(data) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < data.length; i++) {
+            crc ^= data[i];
+            for (let j = 0; j < 8; j++) {
+                crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+            }
+        }
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+    }
+
+    async function addPngTextChunkExact(pngBlob, paddingBytes) {
+        if (paddingBytes <= 0) return pngBlob;
+        const arrayBuffer = await pngBlob.arrayBuffer();
+        const data = new Uint8Array(arrayBuffer);
+        if (data[0] !== 0x89 || data[1] !== 0x50 || data[2] !== 0x4E || data[3] !== 0x47) return pngBlob;
+        const keyword = 'X';
+        const keywordBytes = new TextEncoder().encode(keyword);
+        const chunkOverhead = 12 + keywordBytes.length + 1;
+        const textDataSize = Math.max(0, paddingBytes - chunkOverhead);
+        const paddingText = 'P'.repeat(textDataSize);
+        const textBytes = new TextEncoder().encode(paddingText);
+        const chunkData = new Uint8Array(keywordBytes.length + 1 + textBytes.length);
+        chunkData.set(keywordBytes, 0);
+        chunkData[keywordBytes.length] = 0;
+        chunkData.set(textBytes, keywordBytes.length + 1);
+        const chunkType = new Uint8Array([0x74, 0x45, 0x58, 0x74]);
+        const crcData = new Uint8Array(chunkType.length + chunkData.length);
+        crcData.set(chunkType, 0);
+        crcData.set(chunkData, chunkType.length);
+        const crcVal = crc32(crcData);
+        const lengthBytes = new Uint8Array(4);
+        new DataView(lengthBytes.buffer).setUint32(0, chunkData.length, false);
+        const crcBytes = new Uint8Array(4);
+        new DataView(crcBytes.buffer).setUint32(0, crcVal, false);
+        const newChunk = new Uint8Array(12 + chunkData.length);
+        newChunk.set(lengthBytes, 0);
+        newChunk.set(chunkType, 4);
+        newChunk.set(chunkData, 8);
+        newChunk.set(crcBytes, 8 + chunkData.length);
+        const iendStart = data.length - 12;
+        const newPng = new Uint8Array(data.length + newChunk.length);
+        newPng.set(data.subarray(0, iendStart), 0);
+        newPng.set(newChunk, iendStart);
+        newPng.set(data.subarray(iendStart), iendStart + newChunk.length);
+        return new Blob([newPng], { type: 'image/png' });
+    }
+
+    async function downloadSingleSampleImage(canvas, filename, format, targetBytes) {
+        try {
+            if (format === 'pdf') {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+                const { blob } = await adjustQualityForSize(canvas, 'jpg', targetBytes);
+                const imgData = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(blob); });
+                pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+                pdf.save(filename);
+            } else {
+                const { blob } = await adjustQualityForSize(canvas, format, targetBytes);
+                const link = document.createElement('a');
+                link.download = filename; link.href = URL.createObjectURL(blob); link.click(); URL.revokeObjectURL(link.href);
+            }
+        } catch(e) { showToast('다운로드 중 오류가 발생했습니다', 'error'); }
+    }
+
+    function dataURLtoBlob(dataURL) {
+        const parts = dataURL.split(',');
+        const mime = parts[0].match(/:(.*?);/)[1];
+        const bstr = atob(parts[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) u8arr[n] = bstr.charCodeAt(n);
+        return new Blob([u8arr], { type: mime });
+    }
+
+    async function downloadAllSampleImages() {
+        if (generatedSampleImages.length === 0) return;
+        const zipCheck = document.getElementById('zipDownloadCheck');
+        if (zipCheck && zipCheck.checked) {
+            await downloadAllAsZip();
+            return;
+        }
+        for (const item of generatedSampleImages) {
+            if (item.blob) {
+                const link = document.createElement('a');
+                link.download = item.filename; link.href = URL.createObjectURL(item.blob); link.click(); URL.revokeObjectURL(link.href);
+            } else if (item.canvas) {
+                await downloadSingleSampleImage(item.canvas, item.filename, item.format, item.targetBytes);
+            }
+            await new Promise(resolve => setTimeout(resolve, 300));
+        }
+        showToast('모든 이미지가 다운로드되었습니다', 'success');
+    }
+
+    async function downloadAllAsZip() {
+        if (generatedSampleImages.length === 0) return;
+        const text = document.getElementById('sampleImageText').value || 'Sample';
+        const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
+        const zip = new JSZip();
+        const formatFolders = {};
+        generatedSampleImages.forEach(item => {
+            const folderName = item.format.toUpperCase();
+            if (!formatFolders[folderName]) formatFolders[folderName] = zip.folder(folderName);
+        });
+        for (let i = 0; i < generatedSampleImages.length; i++) {
+            const item = generatedSampleImages[i];
+            const folder = formatFolders[item.format.toUpperCase()];
+            let blob;
+            if (item.blob) { blob = item.blob; }
+            else if (item.canvas) {
+                if (item.format === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ orientation: item.canvas.width > item.canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [item.canvas.width, item.canvas.height] });
+                    const imgData = item.canvas.toDataURL('image/jpeg', 0.92);
+                    pdf.addImage(imgData, 'JPEG', 0, 0, item.canvas.width, item.canvas.height);
+                    blob = pdf.output('blob');
+                } else {
+                    const mimeType = item.format === 'png' ? 'image/png' : 'image/jpeg';
+                    blob = dataURLtoBlob(item.canvas.toDataURL(mimeType, 0.92));
+                }
+            }
+            if (blob) folder.file(item.filename, blob);
+        }
+        const content = await zip.generateAsync({ type: 'blob' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = `이미지모음_${safeText}.zip`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        showToast('ZIP 파일이 다운로드되었습니다', 'success');
+    }
+
+    // ============================================================
+    // CSV GENERATOR
+    // ============================================================
+    function toggleCsvColumn(columnNumber) {
+        const container = document.getElementById(`col${columnNumber}-container`);
+        const options = document.getElementById(`col${columnNumber}-options`);
+        const checkbox = document.getElementById(`col${columnNumber}-enable`);
+        if (checkbox && container && options) {
+            const inputs = options.querySelectorAll('input');
+            if (checkbox.checked) {
+                container.style.opacity = '1'; container.style.background = '#f9fafb';
+                inputs.forEach(input => input.disabled = false);
+            } else {
+                container.style.opacity = '0.5'; container.style.background = '#f3f4f6';
+                inputs.forEach(input => input.disabled = true);
+            }
+        }
+    }
+
+    function generateRandomString() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < 10; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+        return result;
+    }
+
+    function generateCsvFile() {
+        try {
+            const rowCount = parseInt(document.getElementById('csv-rowCount').value);
+            if (rowCount <= 0 || rowCount > 1000) { showToast('행 수는 1~1000 범위로 입력해주세요', 'error'); return; }
+            const col2Enabled = document.getElementById('col2-enable').checked;
+            const col3Enabled = document.getElementById('col3-enable').checked;
+            csvData = [];
+            for (let i = 0; i < rowCount; i++) {
+                const row = [];
+                const col1Type = document.querySelector('input[name="col1Type"]:checked').value;
+                row.push(col1Type === 'text' ? (document.getElementById('col1-text').value || 'Data') : generateRandomString());
+                if (col2Enabled) {
+                    const col2Type = document.querySelector('input[name="col2Type"]:checked').value;
+                    row.push(col2Type === 'text' ? (document.getElementById('col2-text').value || 'Data') : generateRandomString());
+                }
+                if (col3Enabled) {
+                    const col3Type = document.querySelector('input[name="col3Type"]:checked').value;
+                    row.push(col3Type === 'text' ? (document.getElementById('col3-text').value || 'Data') : generateRandomString());
+                }
+                csvData.push(row);
+            }
+            displayCsvPreview();
+            showToast('CSV 미리보기가 생성되었습니다', 'success');
+        } catch(e) { showToast('CSV 생성 오류', 'error'); }
+    }
+
+    function displayCsvPreview() {
+        const previewDiv = document.getElementById('csv-preview');
+        const tbody = document.getElementById('csv-preview-body');
+        if (!tbody) { previewDiv.classList.remove('hidden'); return; }
+        tbody.innerHTML = '';
+        const previewRows = Math.min(10, csvData.length);
+        for (let i = 0; i < previewRows; i++) {
+            const tr = document.createElement('tr');
+            csvData[i].forEach(cell => {
+                const td = document.createElement('td');
+                td.className = 'border border-gray-300 px-4 py-2';
+                td.textContent = cell;
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        }
+        if (csvData.length > 10) {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = csvData[0].length;
+            td.className = 'border border-gray-300 px-4 py-2 text-center text-gray-500';
+            td.textContent = `... 외 ${csvData.length - 10}개 행`;
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+        }
+        previewDiv.classList.remove('hidden');
+    }
+
+    function downloadCsvFile() {
+        if (csvData.length === 0) { showToast('먼저 CSV를 생성해주세요', 'error'); return; }
+        let csvContent = '';
+        csvData.forEach(row => csvContent += row.join(',') + '\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.setAttribute('href', URL.createObjectURL(blob));
+        link.setAttribute('download', `custom_data_${csvData.length}rows_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}.csv`);
+        link.click();
+        showToast('CSV 파일이 다운로드되었습니다', 'success');
+    }
+
+    // ============================================================
+    // STOPWATCH
+    // ============================================================
+    function formatStopwatchTime(ms) {
+        const hours = Math.floor(ms / 3600000);
+        const minutes = Math.floor((ms % 3600000) / 60000);
+        const seconds = Math.floor((ms % 60000) / 1000);
+        const milliseconds = ms % 1000;
+        return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}<span class="text-4xl md:text-5xl">.${String(milliseconds).padStart(3,'0')}</span>`;
+    }
+
+    function updateStopwatchDisplay() {
+        const now = Date.now();
+        const elapsed = stopwatchElapsed + (stopwatchRunning ? now - stopwatchStartTime : 0);
+        document.getElementById('stopwatchDisplay').innerHTML = formatStopwatchTime(elapsed);
+    }
+
+    function startStopwatch() {
+        if (!stopwatchRunning) {
+            stopwatchRunning = true;
+            stopwatchStartTime = Date.now();
+            stopwatchInterval = setInterval(updateStopwatchDisplay, 10);
+            document.getElementById('stopwatchStartBtn').disabled = true;
+            document.getElementById('stopwatchStopBtn').disabled = false;
+            document.getElementById('stopwatchLapBtn').disabled = false;
+        }
+    }
+
+    function stopStopwatch() {
+        if (stopwatchRunning) {
+            stopwatchRunning = false;
+            stopwatchElapsed += Date.now() - stopwatchStartTime;
+            clearInterval(stopwatchInterval);
+            document.getElementById('stopwatchStartBtn').disabled = false;
+            document.getElementById('stopwatchStopBtn').disabled = true;
+            document.getElementById('stopwatchLapBtn').disabled = true;
+        }
+    }
+
+    function resetStopwatch() {
+        stopStopwatch();
+        stopwatchElapsed = 0;
+        updateStopwatchDisplay();
+        clearLaps();
+    }
+
+    function recordLap() {
+        if (stopwatchRunning) {
+            const now = Date.now();
+            const totalElapsed = stopwatchElapsed + (now - stopwatchStartTime);
+            const lapNumber = lapTimes.length + 1;
+            const previousTotal = lapTimes.length > 0 ? lapTimes[lapTimes.length - 1].total : 0;
+            const lapTime = totalElapsed - previousTotal;
+            lapTimes.push({ number: lapNumber, lap: lapTime, total: totalElapsed });
+            displayLapTimes();
+        }
+    }
+
+    function formatLapTime(ms) {
+        const hours = Math.floor(ms / 3600000);
+        const minutes = Math.floor((ms % 3600000) / 60000);
+        const seconds = Math.floor((ms % 60000) / 1000);
+        const milliseconds = ms % 1000;
+        if (hours > 0) return `${hours}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(milliseconds).padStart(3,'0')}`;
+        return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(milliseconds).padStart(3,'0')}`;
+    }
+
+    function displayLapTimes() {
+        const container = document.getElementById('lapTimesList');
+        if (lapTimes.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500 py-4">랩 버튼을 눌러 기록하세요</p>';
+            return;
+        }
+        const lapTimesOnly = lapTimes.map(l => l.lap);
+        const bestLap = Math.min(...lapTimesOnly);
+        const worstLap = Math.max(...lapTimesOnly);
+        container.innerHTML = lapTimes.slice().reverse().map(lap => {
+            let bgClass = 'bg-white', badge = '';
+            if (lapTimes.length > 1) {
+                if (lap.lap === bestLap) { bgClass = 'bg-green-50 border-green-200'; badge = '<span class="text-xs text-green-600 font-medium">Best</span>'; }
+                else if (lap.lap === worstLap) { bgClass = 'bg-red-50 border-red-200'; badge = '<span class="text-xs text-red-600 font-medium">Worst</span>'; }
+            }
+            return `<div class="flex items-center justify-between p-3 ${bgClass} rounded-lg border border-gray-200"><div class="flex items-center gap-3"><span class="text-sm text-gray-500 font-medium">#${String(lap.number).padStart(2,'0')}</span>${badge}</div><div class="text-right"><span class="font-mono font-semibold text-gray-800">${formatLapTime(lap.lap)}</span><span class="text-xs text-gray-500 ml-2">(${formatLapTime(lap.total)})</span></div></div>`;
+        }).join('');
+    }
+
+    function clearLaps() {
+        lapTimes = [];
+        displayLapTimes();
+    }
+
+    // ============================================================
+    // CLOCK
+    // ============================================================
+    function initializeClock() {
+        updateClock();
+        clockInterval = setInterval(updateClock, 1000);
+    }
+
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2,'0');
+        const minutes = String(now.getMinutes()).padStart(2,'0');
+        const seconds = String(now.getSeconds()).padStart(2,'0');
+        const el = document.getElementById('currentTimeDisplay');
+        if (el) el.textContent = `${hours}:${minutes}:${seconds}`;
+        const year = now.getFullYear(), month = now.getMonth() + 1, day = now.getDate();
+        const dateEl = document.getElementById('currentDateDisplay');
+        if (dateEl) dateEl.textContent = `${year}년 ${month}월 ${day}일`;
+        const daysKo = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+        const dayEl = document.getElementById('currentDayDisplay');
+        if (dayEl) dayEl.textContent = daysKo[now.getDay()];
+        const tzEl = document.getElementById('timezoneDisplay');
+        if (tzEl) tzEl.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const offset = -now.getTimezoneOffset();
+        const offsetHours = Math.floor(Math.abs(offset) / 60);
+        const offsetMinutes = Math.abs(offset) % 60;
+        const offsetSign = offset >= 0 ? '+' : '-';
+        const utcEl = document.getElementById('utcOffsetDisplay');
+        if (utcEl) utcEl.textContent = `UTC${offsetSign}${String(offsetHours).padStart(2,'0')}:${String(offsetMinutes).padStart(2,'0')}`;
+        updateWorldClock('timeNewYork', 'America/New_York');
+        updateWorldClock('timeLondon', 'Europe/London');
+        updateWorldClock('timeTokyo', 'Asia/Tokyo');
+        updateWorldClock('timeSydney', 'Australia/Sydney');
+    }
+
+    function updateWorldClock(elementId, timezone) {
+        try {
+            const now = new Date();
+            const options = { timeZone: timezone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const el = document.getElementById(elementId);
+            if (el) el.textContent = now.toLocaleTimeString('en-GB', options);
+        } catch(e) {
+            const el = document.getElementById(elementId);
+            if (el) el.textContent = '--:--:--';
+        }
+    }
+
+    // ============================================================
     // Initialization
     // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
         // Load saved admin settings for business number generator
         loadAdminSettings();
+
+        // Initialize new tabs
+        initializeProfileGenerator();
+        initializeSampleGenerator();
+        initializeClock();
 
         // Dashboard event listeners
         document.querySelectorAll('.dashboard-func-item').forEach(item => {
