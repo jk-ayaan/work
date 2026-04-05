@@ -157,8 +157,8 @@
                     <div class="mt-4 space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">프록시 서버 URL</label>
-                                <input type="text" id="proxy-url" class="form-input" value="http://localhost:8099" placeholder="http://localhost:8099">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">CORS 프록시 URL (비우면 직접 호출)</label>
+                                <input type="text" id="cors-proxy-url" class="form-input" value="https://corsproxy.io/?url=" placeholder="https://corsproxy.io/?url=">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">로그인 API URL</label>
@@ -1155,11 +1155,17 @@
     }
 
     // ============================================================
-    // Admin Login & API Call (Proxy)
+    // Admin Login & API Call (Direct / CORS Proxy)
     // ============================================================
+    function buildProxiedUrl(targetUrl) {
+        const corsProxy = document.getElementById('cors-proxy-url').value.trim();
+        if (!corsProxy) return targetUrl;
+        return corsProxy + encodeURIComponent(targetUrl);
+    }
+
     function loadAdminSettings() {
         const settings = JSON.parse(localStorage.getItem('adminSettings') || '{}');
-        if (settings.proxyUrl) document.getElementById('proxy-url').value = settings.proxyUrl;
+        if (settings.corsProxyUrl !== undefined) document.getElementById('cors-proxy-url').value = settings.corsProxyUrl;
         if (settings.loginApiUrl) document.getElementById('login-api-url').value = settings.loginApiUrl;
         if (settings.loginId) document.getElementById('login-id').value = settings.loginId;
         if (settings.loginBodyTemplate) document.getElementById('login-body-template').value = settings.loginBodyTemplate;
@@ -1173,7 +1179,7 @@
 
     function saveAdminSettings() {
         const settings = {
-            proxyUrl: document.getElementById('proxy-url').value,
+            corsProxyUrl: document.getElementById('cors-proxy-url').value,
             loginApiUrl: document.getElementById('login-api-url').value,
             loginId: document.getElementById('login-id').value,
             loginBodyTemplate: document.getElementById('login-body-template').value,
@@ -1198,7 +1204,6 @@
 
     async function adminLogin() {
         saveAdminSettings();
-        const proxyUrl = document.getElementById('proxy-url').value.replace(/\/+$/, '');
         const loginApiUrl = document.getElementById('login-api-url').value;
         const loginId = document.getElementById('login-id').value;
         const loginPassword = document.getElementById('login-password').value;
@@ -1212,10 +1217,10 @@
         badge.className = 'text-sm font-normal px-3 py-1 rounded-full bg-yellow-200 text-yellow-800';
 
         try {
-            const resp = await fetch(`${proxyUrl}/api/login`, {
+            const resp = await fetch(buildProxiedUrl(loginApiUrl), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ loginUrl: loginApiUrl, body: JSON.parse(body) }),
+                body: body,
             });
             const data = await resp.json();
             if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
@@ -1244,7 +1249,6 @@
     async function callApiForNumber(businessNumber, btnEl) {
         saveApiCallSettings();
         if (!cachedToken) { showToast('먼저 로그인하세요', 'error'); return; }
-        const proxyUrl = document.getElementById('proxy-url').value.replace(/\/+$/, '');
         const apiUrl = document.getElementById('api-call-url').value;
         const method = document.getElementById('api-call-method').value;
         const bodyTemplate = document.getElementById('api-call-body-template').value;
@@ -1252,7 +1256,7 @@
         if (!apiUrl) { showToast('API URL을 설정하세요', 'error'); return; }
         const rawNumber = businessNumber.replace(/-/g, '');
         let requestBody = null;
-        if (bodyTemplate && method !== 'GET') requestBody = JSON.parse(bodyTemplate.replace(/\{\{businessNumber\}\}/g, rawNumber));
+        if (bodyTemplate && method !== 'GET') requestBody = JSON.stringify(JSON.parse(bodyTemplate.replace(/\{\{businessNumber\}\}/g, rawNumber)));
         let extraHeaders = {};
         if (extraHeadersStr) { try { extraHeaders = JSON.parse(extraHeadersStr); } catch(e) {} }
         const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cachedToken}`, ...extraHeaders };
@@ -1260,20 +1264,19 @@
         const startTime = Date.now();
 
         try {
-            const resp = await fetch(`${proxyUrl}/api/call`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ apiUrl, method, headers, body: requestBody }),
+            const resp = await fetch(buildProxiedUrl(apiUrl), {
+                method: method,
+                headers: headers,
+                body: method !== 'GET' ? requestBody : undefined,
             });
             const data = await resp.json();
             const elapsed = Date.now() - startTime;
-            const status = data.status || resp.status;
-            addApiLog(businessNumber, apiUrl, status, data, elapsed);
+            addApiLog(businessNumber, apiUrl, resp.status, data, elapsed);
             if (btnEl) {
-                btnEl.textContent = (status >= 200 && status < 300) ? '✅' : '❌';
+                btnEl.textContent = resp.ok ? '✅' : '❌';
                 setTimeout(() => { btnEl.textContent = '🚀'; btnEl.disabled = false; }, 1500);
             }
-            return { success: status >= 200 && status < 300, status };
+            return { success: resp.ok, status: resp.status };
         } catch (err) {
             const elapsed = Date.now() - startTime;
             addApiLog(businessNumber, apiUrl, 0, { error: err.message }, elapsed);
