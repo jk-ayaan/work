@@ -6,15 +6,15 @@
 
 ### GitHub Pages로 접속
 별도 설치 없이 바로 사용 가능합니다:
-👉 **[https://jk-ayaan.github.io/work-assistant/main.html](https://jk-ayaan.github.io/work-assistant/main.html)**
+👉 **[https://jk-ayaan.github.io/work/main.html](https://jk-ayaan.github.io/work/main.html)**
 
 ### 로컬 실행
 ```bash
 # 프로젝트 클론
-git clone https://github.com/jk-ayaan/work-assistant.git
+git clone https://github.com/jk-ayaan/work.git
 
 # 디렉토리 이동
-cd work-assistant
+cd work
 
 # HTML 파일 직접 열기
 open main.html
@@ -172,7 +172,7 @@ http://localhost:8000/main.html
 
 ## 📞 문의
 
-프로젝트에 대한 문의사항이나 버그 신고는 [Issues](https://github.com/jk-ayaan/work-assistant/issues)를 이용해 주세요.
+프로젝트에 대한 문의사항이나 버그 신고는 [Issues](https://github.com/jk-ayaan/work/issues)를 이용해 주세요.
 
 ---
 
