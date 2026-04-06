@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CEO+ Help - 관리자 도구</title>
-    <link rel="icon" type="image/jpeg" href="../favicon-32x32.jpg">
-    <link rel="icon" type="image/jpeg" sizes="16x16" href="../favicon-16x16.jpg">
-    <link rel="icon" type="image/jpeg" sizes="32x32" href="../favicon-32x32.jpg">
+    <link rel="icon" type="image/jpeg" href="favicon-32x32.jpg">
+    <link rel="icon" type="image/jpeg" sizes="16x16" href="favicon-16x16.jpg">
+    <link rel="icon" type="image/jpeg" sizes="32x32" href="favicon-32x32.jpg">
 
     <!-- TailwindCSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -602,7 +602,6 @@
     <div class="mobile-sidebar" id="mobileSidebar">
         <div class="p-4 bg-gradient-to-r from-primary-500 to-primary-600">
             <div class="flex items-center space-x-3">
-                <img src="../logo.jpg" alt="CEO+ Help" class="w-10 h-10 rounded-lg shadow-md">
                 <div>
                     <h1 class="text-lg font-bold text-white">CEO+ Help</h1>
                     <p class="text-xs text-white opacity-80">Admin Tools</p>
@@ -615,21 +614,21 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                 </svg>
-                <span data-ko="사업자번호 생성기" data-en="Business Number">사업자번호 생성기</span>
+                <span data-ko="비즈넘버" data-en="BizNum">비즈넘버</span>
             </div>
 
             <div class="mobile-nav-item" data-tab="qr-xlsx" onclick="showTabFromMobile('qr-xlsx')">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
-                <span data-ko="QR XLSX 생성기" data-en="QR XLSX Generator">QR XLSX 생성기</span>
+                <span data-ko="QR첨부" data-en="QR Attach">QR첨부</span>
             </div>
 
             <div class="mobile-nav-item" data-tab="combination" onclick="showTabFromMobile('combination')">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
                 </svg>
-                <span data-ko="조합 생성기" data-en="Combination Generator">조합 생성기</span>
+                <span data-ko="조합확인" data-en="Combination">조합확인</span>
             </div>
 
             <div class="mobile-nav-item" data-tab="profile" onclick="showTabFromMobile('profile')">
@@ -697,7 +696,6 @@
                         <span></span>
                         <span></span>
                     </div>
-                    <img src="../logo.jpg" alt="CEO+ Help" class="w-12 h-12 rounded-lg shadow-md">
                     <div class="hidden sm:block">
                         <h1 class="text-xl font-bold text-black">CEO+</h1>
                         <p class="text-sm font-semibold text-red-600">Help</p>
@@ -708,58 +706,30 @@
                 <nav class="flex-1 mx-8">
                     <div class="tab-container flex space-x-1 justify-center">
                         <button class="tab-button active" onclick="showTab('business-number')" id="tab-business-number">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                            </svg>
-                            <span class="tab-text" data-ko="사업자번호 생성기" data-en="Business Number">사업자번호 생성기</span>
+                            <span class="tab-text" data-ko="비즈넘버" data-en="BizNum">비즈넘버</span>
                         </button>
                         <button class="tab-button" onclick="showTab('qr-xlsx')" id="tab-qr-xlsx">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            <span class="tab-text" data-ko="QR XLSX 생성기" data-en="QR XLSX">QR XLSX 생성기</span>
+                            <span class="tab-text" data-ko="QR첨부" data-en="QR Attach">QR첨부</span>
                         </button>
                         <button class="tab-button" onclick="showTab('combination')" id="tab-combination">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-                            </svg>
-                            <span class="tab-text" data-ko="조합 생성기" data-en="Combination">조합 생성기</span>
+                            <span class="tab-text" data-ko="조합확인" data-en="Combination">조합확인</span>
                         </button>
                         <button class="tab-button" onclick="showTab('profile')" id="tab-profile">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
                             <span class="tab-text" data-ko="프로필" data-en="Profile">프로필</span>
                         </button>
                         <button class="tab-button" onclick="showTab('sample')" id="tab-sample">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
                             <span class="tab-text" data-ko="이미지" data-en="Image">이미지</span>
                         </button>
                         <button class="tab-button" onclick="showTab('csv')" id="tab-csv">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
                             <span class="tab-text" data-ko="CSV" data-en="CSV">CSV</span>
                         </button>
                         <button class="tab-button" onclick="showTab('stopwatch')" id="tab-stopwatch">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
                             <span class="tab-text" data-ko="타이머" data-en="Timer">타이머</span>
                         </button>
                         <button class="tab-button" onclick="showTab('clock')" id="tab-clock">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
                             <span class="tab-text" data-ko="시계" data-en="Clock">시계</span>
                         </button>
                         <button class="tab-button" onclick="showTab('admin-dashboard')" id="tab-admin-dashboard">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
                             <span class="tab-text" data-ko="어드민" data-en="Admin">어드민</span>
                         </button>
                     </div>
@@ -767,6 +737,10 @@
 
                 <!-- 우측 유틸리티 -->
                 <div class="flex items-center space-x-3">
+                    <button id="proxy-status-btn" class="px-3 py-1.5 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all text-sm font-medium text-black" onclick="toggleProxyPanel()" title="CORS Proxy 서버 상태">
+                        <span id="proxy-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-right:4px;vertical-align:middle;"></span>
+                        Proxy
+                    </button>
                     <div class="relative">
                         <button class="px-3 py-1.5 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all text-sm font-medium" onclick="toggleLanguage()">
                             <span id="current-lang" class="text-black">KOR</span>
@@ -904,6 +878,16 @@
                                     <button onclick="bnDownloadExcel()" class="px-4 py-2 bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors text-sm flex-1">Excel 다운로드</button>
                                     <button onclick="bnDownloadPostmanCSV()" class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors text-sm flex-1">Postman CSV</button>
                                 </div>
+
+                                <div class="border-t pt-4 mt-2">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <label class="text-sm font-medium text-neutral-700">호출 딜레이 (ms)</label>
+                                        <input type="number" id="bn-bulk-api-delay" class="form-input w-24 text-sm py-1" value="500" min="0" step="100">
+                                    </div>
+                                    <button onclick="bnBulkApiCall()" id="bn-bulk-api-btn" class="w-full px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors text-sm">
+                                        전체 API 호출
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="lg:col-span-2">
@@ -916,6 +900,103 @@
                                     <span><span id="bn-count-display">0</span> 개 생성됨</span>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin 로그인 설정 -->
+                    <div class="card p-6 mt-6">
+                        <details id="bn-admin-login-section">
+                            <summary class="cursor-pointer flex items-center justify-between text-lg font-semibold text-neutral-800 hover:text-neutral-900">
+                                <span>Admin 로그인 설정</span>
+                                <span id="bn-login-status-badge" class="text-sm font-normal px-3 py-1 rounded-full bg-neutral-200 text-neutral-600">미연결</span>
+                            </summary>
+                            <div class="mt-4 space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 mb-1">CORS 프록시 URL (비우면 직접 호출)</label>
+                                        <input type="text" id="bn-cors-proxy-url" class="form-input" value="http://localhost:8888/" placeholder="http://localhost:8888/">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 mb-1">로그인 API URL</label>
+                                        <input type="text" id="bn-login-api-url" class="form-input" placeholder="https://admin.internal.com/api/login">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 mb-1">로그인 ID</label>
+                                        <input type="text" id="bn-login-id" class="form-input" placeholder="admin">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 mb-1">로그인 Password</label>
+                                        <input type="password" id="bn-login-password" class="form-input" placeholder="••••••••">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-neutral-700 mb-1">로그인 요청 Body 템플릿 (JSON)</label>
+                                    <textarea id="bn-login-body-template" class="form-input font-mono text-sm" rows="3" placeholder='{"username": "{{id}}", "password": "{{password}}"}'></textarea>
+                                    <p class="text-xs text-neutral-500 mt-1">{{id}}, {{password}} 플레이스홀더 사용</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-neutral-700 mb-1">토큰 응답 경로</label>
+                                    <input type="text" id="bn-token-response-path" class="form-input" placeholder="data.accessToken">
+                                    <p class="text-xs text-neutral-500 mt-1">응답 JSON에서 토큰을 추출할 경로 (예: data.accessToken, token)</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="bnAdminLogin()" class="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                                        로그인
+                                    </button>
+                                    <button onclick="bnAdminLogout()" class="px-6 py-2 bg-neutral-200 text-neutral-800 font-medium rounded-lg hover:bg-neutral-300 transition-colors">
+                                        로그아웃
+                                    </button>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <!-- API 호출 설정 -->
+                    <div class="card p-6 mt-4">
+                        <details id="bn-api-call-section">
+                            <summary class="cursor-pointer flex items-center justify-between text-lg font-semibold text-neutral-800 hover:text-neutral-900">
+                                <span>사업자번호 API 호출 설정</span>
+                            </summary>
+                            <div class="mt-4 space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 mb-1">API URL</label>
+                                        <input type="text" id="bn-api-call-url" class="form-input" placeholder="https://admin.internal.com/api/business">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 mb-1">HTTP Method</label>
+                                        <select id="bn-api-call-method" class="form-input">
+                                            <option value="GET">GET</option>
+                                            <option value="POST" selected>POST</option>
+                                            <option value="PUT">PUT</option>
+                                            <option value="PATCH">PATCH</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-neutral-700 mb-1">Request Body 템플릿 (JSON)</label>
+                                    <textarea id="bn-api-call-body-template" class="form-input font-mono text-sm" rows="3" placeholder='{"businessNumber": "{{businessNumber}}", "type": "individual"}'></textarea>
+                                    <p class="text-xs text-neutral-500 mt-1">{{businessNumber}} 플레이스홀더가 각 사업자번호(하이픈 제거)로 치환됩니다</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-neutral-700 mb-1">추가 헤더 (JSON, 선택사항)</label>
+                                    <textarea id="bn-api-call-extra-headers" class="form-input font-mono text-sm" rows="2" placeholder='{"X-Custom-Header": "value"}'></textarea>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <!-- API 호출 로그 -->
+                    <div class="card p-6 mt-4" id="bn-api-log-section">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-neutral-800">API 호출 로그</h3>
+                            <div class="flex gap-2">
+                                <span id="bn-api-log-count" class="text-sm text-neutral-500">0건</span>
+                                <button onclick="bnClearApiLogs()" class="px-3 py-1 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors text-sm">초기화</button>
+                            </div>
+                        </div>
+                        <div id="bn-api-log-list" class="space-y-2 max-h-[400px] overflow-y-auto">
+                            <p class="text-center text-neutral-400 text-sm py-4">API 호출 로그가 여기에 표시됩니다</p>
                         </div>
                     </div>
                 </div>
@@ -1821,6 +1902,45 @@
         </div>
     </div>
 
+    <!-- Proxy 패널 모달 -->
+    <div id="proxy-panel-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-lg w-full m-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-neutral-800">CORS Proxy 서버</h3>
+                <button onclick="closeProxyPanel()" class="p-2 hover:bg-neutral-100 rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center gap-3 p-4 rounded-lg" id="proxy-status-box" style="background:#fef2f2;border:1px solid #fecaca;">
+                    <span id="proxy-status-dot-big" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#ef4444;flex-shrink:0;"></span>
+                    <div>
+                        <p class="font-semibold text-neutral-800" id="proxy-status-text">Offline</p>
+                        <p class="text-sm text-neutral-600" id="proxy-status-detail">프록시 서버가 실행 중이 아닙니다</p>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 mb-1">Proxy URL</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="proxy-url-input" class="form-input flex-1" value="http://localhost:8888" placeholder="http://localhost:8888">
+                        <button onclick="checkProxyStatus()" class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-medium">확인</button>
+                    </div>
+                </div>
+                <div class="bg-neutral-50 rounded-lg p-4">
+                    <h4 class="font-medium text-neutral-800 mb-2">proxy.py 실행 방법</h4>
+                    <p class="text-sm text-neutral-600 mb-2">터미널에서 아래 명령어를 실행하세요:</p>
+                    <div class="bg-neutral-800 text-green-400 rounded-lg p-3 font-mono text-sm relative">
+                        <code>python proxy.py</code>
+                        <button onclick="copyToClipboard('python proxy.py')" class="absolute top-2 right-2 text-neutral-400 hover:text-white px-2">📋</button>
+                    </div>
+                    <p class="text-xs text-neutral-500 mt-2">Python 3.x 필요. 기본 포트: 8888</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     // ============================================================
     // GLOBAL VARIABLES
@@ -1829,6 +1949,10 @@
     let currentAdminSubTab = 'dashboard';
     let windowRefs = {};
     let currentLanguage = 'ko';
+
+    // BN API variables
+    let bnCachedToken = null;
+    let bnApiLogs = [];
 
     // Profile generator variables
     let profileCanvas, profileCtx;
@@ -2157,7 +2281,10 @@
                     <span class="font-mono text-lg">${num.formatted}</span>
                     <span class="px-2 py-1 text-xs font-medium rounded-full bg-primary-100 text-primary-800">${num.type}</span>
                 </div>
-                <button onclick="copyToClipboard('${num.formatted}')" class="text-neutral-400 hover:text-neutral-600 px-1" title="복사">📋</button>
+                <div class="flex gap-1">
+                    <button onclick="copyToClipboard('${num.formatted}')" class="text-neutral-400 hover:text-neutral-600 px-1" title="복사">📋</button>
+                    <button onclick="bnCallApiForNumber('${num.formatted}', this)" id="bn-api-btn-${idx}" class="text-neutral-400 hover:text-neutral-600 px-1" title="API 호출">🚀</button>
+                </div>
             </div>
         `).join('');
         countEl.textContent = bnGeneratedNumbers.length;
@@ -2191,6 +2318,239 @@
         link.download = `postman_business_numbers_${Date.now()}.csv`;
         link.click();
         showToast('Postman CSV 파일이 다운로드되었습니다!', 'success');
+    }
+
+    // ============================================================
+    // BN Admin Login & API Call
+    // ============================================================
+    function bnBuildProxiedUrl(targetUrl) {
+        const corsProxy = document.getElementById('bn-cors-proxy-url').value.trim();
+        if (!corsProxy) return targetUrl;
+        return corsProxy + encodeURIComponent(targetUrl);
+    }
+
+    function bnGetNestedValue(obj, path) {
+        return path.split('.').reduce((current, key) => current && current[key], obj);
+    }
+
+    function bnSaveAdminSettings() {
+        const settings = {
+            corsProxyUrl: document.getElementById('bn-cors-proxy-url').value,
+            loginApiUrl: document.getElementById('bn-login-api-url').value,
+            loginId: document.getElementById('bn-login-id').value,
+            loginBodyTemplate: document.getElementById('bn-login-body-template').value,
+            tokenResponsePath: document.getElementById('bn-token-response-path').value,
+        };
+        localStorage.setItem('bnAdminSettings', JSON.stringify(settings));
+    }
+
+    function bnLoadAdminSettings() {
+        const settings = JSON.parse(localStorage.getItem('bnAdminSettings') || '{}');
+        if (settings.corsProxyUrl !== undefined) document.getElementById('bn-cors-proxy-url').value = settings.corsProxyUrl;
+        if (settings.loginApiUrl) document.getElementById('bn-login-api-url').value = settings.loginApiUrl;
+        if (settings.loginId) document.getElementById('bn-login-id').value = settings.loginId;
+        if (settings.loginBodyTemplate) document.getElementById('bn-login-body-template').value = settings.loginBodyTemplate;
+        if (settings.tokenResponsePath) document.getElementById('bn-token-response-path').value = settings.tokenResponsePath;
+        const apiSettings = JSON.parse(localStorage.getItem('bnApiCallSettings') || '{}');
+        if (apiSettings.apiUrl) document.getElementById('bn-api-call-url').value = apiSettings.apiUrl;
+        if (apiSettings.method) document.getElementById('bn-api-call-method').value = apiSettings.method;
+        if (apiSettings.bodyTemplate) document.getElementById('bn-api-call-body-template').value = apiSettings.bodyTemplate;
+        if (apiSettings.extraHeaders) document.getElementById('bn-api-call-extra-headers').value = apiSettings.extraHeaders;
+    }
+
+    function bnSaveApiCallSettings() {
+        const settings = {
+            apiUrl: document.getElementById('bn-api-call-url').value,
+            method: document.getElementById('bn-api-call-method').value,
+            bodyTemplate: document.getElementById('bn-api-call-body-template').value,
+            extraHeaders: document.getElementById('bn-api-call-extra-headers').value,
+        };
+        localStorage.setItem('bnApiCallSettings', JSON.stringify(settings));
+    }
+
+    async function bnAdminLogin() {
+        bnSaveAdminSettings();
+        const loginApiUrl = document.getElementById('bn-login-api-url').value;
+        const loginId = document.getElementById('bn-login-id').value;
+        const loginPassword = document.getElementById('bn-login-password').value;
+        let bodyTemplate = document.getElementById('bn-login-body-template').value || '{"username": "{{id}}", "password": "{{password}}"}';
+        const tokenPath = document.getElementById('bn-token-response-path').value || 'token';
+
+        if (!loginApiUrl || !loginId || !loginPassword) { showToast('로그인 URL, ID, Password를 모두 입력하세요', 'error'); return; }
+        const body = bodyTemplate.replace(/\{\{id\}\}/g, loginId).replace(/\{\{password\}\}/g, loginPassword);
+        const badge = document.getElementById('bn-login-status-badge');
+        badge.textContent = '로그인 중...';
+        badge.className = 'text-sm font-normal px-3 py-1 rounded-full bg-yellow-200 text-yellow-800';
+
+        try {
+            const resp = await fetch(bnBuildProxiedUrl(loginApiUrl), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: body,
+            });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+            const token = bnGetNestedValue(data, tokenPath);
+            if (!token) throw new Error(`토큰 경로 '${tokenPath}'에서 토큰을 찾을 수 없음. 응답: ${JSON.stringify(data).substring(0, 200)}`);
+            bnCachedToken = token;
+            badge.textContent = '로그인 성공';
+            badge.className = 'text-sm font-normal px-3 py-1 rounded-full bg-green-200 text-green-800';
+            showToast('로그인 성공', 'success');
+        } catch (err) {
+            bnCachedToken = null;
+            badge.textContent = '로그인 실패';
+            badge.className = 'text-sm font-normal px-3 py-1 rounded-full bg-red-200 text-red-800';
+            showToast(`로그인 실패: ${err.message}`, 'error');
+        }
+    }
+
+    function bnAdminLogout() {
+        bnCachedToken = null;
+        const badge = document.getElementById('bn-login-status-badge');
+        badge.textContent = '미연결';
+        badge.className = 'text-sm font-normal px-3 py-1 rounded-full bg-neutral-200 text-neutral-600';
+        showToast('로그아웃되었습니다', 'success');
+    }
+
+    async function bnCallApiForNumber(businessNumber, btnEl) {
+        bnSaveApiCallSettings();
+        if (!bnCachedToken) { showToast('먼저 로그인하세요', 'error'); return; }
+        const apiUrl = document.getElementById('bn-api-call-url').value;
+        const method = document.getElementById('bn-api-call-method').value;
+        const bodyTemplate = document.getElementById('bn-api-call-body-template').value;
+        const extraHeadersStr = document.getElementById('bn-api-call-extra-headers').value;
+        if (!apiUrl) { showToast('API URL을 설정하세요', 'error'); return; }
+        const rawNumber = businessNumber.replace(/-/g, '');
+        let requestBody = null;
+        if (bodyTemplate && method !== 'GET') requestBody = JSON.stringify(JSON.parse(bodyTemplate.replace(/\{\{businessNumber\}\}/g, rawNumber)));
+        let extraHeaders = {};
+        if (extraHeadersStr) { try { extraHeaders = JSON.parse(extraHeadersStr); } catch(e) {} }
+        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${bnCachedToken}`, ...extraHeaders };
+        if (btnEl) { btnEl.textContent = '⏳'; btnEl.disabled = true; }
+        const startTime = Date.now();
+
+        try {
+            const resp = await fetch(bnBuildProxiedUrl(apiUrl), {
+                method: method,
+                headers: headers,
+                body: method !== 'GET' ? requestBody : undefined,
+            });
+            const data = await resp.json();
+            const elapsed = Date.now() - startTime;
+            bnAddApiLog(businessNumber, apiUrl, resp.status, data, elapsed);
+            if (btnEl) {
+                btnEl.textContent = resp.ok ? '✅' : '❌';
+                setTimeout(() => { btnEl.textContent = '🚀'; btnEl.disabled = false; }, 1500);
+            }
+            return { success: resp.ok, status: resp.status };
+        } catch (err) {
+            const elapsed = Date.now() - startTime;
+            bnAddApiLog(businessNumber, apiUrl, 0, { error: err.message }, elapsed);
+            if (btnEl) { btnEl.textContent = '❌'; setTimeout(() => { btnEl.textContent = '🚀'; btnEl.disabled = false; }, 1500); }
+            return { success: false, status: 0 };
+        }
+    }
+
+    async function bnBulkApiCall() {
+        if (!bnCachedToken) { showToast('먼저 로그인하세요', 'error'); return; }
+        if (bnGeneratedNumbers.length === 0) { showToast('생성된 사업자번호가 없습니다', 'error'); return; }
+        const delay = parseInt(document.getElementById('bn-bulk-api-delay').value) || 500;
+        const btn = document.getElementById('bn-bulk-api-btn');
+        btn.disabled = true; btn.textContent = '⏳ 호출 중...';
+        let successCount = 0, failCount = 0;
+        for (let i = 0; i < bnGeneratedNumbers.length; i++) {
+            const num = bnGeneratedNumbers[i];
+            const apiBtn = document.getElementById(`bn-api-btn-${i}`);
+            btn.textContent = `⏳ ${i + 1}/${bnGeneratedNumbers.length} 호출 중...`;
+            const result = await bnCallApiForNumber(num.formatted, apiBtn);
+            if (result.success) successCount++; else failCount++;
+            if (i < bnGeneratedNumbers.length - 1 && delay > 0) await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        btn.disabled = false; btn.textContent = '전체 API 호출';
+        showToast(`전체 호출 완료: 성공 ${successCount}건, 실패 ${failCount}건`, successCount > 0 ? 'success' : 'error');
+    }
+
+    function bnAddApiLog(businessNumber, apiUrl, status, responseBody, elapsed) {
+        bnApiLogs.unshift({ timestamp: new Date().toLocaleString('ko-KR'), businessNumber, apiUrl, status, responseBody, elapsed });
+        if (bnApiLogs.length > 100) bnApiLogs.pop();
+        bnRenderApiLogs();
+    }
+
+    function bnRenderApiLogs() {
+        const listEl = document.getElementById('bn-api-log-list');
+        const countEl = document.getElementById('bn-api-log-count');
+        countEl.textContent = `${bnApiLogs.length}건`;
+        if (bnApiLogs.length === 0) { listEl.innerHTML = '<p class="text-center text-neutral-400 text-sm py-4">API 호출 로그가 여기에 표시됩니다</p>'; return; }
+        listEl.innerHTML = bnApiLogs.map(log => {
+            const isSuccess = log.status >= 200 && log.status < 300;
+            const bgClass = isSuccess ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+            const statusClass = isSuccess ? 'text-green-700' : 'text-red-700';
+            const bodyStr = typeof log.responseBody === 'string' ? log.responseBody : JSON.stringify(log.responseBody, null, 2);
+            return `
+                <div class="border rounded-lg p-3 ${bgClass}">
+                    <div class="flex items-center justify-between text-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="text-neutral-500">${log.timestamp}</span>
+                            <span class="font-mono font-medium">${log.businessNumber}</span>
+                            <span class="${statusClass} font-medium">HTTP ${log.status}</span>
+                            <span class="text-neutral-500">${log.elapsed}ms</span>
+                        </div>
+                    </div>
+                    <details class="mt-1">
+                        <summary class="text-xs text-neutral-500 cursor-pointer hover:text-neutral-700">응답 보기</summary>
+                        <pre class="mt-1 text-xs bg-white rounded p-2 overflow-x-auto max-h-32 overflow-y-auto">${bodyStr}</pre>
+                    </details>
+                </div>`;
+        }).join('');
+    }
+
+    function bnClearApiLogs() {
+        bnApiLogs = [];
+        bnRenderApiLogs();
+        showToast('API 로그가 초기화되었습니다', 'success');
+    }
+
+    // ============================================================
+    // PROXY PANEL
+    // ============================================================
+    function toggleProxyPanel() {
+        const modal = document.getElementById('proxy-panel-modal');
+        modal.classList.toggle('hidden');
+        if (!modal.classList.contains('hidden')) checkProxyStatus();
+    }
+
+    function closeProxyPanel() {
+        document.getElementById('proxy-panel-modal').classList.add('hidden');
+    }
+
+    async function checkProxyStatus() {
+        const proxyUrl = document.getElementById('proxy-url-input').value.trim();
+        const dot = document.getElementById('proxy-dot');
+        const dotBig = document.getElementById('proxy-status-dot-big');
+        const box = document.getElementById('proxy-status-box');
+        const text = document.getElementById('proxy-status-text');
+        const detail = document.getElementById('proxy-status-detail');
+        try {
+            const healthUrl = proxyUrl.endsWith('/') ? proxyUrl + 'health' : proxyUrl + '/health';
+            const resp = await fetch(healthUrl, { signal: AbortSignal.timeout(3000) });
+            if (resp.ok) {
+                dot.style.background = '#22c55e';
+                dotBig.style.background = '#22c55e';
+                box.style.background = '#f0fdf4';
+                box.style.border = '1px solid #bbf7d0';
+                text.textContent = 'Online';
+                detail.textContent = `프록시 서버가 ${proxyUrl}에서 실행 중입니다`;
+            } else {
+                throw new Error('Not OK');
+            }
+        } catch (e) {
+            dot.style.background = '#ef4444';
+            dotBig.style.background = '#ef4444';
+            box.style.background = '#fef2f2';
+            box.style.border = '1px solid #fecaca';
+            text.textContent = 'Offline';
+            detail.textContent = '프록시 서버가 실행 중이 아닙니다';
+        }
     }
 
     // ============================================================
@@ -3924,6 +4284,8 @@
         });
         updateTokenStatus();
         initAdminTools();
+        bnLoadAdminSettings();
+        checkProxyStatus();
         console.log('CEO+ Help v2.1 - Merged main.html loaded');
     });
 

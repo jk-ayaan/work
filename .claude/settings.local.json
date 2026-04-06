@@ -15,7 +15,12 @@
       "WebFetch(domain:jk-ayaan.github.io)",
       "Read(//Users/jk.jeong/Desktop/**)",
       "Bash(npx html-validate:*)",
-      "WebFetch(domain:www.google.com)"
+      "WebFetch(domain:www.google.com)",
+      "Bash(git:*)",
+      "Bash(/Volumes/ExtSSD/DevEnvironment/nvm/versions/node/v24.14.1/bin/node:*)",
+      "Bash(pip3 install:*)",
+      "Bash(python3:*)",
+      "Bash(curl -s http://localhost:8099/docs -o /dev/null -w \"%{http_code}\")"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
