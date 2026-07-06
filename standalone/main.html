@@ -106,6 +106,29 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
 
+        /* 모바일(iOS Safari 포함) 색상 선택기: 기본 렌더링을 없애고 큼직한 스와치로 표시 */
+        input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            padding: 0;
+            border: 1px solid #d4d4d4;
+            border-radius: 8px;
+            background: transparent;
+            flex-shrink: 0;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
+
+        /* 시간 표시(스톱워치/현재 시각): 화면 폭에 맞춰 글자 크기 조절 */
+        .time-display {
+            font-size: clamp(1.9rem, 9vw, 4.5rem);
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+        .time-display .time-sub {
+            font-size: clamp(1.2rem, 5.5vw, 3rem);
+        }
+
         /* 샘플 이미지 생성기 스타일 */
         .format-checkbox {
             display: flex;
@@ -884,15 +907,15 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">텍스트색</label>
                                         <div class="flex items-center space-x-2">
-                                            <input type="color" id="sampleTextColor" value="#3C1E1E" class="w-10 h-10 rounded cursor-pointer">
-                                            <input type="text" id="sampleTextColorHex" value="#3C1E1E" class="flex-1 px-2 py-1 border border-gray-200 rounded text-sm font-mono">
+                                            <input type="color" id="sampleTextColor" value="#3C1E1E" class="w-12 h-12 rounded cursor-pointer">
+                                            <input type="text" id="sampleTextColorHex" value="#3C1E1E" class="flex-1 min-w-0 px-2 py-2 border border-gray-200 rounded text-sm font-mono">
                                         </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">배경색</label>
                                         <div class="flex items-center space-x-2">
-                                            <input type="color" id="sampleBgColor" value="#FEE500" class="w-10 h-10 rounded cursor-pointer">
-                                            <input type="text" id="sampleBgColorHex" value="#FEE500" class="flex-1 px-2 py-1 border border-gray-200 rounded text-sm font-mono">
+                                            <input type="color" id="sampleBgColor" value="#FEE500" class="w-12 h-12 rounded cursor-pointer">
+                                            <input type="text" id="sampleBgColorHex" value="#FEE500" class="flex-1 min-w-0 px-2 py-2 border border-gray-200 rounded text-sm font-mono">
                                         </div>
                                     </div>
                                 </div>
@@ -1111,15 +1134,15 @@
                     <p class="text-gray-600">시간을 측정하고 랩 타임을 기록하세요</p>
                 </div>
                 <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 mb-6 text-center">
-                    <div id="stopwatchDisplay" class="font-mono text-6xl md:text-7xl font-bold text-gray-800 tracking-wider">
-                        00:00:00<span class="text-4xl md:text-5xl">.000</span>
+                    <div id="stopwatchDisplay" class="font-mono time-display font-bold text-gray-800">
+                        00:00:00<span class="time-sub">.000</span>
                     </div>
                 </div>
-                <div class="flex justify-center gap-4 mb-6">
-                    <button id="stopwatchStartBtn" onclick="startStopwatch()" class="px-8 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all">시작</button>
-                    <button id="stopwatchStopBtn" onclick="stopStopwatch()" disabled class="px-8 py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed">정지</button>
-                    <button id="stopwatchLapBtn" onclick="recordLap()" disabled class="px-8 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed">랩</button>
-                    <button id="stopwatchResetBtn" onclick="resetStopwatch()" class="px-8 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-all">리셋</button>
+                <div class="grid grid-cols-2 sm:flex sm:justify-center gap-3 sm:gap-4 mb-6">
+                    <button id="stopwatchStartBtn" onclick="startStopwatch()" class="px-4 sm:px-8 py-3 whitespace-nowrap bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all">시작</button>
+                    <button id="stopwatchStopBtn" onclick="stopStopwatch()" disabled class="px-4 sm:px-8 py-3 whitespace-nowrap bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed">정지</button>
+                    <button id="stopwatchLapBtn" onclick="recordLap()" disabled class="px-4 sm:px-8 py-3 whitespace-nowrap bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed">랩</button>
+                    <button id="stopwatchResetBtn" onclick="resetStopwatch()" class="px-4 sm:px-8 py-3 whitespace-nowrap bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-all">리셋</button>
                 </div>
                 <div id="lapTimesContainer" class="bg-gray-50 rounded-xl p-6">
                     <div class="flex justify-between items-center mb-4">
@@ -1143,7 +1166,7 @@
                     <p class="text-gray-600">정확한 현재 시간을 확인하세요</p>
                 </div>
                 <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 mb-6 text-center">
-                    <div id="currentTimeDisplay" class="font-mono text-6xl md:text-7xl font-bold text-gray-800 tracking-wider mb-4">--:--:--</div>
+                    <div id="currentTimeDisplay" class="font-mono time-display font-bold text-gray-800 mb-4">--:--:--</div>
                     <div id="currentDateDisplay" class="text-2xl text-gray-600">----년 --월 --일</div>
                     <div id="currentDayDisplay" class="text-lg text-gray-500 mt-2">--요일</div>
                 </div>
@@ -3810,7 +3833,7 @@
         const minutes = Math.floor((ms % 3600000) / 60000);
         const seconds = Math.floor((ms % 60000) / 1000);
         const milliseconds = ms % 1000;
-        return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}<span class="text-4xl md:text-5xl">.${String(milliseconds).padStart(3,'0')}</span>`;
+        return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}<span class="time-sub">.${String(milliseconds).padStart(3,'0')}</span>`;
     }
 
     function updateStopwatchDisplay() {
