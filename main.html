@@ -1367,10 +1367,13 @@
                                                 <div class="flex gap-2">
                                                     <input type="number" id="sampleTargetSize" value="1" min="0.1" max="10" step="0.1" class="flex-1 form-input">
                                                     <select id="sampleSizeUnit" class="form-input" style="width:auto">
-                                                        <option value="MB">MB</option>
-                                                        <option value="KB">KB</option>
+                                                        <option value="MB" title="1 MB = 1,000,000 bytes">MB</option>
+                                                        <option value="KB" title="1 KB = 1,000 bytes">KB</option>
+                                                        <option value="MiB" title="1 MiB = 1,048,576 bytes">MiB</option>
+                                                        <option value="KiB" title="1 KiB = 1,024 bytes">KiB</option>
                                                     </select>
                                                 </div>
+                                                <p class="text-xs text-neutral-500 mt-1" data-ko="MB/KB=10진(1MB=1,000,000B), MiB/KiB=2진(1MiB=1,048,576B)" data-en="MB/KB=decimal (1MB=1,000,000B), MiB/KiB=binary (1MiB=1,048,576B)">MB/KB=10진(1MB=1,000,000B), MiB/KiB=2진(1MiB=1,048,576B)</p>
                                             </div>
                                             <div>
                                                 <label class="block text-sm font-medium text-neutral-700 mb-2" data-ko="이미지 개수" data-en="Count">이미지 개수</label>
@@ -1386,7 +1389,13 @@
                                                 <label class="format-checkbox checked" data-format="pdf"><input type="checkbox" value="pdf" checked><span class="checkmark"></span><span>PDF</span></label>
                                                 <label class="format-checkbox checked" data-format="tif"><input type="checkbox" value="tif" checked><span class="checkmark"></span><span>TIF</span></label>
                                                 <label class="format-checkbox checked" data-format="tiff"><input type="checkbox" value="tiff" checked><span class="checkmark"></span><span>TIFF</span></label>
+                                                <label class="format-checkbox" data-format="pdf-enc"><input type="checkbox" value="pdf-enc"><span class="checkmark"></span><span>PDF 🔒</span></label>
                                             </div>
+                                        </div>
+                                        <div id="pdfPasswordRow" class="hidden">
+                                            <label class="block text-sm font-medium text-neutral-700 mb-2" data-ko="암호화 PDF 비밀번호" data-en="Encrypted PDF Password">암호화 PDF 비밀번호</label>
+                                            <input type="text" id="samplePdfPassword" value="1234" class="form-input" placeholder="1234">
+                                            <p class="text-xs text-neutral-500 mt-1" data-ko="PDF 🔒 파일을 열 때 필요한 비밀번호입니다" data-en="Password required to open the PDF 🔒 file">PDF 🔒 파일을 열 때 필요한 비밀번호입니다</p>
                                         </div>
                                     </div>
                                 </div>
@@ -3343,6 +3352,9 @@
                 const input = this.querySelector('input[type="checkbox"]');
                 input.checked = !input.checked;
                 this.classList.toggle('checked', input.checked);
+                if (this.dataset.format === 'pdf-enc') {
+                    document.getElementById('pdfPasswordRow').classList.toggle('hidden', !input.checked);
+                }
             });
         });
         document.getElementById('sampleWatermarkEnabled').addEventListener('change', function() {
@@ -3407,14 +3419,35 @@
         return formats.length > 0 ? formats : ['png'];
     }
 
+    // 10진 단위(KB/MB)와 2진 단위(KiB/MiB)를 구분
+    const SIZE_UNITS = { KB: 1000, MB: 1000 * 1000, KiB: 1024, MiB: 1024 * 1024 };
+
     function getTargetSizeBytes() {
         const size = parseFloat(document.getElementById('sampleTargetSize').value) || 1;
         const unit = document.getElementById('sampleSizeUnit').value;
-        return unit === 'MB' ? size * 1024 * 1024 : size * 1024;
+        return Math.round(size * (SIZE_UNITS[unit] || SIZE_UNITS.MB));
+    }
+
+    function formatDisplayLabel(format) {
+        return format === 'pdf-enc' ? 'PDF 🔒' : format.toUpperCase();
+    }
+
+    function formatFileExtension(format) {
+        return format === 'pdf-enc' ? 'pdf' : format;
+    }
+
+    function getPdfPassword() {
+        const input = document.getElementById('samplePdfPassword');
+        return (input && input.value) ? input.value : '1234';
     }
 
     function formatFileSize(bytes) {
-        return bytes >= 1024 * 1024 ? (bytes / (1024*1024)).toFixed(2) + ' MB' : (bytes / 1024).toFixed(2) + ' KB';
+        // 선택된 목표 단위 계열(10진/2진)에 맞춰 표시
+        const unitEl = document.getElementById('sampleSizeUnit');
+        const binary = unitEl && (unitEl.value === 'KiB' || unitEl.value === 'MiB');
+        const k = binary ? 1024 : 1000;
+        const kLabel = binary ? 'KiB' : 'KB', mLabel = binary ? 'MiB' : 'MB';
+        return bytes >= k * k ? (bytes / (k * k)).toFixed(2) + ' ' + mLabel : (bytes / k).toFixed(2) + ' ' + kLabel;
     }
 
     async function canvasToBlob(canvas, format, quality) {
@@ -3442,7 +3475,7 @@
 
     function drawFormatBadge(ctx, width, height, format) {
         ctx.save();
-        const badgeText = format.toUpperCase();
+        const badgeText = format === 'pdf-enc' ? 'PDF 🔒' : format.toUpperCase();
         const badgeFontSize = Math.max(Math.min(width, height) / 12, 12);
         ctx.font = `bold ${badgeFontSize}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
         const textMetrics = ctx.measureText(badgeText);
@@ -3455,6 +3488,7 @@
             case 'png': bgColorBadge = 'rgba(59,130,246,0.9)'; textColorBadge='#FFF'; break;
             case 'jpg': case 'jpeg': bgColorBadge = 'rgba(34,197,94,0.9)'; textColorBadge='#FFF'; break;
             case 'pdf': bgColorBadge = 'rgba(239,68,68,0.9)'; textColorBadge='#FFF'; break;
+            case 'pdf-enc': bgColorBadge = 'rgba(234,88,12,0.9)'; textColorBadge='#FFF'; break;
             case 'tif': case 'tiff': bgColorBadge = 'rgba(168,85,247,0.9)'; textColorBadge='#FFF'; break;
             default: bgColorBadge = 'rgba(107,114,128,0.9)'; textColorBadge='#FFF';
         }
@@ -3552,7 +3586,7 @@
             thumbnailContainer.className = 'flex flex-wrap justify-center gap-2 mb-2';
             const info = document.createElement('div');
             info.className = 'text-sm text-neutral-600 mb-2';
-            info.textContent = `${width}x${height} - ${formats.map(f => f.toUpperCase()).join(', ')}`;
+            info.textContent = `${width}x${height} - ${formats.map(f => formatDisplayLabel(f)).join(', ')}`;
             const downloadButtons = document.createElement('div');
             downloadButtons.className = 'flex flex-wrap justify-center gap-2';
             for (const format of formats) {
@@ -3561,7 +3595,7 @@
                 const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
                 const padLength = String(count).length;
                 const paddedIndex = String(i+1).padStart(padLength, '0');
-                const filename = `${safeText}_${paddedIndex}.${format}`;
+                const filename = `${safeText}_${paddedIndex}${format === 'pdf-enc' ? '_encrypted' : ''}.${formatFileExtension(format)}`;
                 const thumbnailWrapper = document.createElement('div');
                 thumbnailWrapper.className = 'text-center';
                 const previewCanvas = document.createElement('canvas');
@@ -3576,10 +3610,10 @@
                 sizeInfo.className = 'text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded';
                 const accuracy = Math.abs(finalBlob.size - targetBytes) / targetBytes * 100;
                 const accuracyText = accuracy < 1 ? '✓' : `±${accuracy.toFixed(1)}%`;
-                sizeInfo.textContent = `${format.toUpperCase()}: ${formatFileSize(finalBlob.size)} ${accuracyText}`;
+                sizeInfo.textContent = `${formatDisplayLabel(format)}: ${formatFileSize(finalBlob.size)} ${accuracyText}`;
                 const downloadBtn = document.createElement('button');
                 downloadBtn.className = 'px-3 py-1.5 btn-primary text-sm';
-                downloadBtn.textContent = format.toUpperCase();
+                downloadBtn.textContent = formatDisplayLabel(format);
                 const blobToDownload = finalBlob;
                 downloadBtn.onclick = () => {
                     const link = document.createElement('a');
@@ -3656,7 +3690,7 @@
                 const safeText = text.replace(/[\\/:*?"<>|]/g, '_');
                 const padLength = String(count).length;
                 const paddedIndex = String(i+1).padStart(padLength, '0');
-                const filename = `${safeText}_${paddedIndex}.${format}`;
+                const filename = `${safeText}_${paddedIndex}${format === 'pdf-enc' ? '_encrypted' : ''}.${formatFileExtension(format)}`;
 
                 const thumbnailWrapper = document.createElement('div');
                 thumbnailWrapper.className = 'text-center';
@@ -3675,11 +3709,11 @@
                 sizeInfo.className = 'text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded';
                 const accuracy = Math.abs(finalBlob.size - targetBytes) / targetBytes * 100;
                 const accuracyText = accuracy < 1 ? '✓' : `±${accuracy.toFixed(1)}%`;
-                sizeInfo.textContent = `${format.toUpperCase()}: ${formatFileSize(finalBlob.size)} ${accuracyText}`;
+                sizeInfo.textContent = `${formatDisplayLabel(format)}: ${formatFileSize(finalBlob.size)} ${accuracyText}`;
 
                 const downloadBtn = document.createElement('button');
                 downloadBtn.className = 'px-3 py-1.5 btn-primary text-sm';
-                downloadBtn.textContent = format.toUpperCase();
+                downloadBtn.textContent = formatDisplayLabel(format);
                 const blobToDownload = finalBlob;
                 downloadBtn.onclick = () => {
                     const link = document.createElement('a');
@@ -3750,10 +3784,11 @@
         const isPng = format === 'png';
         const isTiff = format === 'tif' || format === 'tiff';
         const isPdf = format === 'pdf';
+        const isEncPdf = format === 'pdf-enc';
         if (isJpeg) return await adjustJpegToExactSize(canvas, targetBytes, keepDimensions);
         if (isPng) return await adjustPngToExactSize(canvas, targetBytes, keepDimensions);
         if (isTiff) return await adjustTiffToExactSize(canvas, targetBytes, keepDimensions);
-        if (isPdf) return await adjustPdfToExactSize(canvas, targetBytes, keepDimensions);
+        if (isPdf || isEncPdf) return await adjustPdfToExactSize(canvas, targetBytes, keepDimensions, isEncPdf);
         return await canvasToBlob(canvas, format, 1);
     }
 
@@ -3827,10 +3862,18 @@
         return new Blob([await blob.arrayBuffer()], { type: 'image/tiff' });
     }
 
-    async function adjustPdfToExactSize(canvas, targetBytes, keepDimensions = false) {
+    async function adjustPdfToExactSize(canvas, targetBytes, keepDimensions = false, encrypted = false) {
         const { jsPDF } = window.jspdf;
         const buildPdf = async (sourceCanvas, jpegBlob) => {
-            const pdf = new jsPDF({ orientation: sourceCanvas.width > sourceCanvas.height ? 'landscape' : 'portrait', unit: 'px', format: [sourceCanvas.width, sourceCanvas.height] });
+            const pdfOptions = { orientation: sourceCanvas.width > sourceCanvas.height ? 'landscape' : 'portrait', unit: 'px', format: [sourceCanvas.width, sourceCanvas.height] };
+            if (encrypted) {
+                const password = getPdfPassword();
+                pdfOptions.encryption = { userPassword: password, ownerPassword: password, userPermissions: ['print', 'modify', 'copy', 'annot-forms'] };
+            }
+            const pdf = new jsPDF(pdfOptions);
+            // 빌드마다 크기가 달라지지 않도록 파일 ID와 생성일을 고정 (암호화 키 파생에 사용됨)
+            if (typeof pdf.setFileId === 'function') pdf.setFileId('0102030405060708090A0B0C0D0E0F10');
+            if (typeof pdf.setCreationDate === 'function') pdf.setCreationDate("D:20240101000000+00'00'");
             const imgData = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(jpegBlob); });
             pdf.addImage(imgData, 'JPEG', 0, 0, sourceCanvas.width, sourceCanvas.height);
             return pdf.output('blob');
@@ -4035,7 +4078,7 @@
         const zip = new JSZip();
         const formatFolders = {};
         generatedSampleImages.forEach(item => {
-            const folderName = item.format.toUpperCase();
+            const folderName = item.format === 'pdf-enc' ? 'PDF_ENCRYPTED' : item.format.toUpperCase();
             if (!formatFolders[folderName]) formatFolders[folderName] = zip.folder(folderName);
         });
         for (let i = 0; i < generatedSampleImages.length; i++) {
