@@ -3464,6 +3464,20 @@
         return (input && input.value) ? input.value : '1234';
     }
 
+    // 모바일 사파리 호환 다운로드: 앵커를 DOM에 붙여 클릭하고 URL 해제는 지연
+    // (클릭 직후 revoke하면 사파리에서 다운로드가 시작되기 전에 취소됨)
+    function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.rel = 'noopener';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+
     function formatFileSize(bytes) {
         // 선택된 목표 단위 계열(10진/2진)에 맞춰 표시
         const unitEl = document.getElementById('sampleSizeUnit');
@@ -3638,13 +3652,7 @@
                 downloadBtn.className = 'px-3 py-1.5 btn-primary text-sm';
                 downloadBtn.textContent = formatDisplayLabel(format);
                 const blobToDownload = finalBlob;
-                downloadBtn.onclick = () => {
-                    const link = document.createElement('a');
-                    link.download = filename;
-                    link.href = URL.createObjectURL(blobToDownload);
-                    link.click();
-                    URL.revokeObjectURL(link.href);
-                };
+                downloadBtn.onclick = () => downloadBlob(blobToDownload, filename);
                 downloadButtons.appendChild(sizeInfo);
                 downloadButtons.appendChild(downloadBtn);
                 generatedSampleImages.push({ blob: finalBlob, filename, format, targetBytes, index: i+1, text: safeText });
@@ -3738,13 +3746,7 @@
                 downloadBtn.className = 'px-3 py-1.5 btn-primary text-sm';
                 downloadBtn.textContent = formatDisplayLabel(format);
                 const blobToDownload = finalBlob;
-                downloadBtn.onclick = () => {
-                    const link = document.createElement('a');
-                    link.download = filename;
-                    link.href = URL.createObjectURL(blobToDownload);
-                    link.click();
-                    URL.revokeObjectURL(link.href);
-                };
+                downloadBtn.onclick = () => downloadBlob(blobToDownload, filename);
                 downloadButtons.appendChild(sizeInfo);
                 downloadButtons.appendChild(downloadBtn);
                 generatedSampleImages.push({ blob: finalBlob, filename, format, targetBytes, isTiled: true, index: i+1, text: safeText });
@@ -4059,8 +4061,7 @@
                 pdf.save(filename);
             } else {
                 const { blob } = await adjustQualityForSize(canvas, format, targetBytes);
-                const link = document.createElement('a');
-                link.download = filename; link.href = URL.createObjectURL(blob); link.click(); URL.revokeObjectURL(link.href);
+                downloadBlob(blob, filename);
             }
         } catch(e) { showToast('다운로드 중 오류가 발생했습니다', 'error'); }
     }
@@ -4084,12 +4085,11 @@
         }
         for (const item of generatedSampleImages) {
             if (item.blob) {
-                const link = document.createElement('a');
-                link.download = item.filename; link.href = URL.createObjectURL(item.blob); link.click(); URL.revokeObjectURL(link.href);
+                downloadBlob(item.blob, item.filename);
             } else if (item.canvas) {
                 await downloadSingleSampleImage(item.canvas, item.filename, item.format, item.targetBytes);
             }
-            await new Promise(resolve => setTimeout(resolve, 300));
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
         showToast('모든 이미지가 다운로드되었습니다', 'success');
     }
@@ -4106,7 +4106,7 @@
         });
         for (let i = 0; i < generatedSampleImages.length; i++) {
             const item = generatedSampleImages[i];
-            const folder = formatFolders[item.format.toUpperCase()];
+            const folder = formatFolders[item.format === 'pdf-enc' ? 'PDF_ENCRYPTED' : item.format.toUpperCase()];
             let blob;
             if (item.blob) { blob = item.blob; }
             else if (item.canvas) {
@@ -4124,11 +4124,7 @@
             if (blob) folder.file(item.filename, blob);
         }
         const content = await zip.generateAsync({ type: 'blob' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(content);
-        link.download = `이미지모음_${safeText}.zip`;
-        link.click();
-        URL.revokeObjectURL(link.href);
+        downloadBlob(content, `이미지모음_${safeText}.zip`);
         showToast('ZIP 파일이 다운로드되었습니다', 'success');
     }
 
