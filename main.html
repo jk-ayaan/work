@@ -1367,10 +1367,13 @@
                                                 <div class="flex gap-2">
                                                     <input type="number" id="sampleTargetSize" value="1" min="0.1" max="10" step="0.1" class="flex-1 form-input">
                                                     <select id="sampleSizeUnit" class="form-input" style="width:auto">
-                                                        <option value="MB">MB</option>
-                                                        <option value="KB">KB</option>
+                                                        <option value="MB" title="1 MB = 1,000,000 bytes">MB</option>
+                                                        <option value="KB" title="1 KB = 1,000 bytes">KB</option>
+                                                        <option value="MiB" title="1 MiB = 1,048,576 bytes">MiB</option>
+                                                        <option value="KiB" title="1 KiB = 1,024 bytes">KiB</option>
                                                     </select>
                                                 </div>
+                                                <p class="text-xs text-neutral-500 mt-1" data-ko="MB/KB=10진(1MB=1,000,000B), MiB/KiB=2진(1MiB=1,048,576B)" data-en="MB/KB=decimal (1MB=1,000,000B), MiB/KiB=binary (1MiB=1,048,576B)">MB/KB=10진(1MB=1,000,000B), MiB/KiB=2진(1MiB=1,048,576B)</p>
                                             </div>
                                             <div>
                                                 <label class="block text-sm font-medium text-neutral-700 mb-2" data-ko="이미지 개수" data-en="Count">이미지 개수</label>
@@ -3416,10 +3419,13 @@
         return formats.length > 0 ? formats : ['png'];
     }
 
+    // 10진 단위(KB/MB)와 2진 단위(KiB/MiB)를 구분
+    const SIZE_UNITS = { KB: 1000, MB: 1000 * 1000, KiB: 1024, MiB: 1024 * 1024 };
+
     function getTargetSizeBytes() {
         const size = parseFloat(document.getElementById('sampleTargetSize').value) || 1;
         const unit = document.getElementById('sampleSizeUnit').value;
-        return unit === 'MB' ? size * 1024 * 1024 : size * 1024;
+        return Math.round(size * (SIZE_UNITS[unit] || SIZE_UNITS.MB));
     }
 
     function formatDisplayLabel(format) {
@@ -3436,7 +3442,12 @@
     }
 
     function formatFileSize(bytes) {
-        return bytes >= 1024 * 1024 ? (bytes / (1024*1024)).toFixed(2) + ' MB' : (bytes / 1024).toFixed(2) + ' KB';
+        // 선택된 목표 단위 계열(10진/2진)에 맞춰 표시
+        const unitEl = document.getElementById('sampleSizeUnit');
+        const binary = unitEl && (unitEl.value === 'KiB' || unitEl.value === 'MiB');
+        const k = binary ? 1024 : 1000;
+        const kLabel = binary ? 'KiB' : 'KB', mLabel = binary ? 'MiB' : 'MB';
+        return bytes >= k * k ? (bytes / (k * k)).toFixed(2) + ' ' + mLabel : (bytes / k).toFixed(2) + ' ' + kLabel;
     }
 
     async function canvasToBlob(canvas, format, quality) {
